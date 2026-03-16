@@ -240,7 +240,7 @@ export function getFleetStats(): FleetStats {
       activeParking: 0,
       expiringSoon: 0,
       ticketsThisMonth: 0,
-      ticketsAvoided: account?.ticketsSaved || 0,
+      ticketsAvoided: 0,
       totalSpent: 0,
       totalSaved: 0,
     }

@@ -58,20 +58,20 @@ export function CommunityScreen({
     return () => clearInterval(interval)
   }, [currentLocation])
 
-  const loadData = () => {
-    setSightings(getEnforcementSightings())
+  const loadData = async () => {
+    setSightings(await getEnforcementSightings())
     if (currentLocation) {
       setMeters(getNearbyMeters(currentLocation.lat, currentLocation.lng))
     }
   }
 
-  const handleReportEnforcement = (type: EnforcementSighting["type"]) => {
+  const handleReportEnforcement = async (type: EnforcementSighting["type"]) => {
     if (!currentLocation || !currentAddress) {
       showToast("error", "Location needed", "Please enable location to report sightings")
       return
     }
 
-    reportEnforcement(type, currentLocation, currentAddress)
+    await reportEnforcement(type, currentLocation, currentAddress)
     loadData()
     setShowReportEnforcement(false)
     showToast("success", "Reported", "Thanks for helping the community!")
@@ -90,13 +90,13 @@ export function CommunityScreen({
     showToast("success", "Reported", "Meter status updated!")
   }
 
-  const handleVote = (id: string, isUpvote: boolean) => {
+  const handleVote = async (id: string, isUpvote: boolean) => {
     if (votedIds.has(id)) {
       showToast("info", "Already voted", "You've already voted on this sighting")
       return
     }
     
-    voteEnforcement(id, isUpvote)
+    await voteEnforcement(id, isUpvote)
     setVotedIds(new Set([...votedIds, id]))
     loadData()
   }

@@ -59,8 +59,11 @@ export function PhotoVault({
   ]
 
   useEffect(() => {
+    const loadPhotos = async () => {
+      setPhotos(await getPhotoEvidence())
+    }
     if (isOpen) {
-      setPhotos(getPhotoEvidence())
+      loadPhotos()
     }
   }, [isOpen])
 
@@ -76,10 +79,10 @@ export function PhotoVault({
     }
   }
 
-  const handleSavePhoto = () => {
+  const handleSavePhoto = async () => {
     if (!previewUrl) return
 
-    savePhotoEvidence(
+    await savePhotoEvidence(
       previewUrl,
       caption || "Parking evidence",
       currentLocation,
@@ -87,7 +90,7 @@ export function PhotoVault({
       selectedTags
     )
 
-    setPhotos(getPhotoEvidence())
+    setPhotos(await getPhotoEvidence())
     setShowCamera(false)
     setPreviewUrl(null)
     setCaption("")
@@ -95,9 +98,9 @@ export function PhotoVault({
     showToast("success", "Photo saved", "Added to your evidence vault")
   }
 
-  const handleDeletePhoto = (id: string) => {
-    deletePhotoEvidence(id)
-    setPhotos(getPhotoEvidence())
+  const handleDeletePhoto = async (id: string) => {
+    await deletePhotoEvidence(id)
+    setPhotos(await getPhotoEvidence())
     setSelectedPhoto(null)
     showToast("info", "Photo deleted", "Removed from your vault")
   }

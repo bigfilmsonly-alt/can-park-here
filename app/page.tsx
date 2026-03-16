@@ -168,7 +168,7 @@ export default function ParkingApp() {
 
       // Start protection session if parking is allowed
       if (result.status !== "prohibited") {
-        const session = startParkingSession(
+        const session = await startParkingSession(
           location.address,
           location.street,
           { lat: location.latitude, lng: location.longitude },
@@ -192,8 +192,8 @@ export default function ParkingApp() {
         result: {
           canPark: result.status !== "prohibited",
           status: result.status,
-          message: result.message,
-          timeRemaining: result.timeRemaining,
+          message: result.description,
+          timeRemaining: result.timeRemaining ?? undefined,
         },
       })
 
@@ -251,7 +251,7 @@ export default function ParkingApp() {
     }
   }, [])
 
-  const handleCheckSavedLocation = useCallback((savedLoc: SavedLocation) => {
+  const handleCheckSavedLocation = useCallback(async (savedLoc: SavedLocation) => {
     if (!canMakeCheck()) {
       setShowUpgrade(true)
       return
@@ -274,7 +274,7 @@ export default function ParkingApp() {
 
     // Start protection session if parking is allowed
     if (result.status !== "prohibited") {
-      const session = startParkingSession(
+      const session = await startParkingSession(
         savedLoc.address,
         savedLoc.name || savedLoc.street,
         savedLoc.coordinates,
@@ -309,8 +309,8 @@ export default function ParkingApp() {
     setParkingResult(null)
   }
 
-  const handleEndSession = () => {
-    endParkingSession()
+  const handleEndSession = async () => {
+    await endParkingSession()
     setActiveSession(null)
     setSessionTimeRemaining(null)
     setCurrentView("home")
@@ -328,7 +328,7 @@ export default function ParkingApp() {
         const reminderMinutes = Math.max(0, parkingResult.timeRemaining - 10)
         const reminderTime = new Date(Date.now() + reminderMinutes * 60 * 1000)
 
-        setSessionReminder(reminderTime)
+        await setSessionReminder(reminderTime)
         setReminderSet(true)
 
         setTimeout(
@@ -382,7 +382,7 @@ export default function ParkingApp() {
     }
   }
 
-  const handleHistoryItemClick = (item: HistoryItem) => {
+  const handleHistoryItemClick = async (item: HistoryItem) => {
     if (!canMakeCheck()) {
       setShowUpgrade(true)
       return
@@ -404,7 +404,7 @@ export default function ParkingApp() {
     setReminderSet(false)
 
     if (result.status !== "prohibited") {
-      const session = startParkingSession(
+      const session = await startParkingSession(
         item.location,
         item.street,
         item.coordinates,

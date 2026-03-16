@@ -108,6 +108,14 @@ const KEYS = {
   ONBOARDING: "park_db_onboarding_complete",
 }
 
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(password + "park_app_salt_v1")
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+}
+
 // Helper to safely parse JSON from localStorage
 function safeGet<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback
@@ -137,7 +145,7 @@ export async function dbGetUser(): Promise<DBUser | null> {
 }
 
 export async function dbCreateUser(email: string, name: string, password: string): Promise<DBUser> {
-  // In production, this would hash password and call Supabase
+  // TODO: Replace with Supabase Auth in production (server-side bcrypt)
   const user: DBUser = {
     id: crypto.randomUUID(),
     email,
@@ -158,9 +166,8 @@ export async function dbCreateUser(email: string, name: string, password: string
     },
   }
   
-  // Store password hash separately (in production, server-side only)
   const users = safeGet<Record<string, { user: DBUser; passwordHash: string }>>("park_db_users", {})
-  users[email] = { user, passwordHash: btoa(password) } // btoa is NOT secure - just for demo
+  users[email] = { user, passwordHash: await hashPassword(password) }
   safeSet("park_db_users", users)
   safeSet(KEYS.USER, user)
   
@@ -168,13 +175,13 @@ export async function dbCreateUser(email: string, name: string, password: string
 }
 
 export async function dbSignIn(email: string, password: string): Promise<DBUser | null> {
+  // TODO: Replace with Supabase Auth in production
   const users = safeGet<Record<string, { user: DBUser; passwordHash: string }>>("park_db_users", {})
   const record = users[email]
   
   if (!record) return null
-  if (record.passwordHash !== btoa(password)) return null
+  if (record.passwordHash !== await hashPassword(password)) return null
   
-  // Update last sign in
   record.user.updated_at = new Date().toISOString()
   users[email] = record
   safeSet("park_db_users", users)
