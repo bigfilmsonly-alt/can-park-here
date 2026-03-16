@@ -1,6 +1,6 @@
 "use client"
 
-import type { HistoryItem } from "@/app/page"
+import type { HistoryItem } from "@/lib/types"
 import { ChevronRight } from "lucide-react"
 import { EmptyHistory } from "@/components/ui/empty-states"
 
