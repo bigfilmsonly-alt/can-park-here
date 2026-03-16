@@ -27,7 +27,7 @@ import {
   canMakeCheck,
   type ProtectionSession,
 } from "@/lib/protection"
-import { getCurrentUserSync, isOnboardingComplete, completeOnboarding, incrementStats, type User } from "@/lib/auth"
+import { getCurrentUserSync, getCurrentUser, isOnboardingComplete, completeOnboarding, incrementStats, type User } from "@/lib/auth"
 import { updateStreak, incrementGamificationStat } from "@/lib/gamification"
 import { getAccessibilitySettings, applyAccessibilityStyles } from "@/lib/accessibility"
 import { showToast } from "@/components/ui/toast-notification"
@@ -148,13 +148,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { isEnabled: biometricEnabled, isAuthenticated, isLoading: biometricLoading, error: biometricError, authenticate } = useBiometric()
 
   useEffect(() => {
-    setUser(getCurrentUserSync())
-    if (!isOnboardingComplete()) setShowOnboarding(true)
-    const a11y = getAccessibilitySettings()
-    applyAccessibilityStyles(a11y)
-    const { newBadges } = updateStreak()
-    newBadges.forEach((b) => showToast("success", `Badge unlocked: ${b.name}`, b.description))
-    setAuthChecked(true)
+    const syncUser = getCurrentUserSync()
+    if (syncUser) setUser(syncUser)
+    getCurrentUser()
+      .then((u) => {
+        if (u) setUser(u)
+        if (!isOnboardingComplete()) setShowOnboarding(true)
+        const a11y = getAccessibilitySettings()
+        applyAccessibilityStyles(a11y)
+        const { newBadges } = updateStreak()
+        newBadges.forEach((b) => showToast("success", `Badge unlocked: ${b.name}`, b.description))
+      })
+      .finally(() => setAuthChecked(true))
   }, [])
 
   useEffect(() => {
