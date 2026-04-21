@@ -42,6 +42,14 @@ export function PhotoVault({
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const availableTags = [
     "Parking Sign",
@@ -59,11 +67,18 @@ export function PhotoVault({
   ]
 
   useEffect(() => {
+    let cancelled = false
     const loadPhotos = async () => {
-      setPhotos(await getPhotoEvidence())
+      const photos = await getPhotoEvidence()
+      if (!cancelled && mountedRef.current) {
+        setPhotos(photos)
+      }
     }
     if (isOpen) {
       loadPhotos()
+    }
+    return () => {
+      cancelled = true
     }
   }, [isOpen])
 
@@ -90,7 +105,12 @@ export function PhotoVault({
       selectedTags
     )
 
-    setPhotos(await getPhotoEvidence())
+    if (!mountedRef.current) return
+
+    const updatedPhotos = await getPhotoEvidence()
+    if (!mountedRef.current) return
+
+    setPhotos(updatedPhotos)
     setShowCamera(false)
     setPreviewUrl(null)
     setCaption("")
@@ -100,7 +120,12 @@ export function PhotoVault({
 
   const handleDeletePhoto = async (id: string) => {
     await deletePhotoEvidence(id)
-    setPhotos(await getPhotoEvidence())
+    if (!mountedRef.current) return
+
+    const updatedPhotos = await getPhotoEvidence()
+    if (!mountedRef.current) return
+
+    setPhotos(updatedPhotos)
     setSelectedPhoto(null)
     showToast("info", "Photo deleted", "Removed from your vault")
   }

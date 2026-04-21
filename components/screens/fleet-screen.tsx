@@ -226,8 +226,8 @@ export function FleetScreen({ showToast }: FleetScreenProps) {
     return (
       <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-20">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => setView("vehicles")} className="p-2 -ml-2">
-            <X className="h-5 w-5 text-muted-foreground" />
+          <button onClick={() => setView("vehicles")} className="p-2 -ml-2" aria-label="Cancel adding vehicle">
+            <X className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </button>
           <h1 className="text-xl font-semibold text-foreground">Add Vehicle</h1>
         </div>
@@ -299,8 +299,8 @@ export function FleetScreen({ showToast }: FleetScreenProps) {
     return (
       <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-20">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => setView("drivers")} className="p-2 -ml-2">
-            <X className="h-5 w-5 text-muted-foreground" />
+          <button onClick={() => setView("drivers")} className="p-2 -ml-2" aria-label="Cancel adding driver">
+            <X className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </button>
           <h1 className="text-xl font-semibold text-foreground">Add Driver</h1>
         </div>
@@ -365,8 +365,8 @@ export function FleetScreen({ showToast }: FleetScreenProps) {
       <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-20">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => setView("overview")} className="p-2 -ml-2">
-              <X className="h-5 w-5 text-muted-foreground" />
+            <button onClick={() => setView("overview")} className="p-2 -ml-2" aria-label="Back to overview">
+              <X className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
             </button>
             <h1 className="text-xl font-semibold text-foreground">Vehicles</h1>
           </div>
@@ -434,8 +434,8 @@ export function FleetScreen({ showToast }: FleetScreenProps) {
       <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-20">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => setView("overview")} className="p-2 -ml-2">
-              <X className="h-5 w-5 text-muted-foreground" />
+            <button onClick={() => setView("overview")} className="p-2 -ml-2" aria-label="Back to overview">
+              <X className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
             </button>
             <h1 className="text-xl font-semibold text-foreground">Drivers</h1>
           </div>

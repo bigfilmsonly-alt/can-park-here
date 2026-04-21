@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { X, Download, Share } from "lucide-react"
 
@@ -14,8 +14,12 @@ export function InstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   useEffect(() => {
+    // SSR guard
+    if (typeof window === "undefined") return
+
     // Check if already installed
     const standalone = window.matchMedia("(display-mode: standalone)").matches
     setIsStandalone(standalone)
@@ -25,11 +29,15 @@ export function InstallPrompt() {
     setIsIOS(iOS)
 
     // Check if dismissed recently
-    const dismissed = localStorage.getItem("park_install_dismissed")
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed, 10)
-      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24)
-      if (daysSinceDismissed < 7) return
+    try {
+      const dismissed = localStorage.getItem("park_install_dismissed")
+      if (dismissed) {
+        const dismissedTime = parseInt(dismissed, 10)
+        const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24)
+        if (daysSinceDismissed < 7) return
+      }
+    } catch {
+      // localStorage unavailable
     }
 
     // Listen for install prompt (Android/Desktop)
@@ -37,17 +45,23 @@ export function InstallPrompt() {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       // Show after 30 seconds of use
-      setTimeout(() => setShowPrompt(true), 30000)
+      const t = setTimeout(() => setShowPrompt(true), 30000)
+      timeoutsRef.current.push(t)
     }
 
     window.addEventListener("beforeinstallprompt", handler)
 
     // For iOS, show after some usage
     if (iOS && !standalone) {
-      setTimeout(() => setShowPrompt(true), 60000)
+      const t = setTimeout(() => setShowPrompt(true), 60000)
+      timeoutsRef.current.push(t)
     }
 
-    return () => window.removeEventListener("beforeinstallprompt", handler)
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler)
+      timeoutsRef.current.forEach(clearTimeout)
+      timeoutsRef.current = []
+    }
   }, [])
 
   const handleInstall = async () => {

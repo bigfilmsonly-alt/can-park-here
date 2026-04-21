@@ -11,7 +11,7 @@ export default function PermissionsPage() {
     <PermissionRequest
       onComplete={() => {
         completeOnboarding()
-        router.push("/")
+        router.push("/signin")
       }}
     />
   )

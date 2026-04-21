@@ -152,17 +152,18 @@ function generateMockEVStations(centerLat: number, centerLng: number): EVStation
 }
 
 // Get parking spots near a location
-export function getNearbyParkingSpots(lat: number, lng: number, radiusKm: number = 1): ParkingSpot[] {
+export function getNearbyParkingSpots(lat: number, lng: number, _radiusKm: number = 1): ParkingSpot[] {
   // In production, this would fetch from an API
   // For demo, generate mock data
+  if (typeof window === "undefined") return generateMockSpots(lat, lng, 30)
   const stored = localStorage.getItem(SPOTS_KEY)
-  
+
   if (!stored) {
     const spots = generateMockSpots(lat, lng, 30)
     localStorage.setItem(SPOTS_KEY, JSON.stringify(spots))
     return spots
   }
-  
+
   try {
     const spots = JSON.parse(stored) as ParkingSpot[]
     return spots.map(s => ({ ...s, lastUpdated: new Date(s.lastUpdated) }))
@@ -175,14 +176,15 @@ export function getNearbyParkingSpots(lat: number, lng: number, radiusKm: number
 
 // Get parking garages near a location
 export function getNearbyGarages(lat: number, lng: number): ParkingGarage[] {
+  if (typeof window === "undefined") return generateMockGarages(lat, lng)
   const stored = localStorage.getItem(GARAGES_KEY)
-  
+
   if (!stored) {
     const garages = generateMockGarages(lat, lng)
     localStorage.setItem(GARAGES_KEY, JSON.stringify(garages))
     return garages
   }
-  
+
   try {
     const garages = JSON.parse(stored) as ParkingGarage[]
     return garages.map(g => ({ ...g, lastUpdated: new Date(g.lastUpdated) }))
@@ -195,14 +197,15 @@ export function getNearbyGarages(lat: number, lng: number): ParkingGarage[] {
 
 // Get EV charging stations near a location
 export function getNearbyEVStations(lat: number, lng: number): EVStation[] {
+  if (typeof window === "undefined") return generateMockEVStations(lat, lng)
   const stored = localStorage.getItem(EV_STATIONS_KEY)
-  
+
   if (!stored) {
     const stations = generateMockEVStations(lat, lng)
     localStorage.setItem(EV_STATIONS_KEY, JSON.stringify(stations))
     return stations
   }
-  
+
   try {
     const stations = JSON.parse(stored) as EVStation[]
     return stations.map(s => ({ ...s, lastUpdated: new Date(s.lastUpdated) }))
@@ -215,13 +218,14 @@ export function getNearbyEVStations(lat: number, lng: number): EVStation[] {
 
 // Report a parking spot status
 export function reportSpotStatus(spotId: string, status: ParkingSpot["status"]): void {
+  if (typeof window === "undefined") return
   const stored = localStorage.getItem(SPOTS_KEY)
   if (!stored) return
-  
+
   try {
     const spots = JSON.parse(stored) as ParkingSpot[]
-    const updated = spots.map(s => 
-      s.id === spotId 
+    const updated = spots.map(s =>
+      s.id === spotId
         ? { ...s, status, lastUpdated: new Date() }
         : s
     )
@@ -254,13 +258,14 @@ export function formatDistance(distanceKm: number): string {
 
 // Get directions URL for navigation
 export function getDirectionsUrl(lat: number, lng: number): string {
-  // Check if iOS
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  
-  if (isIOS) {
-    return `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
+  // Check if iOS (only in browser context)
+  if (typeof navigator !== "undefined") {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    if (isIOS) {
+      return `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
+    }
   }
-  
+
   // Default to Google Maps
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
 }

@@ -37,8 +37,18 @@ export function useVoiceCommands(
   const [lastCommand, setLastCommand] = useState<string | null>(null)
   const [isSupported, setIsSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
+  const onCommandRef = useRef(onCommand)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Keep callback ref in sync without triggering effect re-runs
+  useEffect(() => {
+    onCommandRef.current = onCommand
+  }, [onCommand])
 
   useEffect(() => {
+    // SSR guard
+    if (typeof window === "undefined") return
+
     // Check for browser support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     setIsSupported(!!SpeechRecognition)
@@ -53,7 +63,7 @@ export function useVoiceCommands(
         const current = event.resultIndex
         const result = event.results[current]
         const text = result[0].transcript.toLowerCase().trim()
-        
+
         setTranscript(text)
 
         if (result.isFinal) {
@@ -61,13 +71,13 @@ export function useVoiceCommands(
           for (const command of COMMANDS) {
             if (command.phrases.some((phrase) => text.includes(phrase))) {
               setLastCommand(command.action)
-              onCommand(command.action)
+              onCommandRef.current(command.action)
               break
             }
           }
-          
+
           // Stop listening after final result
-          setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setIsListening(false)
             setTranscript("")
           }, 500)
@@ -89,16 +99,26 @@ export function useVoiceCommands(
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort()
+        recognitionRef.current = null
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
     }
-  }, [onCommand])
+  }, []) // Stable: no deps, uses refs for callbacks
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {
       setTranscript("")
       setLastCommand(null)
-      recognitionRef.current.start()
-      setIsListening(true)
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch (e) {
+        // Catch InvalidStateError if recognition is already started
+        console.error("Failed to start speech recognition:", e)
+      }
     }
   }, [isListening])
 

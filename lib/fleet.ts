@@ -69,7 +69,12 @@ export function getFleetAccount(): FleetAccount | null {
   if (typeof window === "undefined") return null
   const stored = localStorage.getItem(FLEET_STORAGE_KEY)
   if (!stored) return null
-  const account = JSON.parse(stored)
+  let account: FleetAccount
+  try {
+    account = JSON.parse(stored)
+  } catch {
+    return null
+  }
   account.createdAt = new Date(account.createdAt)
   account.vehicles = account.vehicles.map((v: Vehicle) => ({
     ...v,
@@ -99,11 +104,14 @@ export function createFleetAccount(companyName: string, plan: FleetAccount["plan
     moneySaved: 0,
     createdAt: new Date(),
   }
-  localStorage.setItem(FLEET_STORAGE_KEY, JSON.stringify(account))
+  if (typeof window !== "undefined") {
+    localStorage.setItem(FLEET_STORAGE_KEY, JSON.stringify(account))
+  }
   return account
 }
 
 export function updateFleetAccount(account: FleetAccount): void {
+  if (typeof window === "undefined") return
   localStorage.setItem(FLEET_STORAGE_KEY, JSON.stringify(account))
 }
 

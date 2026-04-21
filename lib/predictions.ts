@@ -45,6 +45,7 @@ interface ParkingEvent {
 
 // Simulated historical data for ML predictions
 const getHistoricalData = (): ParkingEvent[] => {
+  if (typeof window === "undefined") return generateSampleData()
   const stored = localStorage.getItem("park_history")
   if (!stored) return generateSampleData()
   
@@ -96,7 +97,7 @@ function generateSampleData(): ParkingEvent[] {
 // Analyze patterns and generate predictions
 export function generatePredictions(
   targetDate: Date = new Date(),
-  location?: { lat: number; lng: number }
+  _location?: { lat: number; lng: number }
 ): DailyPrediction {
   const historical = getHistoricalData()
   const dayOfWeek = targetDate.getDay()
@@ -219,6 +220,7 @@ export function getWeeklyBestTimes(): { day: string; time: string; score: number
 
 // Learn user patterns
 export function analyzeUserPatterns(): LocationPattern[] {
+  if (typeof window === "undefined") return []
   const stored = localStorage.getItem("park_history")
   if (!stored) return []
   

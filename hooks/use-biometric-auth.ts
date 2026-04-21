@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 interface BiometricState {
   isAvailable: boolean
@@ -19,17 +19,30 @@ export function useBiometricAuth() {
     isLocked: false,
     lastAuthTime: null,
   })
+  const mountedRef = useRef(true)
 
   // Check if WebAuthn/biometrics is available
   useEffect(() => {
+    mountedRef.current = true
+
     const checkAvailability = async () => {
+      // SSR guard
+      if (typeof window === "undefined") return
+
       try {
         const available =
           window.PublicKeyCredential !== undefined &&
           (await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())
 
-        const enabled = localStorage.getItem(AUTH_KEY) === "true"
-        
+        let enabled = false
+        try {
+          enabled = localStorage.getItem(AUTH_KEY) === "true"
+        } catch {
+          // localStorage unavailable
+        }
+
+        if (!mountedRef.current) return
+
         setState((prev) => ({
           ...prev,
           isAvailable: available,
@@ -37,11 +50,16 @@ export function useBiometricAuth() {
           isLocked: enabled, // Start locked if enabled
         }))
       } catch {
+        if (!mountedRef.current) return
         setState((prev) => ({ ...prev, isAvailable: false }))
       }
     }
 
     checkAvailability()
+
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   // Auto-lock after inactivity
@@ -61,6 +79,7 @@ export function useBiometricAuth() {
   // Enable biometric authentication
   const enableBiometric = useCallback(async (): Promise<boolean> => {
     if (!state.isAvailable) return false
+    if (typeof window === "undefined") return false
 
     try {
       // Create a credential to verify biometric works
@@ -88,8 +107,12 @@ export function useBiometricAuth() {
         },
       })
 
+      if (!mountedRef.current) return false
+
       if (credential) {
-        localStorage.setItem(AUTH_KEY, "true")
+        try {
+          localStorage.setItem(AUTH_KEY, "true")
+        } catch { /* ignore */ }
         setState((prev) => ({
           ...prev,
           isEnabled: true,
@@ -107,7 +130,9 @@ export function useBiometricAuth() {
 
   // Disable biometric authentication
   const disableBiometric = useCallback(() => {
-    localStorage.removeItem(AUTH_KEY)
+    try {
+      localStorage.removeItem(AUTH_KEY)
+    } catch { /* ignore */ }
     setState((prev) => ({
       ...prev,
       isEnabled: false,
@@ -118,6 +143,7 @@ export function useBiometricAuth() {
   // Authenticate with biometrics
   const authenticate = useCallback(async (): Promise<boolean> => {
     if (!state.isEnabled) return true // Not enabled, no auth needed
+    if (typeof window === "undefined") return false
 
     try {
       const challenge = new Uint8Array(32)
@@ -131,6 +157,8 @@ export function useBiometricAuth() {
           rpId: window.location.hostname,
         },
       })
+
+      if (!mountedRef.current) return false
 
       if (assertion) {
         setState((prev) => ({

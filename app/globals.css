@@ -4,87 +4,112 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.995 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.15 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.25 0 0);
-  --muted: oklch(0.965 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.15 0 0);
-  --destructive: oklch(0.65 0.18 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.93 0 0);
-  --input: oklch(0.93 0 0);
-  --ring: oklch(0.7 0 0);
+  --background: #fafbff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #fafbff;
+  --secondary: #f5f7fb;
+  --secondary-foreground: #334155;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --accent-deep: #1d4ed8;
+  --accent-pale: #eff6ff;
+  --accent-ink: #1e3a8a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+  --hairline: #eef2f7;
+  --fg2: #334155;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  --navy: #0f1b2d;
+  --navy-light: #1e3a5f;
   --radius: 0.75rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  
-  /* Status colors - soft and calm */
-  --status-success: oklch(0.75 0.14 145);
-  --status-success-foreground: oklch(0.35 0.1 145);
-  --status-warning: oklch(0.82 0.12 85);
-  --status-warning-foreground: oklch(0.4 0.1 85);
-  --status-error: oklch(0.75 0.12 25);
-  --status-error-foreground: oklch(0.45 0.1 25);
+  --sidebar: #f5f7fb;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0f172a;
+  --sidebar-primary-foreground: #fafbff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3b82f6;
+
+  /* Status colors matching design */
+  --status-success: #10b981;
+  --status-success-bg: #d1fae5;
+  --status-success-foreground: #065f46;
+  --status-warning: #f59e0b;
+  --status-warning-bg: #fef3c7;
+  --status-warning-foreground: #92400e;
+  --status-error: #ef4444;
+  --status-error-bg: #fee2e2;
+  --status-error-foreground: #991b1b;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --background: #0b0f17;
+  --foreground: #f8fafc;
+  --card: #1a1f2b;
+  --card-foreground: #f8fafc;
+  --popover: #1a1f2b;
+  --popover-foreground: #f8fafc;
+  --primary: #f8fafc;
+  --primary-foreground: #0b0f17;
+  --secondary: #222838;
+  --secondary-foreground: #f8fafc;
+  --muted: #262c3b;
+  --muted-foreground: #94a3b8;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --accent-deep: #1d4ed8;
+  --accent-pale: rgba(59, 130, 246, 0.15);
+  --accent-ink: #1e3a8a;
+  --destructive: #ef4444;
+  --destructive-foreground: #f87171;
+  --border: #2d3447;
+  --input: #2d3447;
+  --ring: #3b82f6;
+  --hairline: #232938;
+  --fg2: #cbd5e1;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar: #1a1f2b;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #262c3b;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #2d3447;
+  --sidebar-ring: #3b82f6;
+
+  --status-success: #10b981;
+  --status-success-bg: rgba(16, 185, 129, 0.15);
+  --status-success-foreground: #34d399;
+  --status-warning: #f59e0b;
+  --status-warning-bg: rgba(245, 158, 11, 0.15);
+  --status-warning-foreground: #fbbf24;
+  --status-error: #ef4444;
+  --status-error-bg: rgba(239, 68, 68, 0.15);
+  --status-error-foreground: #f87171;
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -99,11 +124,16 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-pale: var(--accent-pale);
+  --color-accent-ink: var(--accent-ink);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-hairline: var(--hairline);
+  --color-fg2: var(--fg2);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -122,10 +152,13 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
   --color-status-success-foreground: var(--status-success-foreground);
   --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
   --color-status-warning-foreground: var(--status-warning-foreground);
   --color-status-error: var(--status-error);
+  --color-status-error-bg: var(--status-error-bg);
   --color-status-error-foreground: var(--status-error-foreground);
 }
 
@@ -444,4 +477,221 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ===== iPHONE SHOWCASE FRAME ===== */
+
+/* ---------- Mobile: frame is invisible, app renders normally ---------- */
+.showcase-root,
+.iphone-device,
+.iphone-frame,
+.iphone-screen,
+.iphone-app {
+  display: contents;
+}
+
+.showcase-header,
+.showcase-footer,
+.iphone-island,
+.iphone-home,
+.iphone-btn {
+  display: none;
+}
+
+/* ---------- App shell (used by (app) layout) ---------- */
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-scroll {
+  flex: 1;
+}
+
+/* ---------- Desktop: show iPhone showcase ---------- */
+@media (min-width: 768px) {
+  /* Force dark body behind the showcase */
+  body {
+    background: #070b14 !important;
+  }
+
+  /* Showcase root: dark gradient, centered */
+  .showcase-root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px;
+    gap: 20px;
+    background: linear-gradient(160deg, #070b14 0%, #0c1322 40%, #0a0f1a 70%, #060a12 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle dot grid overlay */
+  .showcase-root::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+
+  /* Blue glow behind iPhone */
+  .showcase-root::after {
+    content: "";
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -45%);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .showcase-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    z-index: 1;
+  }
+
+  .showcase-footer {
+    display: block;
+    z-index: 1;
+  }
+
+  /* iPhone device container */
+  .iphone-device {
+    display: block;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  /* Titanium frame */
+  .iphone-frame {
+    display: block;
+    position: relative;
+    background: linear-gradient(145deg, #3a3a3e 0%, #1f1f23 20%, #2a2a2e 80%, #3a3a3e 100%);
+    padding: 12px;
+    border-radius: 52px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+      0 0 0 1px rgba(0, 0, 0, 0.5),
+      0 25px 50px rgba(0, 0, 0, 0.45),
+      0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Screen area */
+  .iphone-screen {
+    display: block;
+    position: relative;
+    width: 375px;
+    height: min(812px, calc(100vh - 220px));
+    border-radius: 42px;
+    overflow: hidden;
+    background: var(--background);
+    /* Contain fixed-position descendants */
+    transform: translateZ(0);
+  }
+
+  /* Dynamic Island */
+  .iphone-island {
+    display: block;
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 18px;
+    z-index: 30;
+  }
+
+  /* Home indicator */
+  .iphone-home {
+    display: block;
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 3px;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* App area fills screen */
+  .iphone-app {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Side buttons */
+  .iphone-btn {
+    display: block;
+    position: absolute;
+    background: linear-gradient(180deg, #3a3a3e, #2a2a2e);
+    z-index: -1;
+  }
+
+  .iphone-btn-silent {
+    left: -3px;
+    top: 120px;
+    width: 3px;
+    height: 28px;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .iphone-btn-vol-up {
+    left: -3px;
+    top: 175px;
+    width: 3px;
+    height: 52px;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .iphone-btn-vol-down {
+    left: -3px;
+    top: 237px;
+    width: 3px;
+    height: 52px;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .iphone-btn-power {
+    right: -3px;
+    top: 200px;
+    width: 3px;
+    height: 76px;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* App shell: fill iPhone screen, enable internal scrolling */
+  .app-shell {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .app-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
 }

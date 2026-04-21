@@ -1,10 +1,19 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ProtectionBadge } from "@/components/ui/protection-badge"
 import { TimerDisplay } from "@/components/timer-display"
 import { AlertsPanel } from "@/components/alerts-panel"
-import { Loader2, ChevronRight, Camera, Clock, MapPin, Sparkles, Trophy, Map } from "lucide-react"
+import {
+  Loader2,
+  MapPin,
+  Camera,
+  Clock,
+  ChevronRight,
+  Mic,
+  ShieldCheck,
+  Zap,
+  Check,
+} from "lucide-react"
 import type { ProtectionSession } from "@/lib/protection"
 import { formatTimeRemaining } from "@/lib/parking-rules"
 
@@ -23,7 +32,6 @@ interface HomeScreenProps {
   remainingChecks: number
   onUpgrade: () => void
   currentLocation?: { lat: number; lng: number }
-  // Timer props
   timerActive: boolean
   timerRemainingSeconds: number
   formatTimerDisplay: (seconds: number) => string
@@ -54,167 +62,270 @@ export function HomeScreen({
   const isLimitReached = remainingChecks === 0
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pt-4 pb-28">
+      {/* Top row: avatar + streak */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold"
+            style={{
+              background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
+            }}
+          >
+            P
+          </div>
+          <div>
+            <p className="text-[13px] text-muted-foreground font-medium">
+              Good evening
+            </p>
+            <p className="text-[15px] font-semibold tracking-tight">Park</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+          <Zap className="w-3.5 h-3.5 text-accent" />
+          <span className="text-[13px] font-semibold">14-day streak</span>
+        </div>
+      </div>
+
       {/* Smart alerts */}
-      <div className="mb-4">
-        <AlertsPanel 
-          location={currentLocation} 
-          onAction={() => onCheckParking()}
+      <div className="mt-4">
+        <AlertsPanel
+          location={currentLocation}
+          onAction={(alert) => {
+            if (alert.actionType === "check_parking") {
+              onCheckParking()
+            }
+          }}
         />
       </div>
 
-      {/* Active timer countdown */}
+      {/* Active timer */}
       {timerActive && (
-        <TimerDisplay
-          remainingSeconds={timerRemainingSeconds}
-          formatTime={formatTimerDisplay}
-          onCancel={onCancelTimer}
-        />
+        <div className="mt-4">
+          <TimerDisplay
+            remainingSeconds={timerRemainingSeconds}
+            formatTime={formatTimerDisplay}
+            onCancel={onCancelTimer}
+          />
+        </div>
       )}
 
       {/* Active session banner */}
       {hasActiveSession && !timerActive && (
         <button
           onClick={onResumeSession}
-          className="flex items-center justify-between p-4 rounded-2xl bg-status-success/10 mb-6 text-left w-full group"
+          aria-label="Resume active parking session"
+          className="flex items-center justify-between p-4 rounded-2xl mt-4 text-left w-full group"
+          style={{ background: "var(--status-success-bg)" }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-status-success/20 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-status-success-foreground animate-pulse" />
+            <div
+              className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+              style={{ background: "rgba(16,185,129,0.2)" }}
+            >
+              <Check className="w-5 h-5 text-status-success-foreground" />
             </div>
             <div>
-              <p className="text-sm font-medium text-status-success-foreground">
-                Currently parked
+              <p className="text-[15px] font-semibold tracking-tight">
+                Allowed · {sessionTimeRemaining !== null && formatTimeRemaining(sessionTimeRemaining)} ago
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {activeSession.locationStreet} · {sessionTimeRemaining !== null && formatTimeRemaining(sessionTimeRemaining)} remaining
+              <p className="text-[13px] text-muted-foreground mt-0.5">
+                {activeSession.locationStreet}
               </p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <span
+            className="px-2.5 py-1 rounded-full text-xs font-semibold"
+            style={{ background: "var(--accent-pale)", color: "var(--accent-ink)" }}
+          >
+            Saved
+          </span>
         </button>
       )}
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center text-center max-w-sm">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance leading-tight">
-            Can I park here?
-          </h1>
+      {/* Location line */}
+      <div className="mt-6">
+        <p className="text-sm font-semibold text-muted-foreground tracking-wider uppercase">
+          You&apos;re on
+        </p>
+        <p className="text-[26px] font-semibold tracking-tight mt-1">
+          Market St &amp; Valencia
+        </p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          San Francisco · ±5m accuracy
+        </p>
+      </div>
 
-          <p className="mt-4 text-lg text-muted-foreground leading-relaxed text-nowrap">
-            Clear answers. No tickets.<br />No confusion.
-          </p>
-
-          <div className="mt-10 w-full space-y-3">
-            {isLimitReached ? (
-              <>
-                <div className="p-4 rounded-2xl bg-muted text-center">
-                  <p className="text-sm text-foreground font-medium">Free checks used up</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Upgrade to Pro for unlimited checks and ticket protection
-                  </p>
-                </div>
-                <Button
-                  onClick={onUpgrade}
-                  className="w-full h-14 text-base font-medium rounded-2xl"
-                >
-                  Upgrade to Pro
-                </Button>
-              </>
-            ) : (
-              <>
-                {/* Primary action - Check Parking */}
-                <Button
-                  onClick={onCheckParking}
-                  disabled={loading}
-                  className="w-full h-14 text-base font-medium rounded-2xl"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Finding your location
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5" />
-                      Check Parking
-                    </span>
-                  )}
-                </Button>
-
-                {/* Secondary actions */}
-                <div className="grid grid-cols-5 gap-1.5 w-full">
-                  <button
-                    onClick={onScanSign}
-                    disabled={loading || isLimitReached}
-                    className="flex flex-col items-center justify-center gap-1 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl border border-border disabled:opacity-50"
-                  >
-                    <Camera className="h-4 w-4" />
-                    Scan
-                  </button>
-                  <button
-                    onClick={onSetTimer}
-                    disabled={loading || timerActive}
-                    className="flex flex-col items-center justify-center gap-1 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl border border-border disabled:opacity-50"
-                  >
-                    <Clock className="h-4 w-4" />
-                    Timer
-                  </button>
-                  <button
-                    onClick={onOpenMap}
-                    className="flex flex-col items-center justify-center gap-1 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl border border-border"
-                  >
-                    <Map className="h-4 w-4" />
-                    Map
-                  </button>
-                  <button
-                    onClick={onOpenPredictions}
-                    disabled={loading}
-                    className="flex flex-col items-center justify-center gap-1 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl border border-border disabled:opacity-50"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    Predict
-                  </button>
-                  <button
-                    onClick={onOpenRewards}
-                    className="flex flex-col items-center justify-center gap-1 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl border border-border"
-                  >
-                    <Trophy className="h-4 w-4" />
-                    Rewards
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          {error && (
-            <div className="mt-6 p-4 rounded-2xl bg-status-error/10 text-status-error-foreground text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          {/* Pro upgrade prompt */}
-          {!isLimitReached && (
-            <button
+      {/* Primary CTA: "Can I park here?" hero card */}
+      <div className="mt-6">
+        {isLimitReached ? (
+          <div className="rounded-[22px] p-6 bg-muted text-center">
+            <p className="text-sm font-medium">Free checks used up</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Upgrade to Pro for unlimited checks and ticket protection
+            </p>
+            <Button
               onClick={onUpgrade}
-              className="mt-6 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full h-14 text-base font-semibold rounded-full mt-4"
             >
-              Get unlimited checks with Pro
-            </button>
-          )}
+              Upgrade to Pro
+            </Button>
+          </div>
+        ) : (
+          <button
+            onClick={onCheckParking}
+            disabled={loading}
+            className="w-full rounded-[26px] text-left overflow-hidden press-effect disabled:opacity-70"
+            style={{
+              background: "linear-gradient(150deg, var(--accent), var(--accent-deep))",
+              color: "#fff",
+              boxShadow: "0 20px 40px rgba(59,130,246,0.25)",
+            }}
+          >
+            <div className="p-6 pb-6">
+              <p className="text-[11px] font-extrabold tracking-[1.2px] opacity-85 uppercase">
+                CAN I PARK HERE?
+              </p>
+              <h2
+                className="mt-2 font-bold leading-none"
+                style={{ fontSize: 42, letterSpacing: -1.5 }}
+              >
+                {loading ? "Checking..." : "Tap to check."}
+              </h2>
+              <p className="text-sm opacity-85 mt-2.5">
+                Instant answer · Protected by Guarantee
+              </p>
+              {loading && (
+                <div className="flex items-center gap-2 mt-4">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm opacity-80">Finding your location</span>
+                </div>
+              )}
+              <div
+                className="flex items-center gap-2 mt-4.5 px-3.5 py-2.5 rounded-full w-fit"
+                style={{ background: "rgba(255,255,255,0.18)" }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
+                <span className="text-xs font-semibold">Live on your block</span>
+              </div>
+            </div>
+          </button>
+        )}
+      </div>
+
+      {/* Secondary actions: Scan + Timer */}
+      {!isLimitReached && (
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <button
+            onClick={onScanSign}
+            disabled={loading || isLimitReached}
+            className="p-[18px] rounded-[22px] bg-card border border-border text-left press-effect disabled:opacity-50"
+            style={{
+              boxShadow:
+                "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
+            }}
+          >
+            <div className="text-accent mb-2.5">
+              <Camera className="w-[22px] h-[22px]" />
+            </div>
+            <p className="text-base font-semibold tracking-tight">Scan sign</p>
+            <p className="text-[13px] text-muted-foreground mt-0.5">
+              Point at any sign
+            </p>
+          </button>
+          <button
+            onClick={onSetTimer}
+            disabled={loading || timerActive}
+            className="p-[18px] rounded-[22px] bg-card border border-border text-left press-effect disabled:opacity-50"
+            style={{
+              boxShadow:
+                "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
+            }}
+          >
+            <div className="text-accent mb-2.5">
+              <Clock className="w-[22px] h-[22px]" />
+            </div>
+            <p className="text-base font-semibold tracking-tight">Set timer</p>
+            <p className="text-[13px] text-muted-foreground mt-0.5">
+              Remind me before
+            </p>
+          </button>
+        </div>
+      )}
+
+      {/* Last check section */}
+      <div className="mt-6">
+        <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">
+          Last check
+        </p>
+        <div
+          className="flex items-center gap-3.5 p-4 rounded-[22px] bg-card border border-border"
+          style={{
+            boxShadow:
+              "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
+          }}
+        >
+          <div
+            className="w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0"
+            style={{
+              background: "var(--status-success-bg)",
+              color: "var(--status-success-foreground)",
+            }}
+          >
+            <Check className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[15px] font-semibold tracking-tight">
+              Allowed · 22 min ago
+            </p>
+            <p className="text-[13px] text-muted-foreground mt-0.5 truncate">
+              Valencia &amp; 20th · expired 4 min ago
+            </p>
+          </div>
+          <span
+            className="px-2.5 py-1 rounded-full text-xs font-semibold shrink-0"
+            style={{
+              background: "var(--accent-pale)",
+              color: "var(--accent-ink)",
+            }}
+          >
+            Saved
+          </span>
         </div>
       </div>
 
-      {/* Bottom section */}
-      <div className="mt-auto pt-8 pb-16 space-y-6">
-        {/* Protection status */}
-        <ProtectionBadge isActive={hasActiveSession} />
+      {error && (
+        <div
+          className="mt-4 p-4 rounded-2xl text-sm text-center"
+          style={{
+            background: "var(--status-error-bg)",
+            color: "var(--status-error-foreground)",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
-        {/* Trust statement */}
-        <p className="text-center text-sm text-muted-foreground/70 max-w-xs mx-auto leading-relaxed">
-          If you follow our guidance and still receive a ticket, we'll cover it.
-        </p>
+      {/* Voice FAB */}
+      <div className="fixed right-6 z-30" style={{ bottom: 108 }}>
+        <button
+          className="w-14 h-14 rounded-full flex items-center justify-center text-white press-effect"
+          style={{
+            background: "var(--accent)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+          }}
+          aria-label="Voice command"
+        >
+          <Mic className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Protection footer */}
+      <div className="mt-auto pt-6 flex items-center justify-center gap-2">
+        <ShieldCheck className="w-3.5 h-3.5 text-accent" />
+        <span className="text-xs text-muted-foreground">
+          Protected by Ticket Guarantee
+        </span>
       </div>
     </div>
   )

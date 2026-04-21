@@ -1,22 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { 
-  AlertTriangle, 
-  Truck, 
-  Car,
-  Shield,
-  ThumbsUp,
-  ThumbsDown,
-  Plus,
-  MapPin,
-  Clock,
-  Camera,
-  Flag,
-  ChevronRight,
-  X
-} from "lucide-react"
+import { Plus, Check, Flag, ArrowUp, Trash2 } from "lucide-react"
 import {
   type EnforcementSighting,
   type MeterStatus,
@@ -38,6 +24,62 @@ interface CommunityScreenProps {
   showToast: (type: "success" | "error" | "info", title: string, message: string) => void
 }
 
+type FilterType = "all" | "open" | "cleaning" | "tow"
+
+function getSightingCategory(type: EnforcementSighting["type"]): FilterType {
+  switch (type) {
+    case "parking_enforcement":
+    case "police":
+      return "open"
+    case "meter_maid":
+      return "cleaning"
+    case "tow_truck":
+      return "tow"
+    default:
+      return "open"
+  }
+}
+
+function getSightingIcon(type: EnforcementSighting["type"]) {
+  const category = getSightingCategory(type)
+  switch (category) {
+    case "open":
+      return Check
+    case "cleaning":
+      return Trash2
+    case "tow":
+      return Flag
+    default:
+      return Check
+  }
+}
+
+function getSightingColors(type: EnforcementSighting["type"]) {
+  const category = getSightingCategory(type)
+  switch (category) {
+    case "open":
+      return {
+        bg: "bg-status-success",
+        text: "text-status-success-foreground",
+      }
+    case "cleaning":
+      return {
+        bg: "bg-status-warning",
+        text: "text-status-warning-foreground",
+      }
+    case "tow":
+      return {
+        bg: "bg-status-error",
+        text: "text-status-error-foreground",
+      }
+    default:
+      return {
+        bg: "bg-status-success",
+        text: "text-status-success-foreground",
+      }
+  }
+}
+
 export function CommunityScreen({
   currentLocation,
   currentAddress,
@@ -50,20 +92,21 @@ export function CommunityScreen({
   const [showReportEnforcement, setShowReportEnforcement] = useState(false)
   const [showReportMeter, setShowReportMeter] = useState(false)
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set())
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all")
+
+  const loadData = useCallback(async () => {
+    setSightings(await getEnforcementSightings())
+    if (currentLocation) {
+      setMeters(getNearbyMeters(currentLocation.lat, currentLocation.lng))
+    }
+  }, [currentLocation])
 
   useEffect(() => {
     loadData()
     // Refresh every 30 seconds
     const interval = setInterval(loadData, 30000)
     return () => clearInterval(interval)
-  }, [currentLocation])
-
-  const loadData = async () => {
-    setSightings(await getEnforcementSightings())
-    if (currentLocation) {
-      setMeters(getNearbyMeters(currentLocation.lat, currentLocation.lng))
-    }
-  }
+  }, [loadData])
 
   const handleReportEnforcement = async (type: EnforcementSighting["type"]) => {
     if (!currentLocation || !currentAddress) {
@@ -95,263 +138,126 @@ export function CommunityScreen({
       showToast("info", "Already voted", "You've already voted on this sighting")
       return
     }
-    
+
     await voteEnforcement(id, isUpvote)
     setVotedIds(new Set([...votedIds, id]))
     loadData()
   }
 
+  const filteredSightings = useMemo(() => {
+    if (activeFilter === "all") return sightings
+    return sightings.filter((s) => getSightingCategory(s.type) === activeFilter)
+  }, [sightings, activeFilter])
+
+  const recentSightings = filteredSightings.slice(0, 5)
+
+  const filters: { label: string; value: FilterType }[] = [
+    { label: "All", value: "all" },
+    { label: "Open", value: "open" },
+    { label: "Cleaning", value: "cleaning" },
+    { label: "Tow", value: "tow" },
+  ]
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-24">
-      <h1 className="text-2xl font-semibold tracking-tight">Community</h1>
-      <p className="text-muted-foreground mt-1">
-        Real-time updates from nearby drivers
-      </p>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <button
-          onClick={() => setShowReportEnforcement(true)}
-          className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border hover:bg-accent transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full bg-status-error/10 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-status-error-foreground" />
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pb-28 overflow-y-auto">
+      {/* Header */}
+      <div className="pt-16">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Community
+            </p>
+            <h1 className="text-3xl font-bold mt-1">Spots near you</h1>
           </div>
-          <span className="text-sm font-medium">Report Enforcement</span>
-        </button>
-
-        <button
-          onClick={() => setShowReportMeter(true)}
-          className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border hover:bg-accent transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full bg-status-warning/10 flex items-center justify-center">
-            <Clock className="w-5 h-5 text-status-warning-foreground" />
-          </div>
-          <span className="text-sm font-medium">Meter Status</span>
-        </button>
-
-        <button
-          onClick={onOpenPhotoVault}
-          className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border hover:bg-accent transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <Camera className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <span className="text-sm font-medium">Photo Vault</span>
-        </button>
-
-        <button
-          onClick={onOpenReportIssue}
-          className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border hover:bg-accent transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <Flag className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <span className="text-sm font-medium">Report Issue</span>
-        </button>
+          <Button
+            size="icon"
+            className="h-10 w-10 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
+            onClick={onOpenReportIssue}
+            aria-label="New report"
+          >
+            <Plus className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">
+          {recentSightings.length} recent reports in 0.3 mi
+        </p>
       </div>
 
-      {/* Enforcement Sightings */}
-      <div className="mt-8">
-        <h2 className="text-lg font-medium">Nearby Enforcement</h2>
-        <p className="text-sm text-muted-foreground">Active in the last 2 hours</p>
+      {/* Filter Pills */}
+      <div className="flex gap-2 mt-5">
+        {filters.map((filter) => (
+          <button
+            key={filter.value}
+            onClick={() => setActiveFilter(filter.value)}
+            className={`px-3.5 py-2 rounded-full text-[13px] font-semibold transition-colors ${
+              activeFilter === filter.value
+                ? "bg-foreground text-background"
+                : "bg-muted text-foreground"
+            }`}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
 
-        {sightings.length === 0 ? (
-          <div className="mt-4 p-6 rounded-2xl bg-card border border-border text-center">
-            <Shield className="w-8 h-8 text-status-success-foreground mx-auto mb-2" />
-            <p className="text-sm font-medium">All clear nearby</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              No enforcement reported in your area
-            </p>
-          </div>
-        ) : (
-          <div className="mt-4 space-y-3">
-            {sightings.slice(0, 5).map((sighting) => (
-              <div
-                key={sighting.id}
-                className="p-4 rounded-2xl bg-card border border-border"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-status-error/10 flex items-center justify-center">
-                      {sighting.type === "tow_truck" ? (
-                        <Truck className="w-5 h-5 text-status-error-foreground" />
-                      ) : (
-                        <Car className="w-5 h-5 text-status-error-foreground" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">
-                        {getEnforcementTypeLabel(sighting.type)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {sighting.address}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {getTimeAgo(sighting.reportedAt)}
-                  </span>
+      {/* Sighting Cards */}
+      <div className="mt-5 space-y-3">
+        {recentSightings.map((sighting) => {
+          const Icon = getSightingIcon(sighting.type)
+          const colors = getSightingColors(sighting.type)
+          const hasVoted = votedIds.has(sighting.id)
+          const voteCount = sighting.upvotes - sighting.downvotes
+
+          return (
+            <div
+              key={sighting.id}
+              className="bg-card border border-border rounded-[18px] p-3.5"
+            >
+              <div className="flex items-center gap-3">
+                {/* Icon circle */}
+                <div
+                  className={`w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center shrink-0`}
+                >
+                  <Icon className={`w-5 h-5 ${colors.text}`} />
                 </div>
 
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-                  <button
-                    onClick={() => handleVote(sighting.id, true)}
-                    className={`flex items-center gap-1.5 text-xs ${
-                      votedIds.has(sighting.id) ? "text-muted-foreground" : "text-foreground"
-                    }`}
-                  >
-                    <ThumbsUp className="w-4 h-4" />
-                    <span>{sighting.upvotes}</span>
-                  </button>
-                  <button
-                    onClick={() => handleVote(sighting.id, false)}
-                    className={`flex items-center gap-1.5 text-xs ${
-                      votedIds.has(sighting.id) ? "text-muted-foreground" : "text-foreground"
-                    }`}
-                  >
-                    <ThumbsDown className="w-4 h-4" />
-                    <span>{sighting.downvotes}</span>
-                  </button>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    Still there?
-                  </span>
+                {/* Center content */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm">
+                    {getEnforcementTypeLabel(sighting.type)}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {sighting.reportedBy} &middot; {getTimeAgo(sighting.reportedAt)} &middot; {sighting.address}
+                  </p>
                 </div>
+
+                {/* Upvote button */}
+                <button
+                  onClick={() => handleVote(sighting.id, true)}
+                  disabled={hasVoted}
+                  className={`px-2.5 py-1.5 rounded-[10px] text-xs font-bold flex items-center gap-1 shrink-0 transition-colors ${
+                    hasVoted
+                      ? "bg-accent/20 text-accent"
+                      : "bg-muted text-foreground"
+                  }`}
+                  aria-label={`Upvote sighting, ${sighting.upvotes} upvotes`}
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                  <span>{voteCount}</span>
+                </button>
               </div>
-            ))}
+            </div>
+          )
+        })}
+
+        {recentSightings.length === 0 && (
+          <div className="bg-card border border-border rounded-[18px] p-6 text-center">
+            <p className="text-sm font-medium text-muted-foreground">
+              No reports in this area yet
+            </p>
           </div>
         )}
       </div>
-
-      {/* Nearby Meters */}
-      {meters.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-lg font-medium">Meter Status</h2>
-          <p className="text-sm text-muted-foreground">Reported by users nearby</p>
-
-          <div className="mt-4 space-y-3">
-            {meters.slice(0, 3).map((meter) => (
-              <div
-                key={meter.id}
-                className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    meter.status === "working" ? "bg-status-success/10" :
-                    meter.status === "broken" ? "bg-status-error/10" :
-                    "bg-status-warning/10"
-                  }`}>
-                    <Clock className={`w-5 h-5 ${
-                      meter.status === "working" ? "text-status-success-foreground" :
-                      meter.status === "broken" ? "text-status-error-foreground" :
-                      "text-status-warning-foreground"
-                    }`} />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{getMeterStatusLabel(meter.status)}</p>
-                    <p className="text-xs text-muted-foreground">{meter.address}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">{getTimeAgo(meter.reportedAt)}</p>
-                  <p className="text-xs text-muted-foreground">{meter.confirmations} confirmed</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Report Enforcement Modal */}
-      {showReportEnforcement && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end">
-          <div className="w-full bg-card rounded-t-3xl p-6 pb-10 animate-in slide-in-from-bottom">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Report Enforcement</h2>
-              <button onClick={() => setShowReportEnforcement(false)}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {currentLocation ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <MapPin className="w-4 h-4" />
-                <span>{currentAddress || "Current location"}</span>
-              </div>
-            ) : (
-              <p className="text-sm text-status-error-foreground mb-4">
-                Location not available
-              </p>
-            )}
-
-            <div className="space-y-3">
-              {[
-                { type: "parking_enforcement" as const, label: "Parking Enforcement", icon: Car },
-                { type: "meter_maid" as const, label: "Meter Maid", icon: Clock },
-                { type: "tow_truck" as const, label: "Tow Truck", icon: Truck },
-                { type: "police" as const, label: "Police", icon: Shield },
-              ].map(({ type, label, icon: Icon }) => (
-                <button
-                  key={type}
-                  onClick={() => handleReportEnforcement(type)}
-                  disabled={!currentLocation}
-                  className="w-full flex items-center gap-3 p-4 rounded-2xl bg-secondary hover:bg-accent transition-colors disabled:opacity-50"
-                >
-                  <Icon className="w-5 h-5 text-status-error-foreground" />
-                  <span className="font-medium">{label}</span>
-                  <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Meter Modal */}
-      {showReportMeter && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end">
-          <div className="w-full bg-card rounded-t-3xl p-6 pb-10 animate-in slide-in-from-bottom">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Report Meter Status</h2>
-              <button onClick={() => setShowReportMeter(false)}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {currentLocation ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <MapPin className="w-4 h-4" />
-                <span>{currentAddress || "Current location"}</span>
-              </div>
-            ) : (
-              <p className="text-sm text-status-error-foreground mb-4">
-                Location not available
-              </p>
-            )}
-
-            <div className="space-y-3">
-              {[
-                { status: "working" as const, label: "Working", color: "text-status-success-foreground" },
-                { status: "broken" as const, label: "Broken", color: "text-status-error-foreground" },
-                { status: "card_only" as const, label: "Card Only", color: "text-status-warning-foreground" },
-                { status: "coin_only" as const, label: "Coins Only", color: "text-status-warning-foreground" },
-                { status: "free" as const, label: "Free Parking", color: "text-status-success-foreground" },
-              ].map(({ status, label, color }) => (
-                <button
-                  key={status}
-                  onClick={() => handleReportMeter(status)}
-                  disabled={!currentLocation}
-                  className="w-full flex items-center gap-3 p-4 rounded-2xl bg-secondary hover:bg-accent transition-colors disabled:opacity-50"
-                >
-                  <Clock className={`w-5 h-5 ${color}`} />
-                  <span className="font-medium">{label}</span>
-                  <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

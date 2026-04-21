@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 interface BiometricState {
   isSupported: boolean
@@ -22,22 +22,40 @@ export function useBiometric() {
     isLoading: true,
     error: null,
   })
+  const mountedRef = useRef(true)
 
   useEffect(() => {
+    mountedRef.current = true
+
+    // SSR guard
+    if (typeof window === "undefined") {
+      setState(prev => ({ ...prev, isLoading: false }))
+      return
+    }
+
     // Check if WebAuthn is supported
     const supported =
-      typeof window !== "undefined" &&
       window.PublicKeyCredential !== undefined &&
       typeof window.PublicKeyCredential === "function"
 
     // Check if enabled by user
-    const enabled = localStorage.getItem(BIOMETRIC_ENABLED_KEY) === "true"
+    let enabled = false
+    try {
+      enabled = localStorage.getItem(BIOMETRIC_ENABLED_KEY) === "true"
+    } catch {
+      // localStorage unavailable
+    }
 
     // Check if recently authenticated
-    const lastAuth = localStorage.getItem(BIOMETRIC_AUTH_KEY)
-    const authenticated = lastAuth
-      ? Date.now() - parseInt(lastAuth, 10) < AUTH_EXPIRY
-      : false
+    let authenticated = false
+    try {
+      const lastAuth = localStorage.getItem(BIOMETRIC_AUTH_KEY)
+      authenticated = lastAuth
+        ? Date.now() - parseInt(lastAuth, 10) < AUTH_EXPIRY
+        : false
+    } catch {
+      // localStorage unavailable
+    }
 
     setState({
       isSupported: supported,
@@ -46,6 +64,10 @@ export function useBiometric() {
       isLoading: false,
       error: null,
     })
+
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   const authenticate = useCallback(async (): Promise<boolean> => {
@@ -66,12 +88,17 @@ export function useBiometric() {
 
       if (!available) {
         // Fall back to simple confirmation for demo
+        if (typeof window === "undefined") return false
         const confirmed = window.confirm(
           "Biometric authentication would appear here. Simulate success?"
         )
 
+        if (!mountedRef.current) return false
+
         if (confirmed) {
-          localStorage.setItem(BIOMETRIC_AUTH_KEY, Date.now().toString())
+          try {
+            localStorage.setItem(BIOMETRIC_AUTH_KEY, Date.now().toString())
+          } catch { /* ignore */ }
           setState((prev) => ({
             ...prev,
             isAuthenticated: true,
@@ -114,8 +141,12 @@ export function useBiometric() {
         },
       })
 
+      if (!mountedRef.current) return false
+
       if (credential) {
-        localStorage.setItem(BIOMETRIC_AUTH_KEY, Date.now().toString())
+        try {
+          localStorage.setItem(BIOMETRIC_AUTH_KEY, Date.now().toString())
+        } catch { /* ignore */ }
         setState((prev) => ({
           ...prev,
           isAuthenticated: true,
@@ -131,6 +162,7 @@ export function useBiometric() {
       }))
       return false
     } catch (error) {
+      if (!mountedRef.current) return false
       const message =
         error instanceof Error ? error.message : "Authentication failed"
       setState((prev) => ({
@@ -145,15 +177,19 @@ export function useBiometric() {
   const enableBiometric = useCallback(async () => {
     const success = await authenticate()
     if (success) {
-      localStorage.setItem(BIOMETRIC_ENABLED_KEY, "true")
+      try {
+        localStorage.setItem(BIOMETRIC_ENABLED_KEY, "true")
+      } catch { /* ignore */ }
       setState((prev) => ({ ...prev, isEnabled: true }))
     }
     return success
   }, [authenticate])
 
   const disableBiometric = useCallback(() => {
-    localStorage.removeItem(BIOMETRIC_ENABLED_KEY)
-    localStorage.removeItem(BIOMETRIC_AUTH_KEY)
+    try {
+      localStorage.removeItem(BIOMETRIC_ENABLED_KEY)
+      localStorage.removeItem(BIOMETRIC_AUTH_KEY)
+    } catch { /* ignore */ }
     setState((prev) => ({
       ...prev,
       isEnabled: false,
@@ -162,7 +198,9 @@ export function useBiometric() {
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem(BIOMETRIC_AUTH_KEY)
+    try {
+      localStorage.removeItem(BIOMETRIC_AUTH_KEY)
+    } catch { /* ignore */ }
     setState((prev) => ({ ...prev, isAuthenticated: false }))
   }, [])
 

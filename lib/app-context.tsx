@@ -27,7 +27,8 @@ import {
   canMakeCheck,
   type ProtectionSession,
 } from "@/lib/protection"
-import { getCurrentUserSync, getCurrentUser, isOnboardingComplete, completeOnboarding, incrementStats, type User } from "@/lib/auth"
+import { getCurrentUserSync, getCurrentUser, isOnboardingComplete, completeOnboarding, incrementStats, signOut as authSignOut, type User } from "@/lib/auth"
+import { isSupabaseConfigured, createClient as createSupabaseClient } from "@/lib/supabase/client"
 import { updateStreak, incrementGamificationStat } from "@/lib/gamification"
 import { getAccessibilitySettings, applyAccessibilityStyles } from "@/lib/accessibility"
 import { showToast } from "@/components/ui/toast-notification"
@@ -153,13 +154,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     getCurrentUser()
       .then((u) => {
         if (u) setUser(u)
-        if (!isOnboardingComplete()) setShowOnboarding(true)
+        // In demo mode (no Supabase), auto-complete onboarding so the
+        // showcase loads directly to the app home screen.
+        if (!isSupabaseConfigured()) {
+          if (!isOnboardingComplete()) completeOnboarding()
+        } else {
+          if (!isOnboardingComplete()) setShowOnboarding(true)
+        }
         const a11y = getAccessibilitySettings()
         applyAccessibilityStyles(a11y)
         const { newBadges } = updateStreak()
         newBadges.forEach((b) => showToast("success", `Badge unlocked: ${b.name}`, b.description))
       })
       .finally(() => setAuthChecked(true))
+  }, [])
+
+  // Listen for Supabase auth state changes (session refresh, sign-out in
+  // another tab, token expiry, etc.) so the UI reacts immediately.
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return
+
+    const supabase = createSupabaseClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          setUser(null)
+        } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          const u = await getCurrentUser()
+          if (u) setUser(u)
+        }
+      }
+    )
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
@@ -182,7 +211,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!location) return
 
     const userAccessibility = getUserAccessibility()
-    const result = checkParking(location.latitude, location.longitude, userAccessibility)
+    let result: ParkingResult
+
+    // Use server-side check when Supabase is configured (production)
+    if (isSupabaseConfigured()) {
+      try {
+        const res = await fetch("/api/parking/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            accessibility: userAccessibility,
+          }),
+        })
+        const json = await res.json()
+        if (res.ok && json.ok) {
+          result = json.data
+        } else {
+          // API error — fall back to client-side
+          result = checkParking(location.latitude, location.longitude, userAccessibility)
+        }
+      } catch {
+        result = checkParking(location.latitude, location.longitude, userAccessibility)
+      }
+    } else {
+      result = checkParking(location.latitude, location.longitude, userAccessibility)
+    }
     setParkingResult(result)
     setCurrentLocation(location)
     setReminderSet(false)
@@ -404,7 +459,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [router]
   )
 
-  const handleUpgrade = useCallback(() => {
+  const handleUpgrade = useCallback(async () => {
+    // Try Stripe checkout first (production flow)
+    const proPriceId = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
+    if (proPriceId) {
+      try {
+        setShowUpgrade(false)
+        const res = await fetch("/api/billing/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ priceId: proPriceId }),
+        })
+        const data = await res.json()
+        if (data.url) {
+          window.location.href = data.url
+          return
+        }
+      } catch {
+        // Stripe not configured — fall through to local upgrade
+      }
+    }
+
+    // Fallback: local upgrade (demo mode)
     upgradeToProTier()
     setRemainingChecks(-1)
     setShowUpgrade(false)
@@ -455,11 +531,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const handleAuthSkip = useCallback(() => setShowAuth(false), [])
 
-  const handleSignOut = useCallback(() => {
+  const handleSignOut = useCallback(async () => {
+    await authSignOut()
     setUser(null)
     setShowAccount(false)
     showToast("info", "Signed out", "See you next time")
-  }, [])
+    router.push("/signin")
+  }, [router])
 
   const handleScanResult = useCallback((canPark: boolean, timeLimit?: number) => {
     setShowScanSign(false)

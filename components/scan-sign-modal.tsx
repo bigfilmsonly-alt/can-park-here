@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { X, Camera, Upload, ImageIcon, CheckCircle, AlertTriangle, XCircle, Clock, RefreshCw } from "lucide-react"
-import { simulateScan, interpretSignForUser, type ParsedSign } from "@/lib/sign-parser"
+import { interpretSignForUser, type ParsedSign } from "@/lib/sign-parser"
 
 interface ScanSignModalProps {
   isOpen: boolean
@@ -21,8 +21,36 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraStreamRef = useRef<MediaStream | null>(null)
+
+  // Keep ref in sync for cleanup
+  useEffect(() => {
+    cameraStreamRef.current = cameraStream
+  }, [cameraStream])
+
+  // Cleanup camera stream on unmount or when modal closes
+  useEffect(() => {
+    if (!isOpen && cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach(track => track.stop())
+      cameraStreamRef.current = null
+      setCameraStream(null)
+    }
+
+    return () => {
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(track => track.stop())
+        cameraStreamRef.current = null
+      }
+    }
+  }, [isOpen])
 
   const startCamera = useCallback(async () => {
+    // SSR guard
+    if (typeof navigator === "undefined" || !navigator.mediaDevices) {
+      fileInputRef.current?.click()
+      return
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -40,53 +68,73 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
   }, [])
 
   const stopCamera = useCallback(() => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop())
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach(track => track.stop())
+      cameraStreamRef.current = null
       setCameraStream(null)
     }
-  }, [cameraStream])
+  }, [])
+
+  const scanImage = useCallback(async (imageDataUrl: string) => {
+    setState("scanning")
+    try {
+      const res = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageDataUrl }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Scan failed")
+      }
+      setScanResult(data.data.sign as ParsedSign)
+    } catch (err) {
+      console.error("Scan error:", err)
+      // Surface an unknown result so the user knows something went wrong
+      setScanResult({
+        type: "unknown",
+        status: "allowed",
+        message: "Could not analyze the sign. Please try again.",
+        confidence: 0,
+        rawText: [],
+      })
+    }
+    setState("result")
+  }, [])
 
   const capturePhoto = useCallback(async () => {
+    let imageDataUrl = ""
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current
       const canvas = canvasRef.current
-      
+
       canvas.width = video.videoWidth
       canvas.height = video.videoHeight
-      
+
       const ctx = canvas.getContext("2d")
       if (ctx) {
         ctx.drawImage(video, 0, 0)
-        const imageData = canvas.toDataURL("image/jpeg")
-        setCapturedImage(imageData)
+        imageDataUrl = canvas.toDataURL("image/jpeg")
+        setCapturedImage(imageDataUrl)
       }
     }
-    
+
     stopCamera()
-    setState("scanning")
-    
-    // Simulate AI scanning
-    const result = await simulateScan()
-    setScanResult(result)
-    setState("result")
-  }, [stopCamera])
+    await scanImage(imageDataUrl)
+  }, [stopCamera, scanImage])
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = async (event) => {
-        setCapturedImage(event.target?.result as string)
-        setState("scanning")
-        
-        // Simulate AI scanning
-        const result = await simulateScan()
-        setScanResult(result)
-        setState("result")
+        const imageDataUrl = event.target?.result as string
+        setCapturedImage(imageDataUrl)
+        await scanImage(imageDataUrl)
       }
       reader.readAsDataURL(file)
     }
-  }, [])
+  }, [scanImage])
 
   const handleClose = () => {
     stopCamera()

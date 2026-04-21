@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { X, Wallet, Clock, MapPin, Shield, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/components/ui/toast-notification"
@@ -26,6 +26,19 @@ export function WalletPassModal({
 }: WalletPassProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [isAdded, setIsAdded] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -47,22 +60,25 @@ export function WalletPassModal({
 
   const handleAddToWallet = async (type: "apple" | "google") => {
     setIsAdding(true)
-    
+
     // Simulate adding to wallet
     await new Promise((resolve) => setTimeout(resolve, 1500))
-    
+
+    if (!mountedRef.current) return
+
     setIsAdding(false)
     setIsAdded(true)
-    
+
     showToast(
       "success",
       "Pass created",
-      type === "apple" 
-        ? "Check your Apple Wallet" 
+      type === "apple"
+        ? "Check your Apple Wallet"
         : "Check your Google Wallet"
     )
-    
-    setTimeout(() => {
+
+    timeoutRef.current = setTimeout(() => {
+      if (!mountedRef.current) return
       onClose()
       setIsAdded(false)
     }, 2000)

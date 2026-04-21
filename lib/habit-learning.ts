@@ -213,14 +213,16 @@ export function getSmartReminders(): SmartReminder[] {
 
 export function addSmartReminder(reminder: Omit<SmartReminder, "id">): SmartReminder {
   const reminders = getSmartReminders()
-  
+
   const newReminder: SmartReminder = {
     ...reminder,
     id: `reminder_${Date.now()}`,
   }
-  
+
   reminders.push(newReminder)
-  localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders))
+  if (typeof window !== "undefined") {
+    localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders))
+  }
   
   // Schedule browser notification
   scheduleReminderNotification(newReminder)
@@ -229,14 +231,16 @@ export function addSmartReminder(reminder: Omit<SmartReminder, "id">): SmartRemi
 }
 
 export function removeSmartReminder(id: string): void {
+  if (typeof window === "undefined") return
   const reminders = getSmartReminders()
   const filtered = reminders.filter(r => r.id !== id)
   localStorage.setItem(REMINDERS_KEY, JSON.stringify(filtered))
 }
 
 export function toggleSmartReminder(id: string): void {
+  if (typeof window === "undefined") return
   const reminders = getSmartReminders()
-  const updated = reminders.map(r => 
+  const updated = reminders.map(r =>
     r.id === id ? { ...r, enabled: !r.enabled } : r
   )
   localStorage.setItem(REMINDERS_KEY, JSON.stringify(updated))
@@ -349,5 +353,5 @@ function formatHour(hour: number): string {
 // Get day name
 export function getDayName(dayOfWeek: number): string {
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-  return days[dayOfWeek]
+  return days[dayOfWeek] ?? "Unknown"
 }

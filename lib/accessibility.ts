@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: AccessibilitySettings = {
   language: "en",
 }
 
-const STORAGE_KEY = "park_accessibility"
+const STORAGE_KEY = "park_accessibility_settings"
 
 export function getAccessibilitySettings(): AccessibilitySettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS

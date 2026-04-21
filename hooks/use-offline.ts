@@ -22,23 +22,26 @@ export function useOffline() {
   const [cachedLocations, setCachedLocations] = useState<CachedParkingData[]>([])
 
   useEffect(() => {
+    // SSR guard
+    if (typeof window === "undefined") return
+
     // Set initial state
     setIsOnline(navigator.onLine)
 
     // Load cached data
-    const cached = localStorage.getItem(CACHE_KEY)
-    if (cached) {
-      try {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY)
+      if (cached) {
         const data = JSON.parse(cached) as CachedParkingData[]
         // Filter out expired entries
         const validData = data.filter(
           (item) => Date.now() - item.timestamp < CACHE_DURATION
         )
         setCachedLocations(validData)
-      } catch {
-        // Invalid cache, clear it
-        localStorage.removeItem(CACHE_KEY)
       }
+    } catch {
+      // Invalid cache, clear it
+      localStorage.removeItem(CACHE_KEY)
     }
 
     // Listen for online/offline events
@@ -79,7 +82,11 @@ export function useOffline() {
           updated = [newEntry, ...prev].slice(0, 50)
         }
 
-        localStorage.setItem(CACHE_KEY, JSON.stringify(updated))
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify(updated))
+        } catch {
+          // localStorage may be full or unavailable
+        }
         return updated
       })
     },
@@ -105,7 +112,11 @@ export function useOffline() {
   )
 
   const clearCache = useCallback(() => {
-    localStorage.removeItem(CACHE_KEY)
+    try {
+      localStorage.removeItem(CACHE_KEY)
+    } catch {
+      // localStorage may be unavailable
+    }
     setCachedLocations([])
   }, [])
 

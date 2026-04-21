@@ -197,7 +197,9 @@ const rulesDatabase: Record<string, ParkingRule[]> = {
 }
 
 function parseTime(timeStr: string): { hours: number; minutes: number } {
-  const [hours, minutes] = timeStr.split(":").map(Number)
+  const parts = timeStr.split(":").map(Number)
+  const hours = parts[0] ?? 0
+  const minutes = parts[1] ?? 0
   return { hours, minutes }
 }
 
@@ -236,6 +238,11 @@ function isRuleActive(rule: ParkingRule, date: Date): boolean {
   const end = parseTime(rule.endTime)
   const startMinutes = timeToMinutes(start.hours, start.minutes)
   const endMinutes = timeToMinutes(end.hours, end.minutes)
+
+  // Handle overnight ranges (e.g., 22:00 - 06:00)
+  if (startMinutes > endMinutes) {
+    return currentMinutes >= startMinutes || currentMinutes < endMinutes
+  }
 
   return currentMinutes >= startMinutes && currentMinutes < endMinutes
 }
@@ -634,12 +641,13 @@ export function checkParking(
 }
 
 function formatMinutes(minutes: number): string {
-  if (minutes < 60) {
-    return `${minutes} minute${minutes !== 1 ? "s" : ""}`
+  const rounded = Math.round(minutes)
+  if (rounded < 60) {
+    return `${rounded} minute${rounded !== 1 ? "s" : ""}`
   }
 
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
+  const hours = Math.floor(rounded / 60)
+  const mins = rounded % 60
 
   if (mins === 0) {
     return `${hours} hour${hours !== 1 ? "s" : ""}`
@@ -657,8 +665,10 @@ function formatTimeFromMinutes(minutesFromNow: number, fromDate: Date): string {
 }
 
 export function formatTimeRemaining(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
+  if (minutes <= 0) return "0m"
+  const rounded = Math.round(minutes)
+  const hours = Math.floor(rounded / 60)
+  const mins = rounded % 60
 
   if (hours === 0) {
     return `${mins}m`

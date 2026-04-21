@@ -6,14 +6,13 @@
  */
 
 import {
-  dbGetUser,
-  dbGetCommunityReports,
-  dbAddCommunityReport,
-  dbVoteCommunityReport,
+  dbGetNearbySightings,
+  dbAddSighting,
+  dbVoteSighting,
   dbGetPhotoEvidence,
   dbAddPhotoEvidence,
   dbDeletePhotoEvidence,
-  type DBCommunityReport,
+  type DBEnforcementSighting,
   type DBPhotoEvidence,
 } from "./db"
 
@@ -78,7 +77,7 @@ const USER_ID_KEY = "park_anonymous_user_id"
 // Generate anonymous user ID
 export function getAnonymousUserId(): string {
   if (typeof window === "undefined") return "server"
-  
+
   let userId = localStorage.getItem(USER_ID_KEY)
   if (!userId) {
     userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
@@ -87,18 +86,18 @@ export function getAnonymousUserId(): string {
   return userId
 }
 
-// Convert DB report to enforcement sighting
-function toEnforcementSighting(report: DBCommunityReport): EnforcementSighting {
+// Convert DB sighting to enforcement sighting
+function toEnforcementSighting(sighting: DBEnforcementSighting): EnforcementSighting {
   return {
-    id: report.id,
-    type: report.subtype as EnforcementSighting["type"],
-    coordinates: { lat: report.coordinates_lat, lng: report.coordinates_lng },
-    address: report.address || "",
-    reportedAt: new Date(report.created_at),
-    reportedBy: report.user_id,
-    upvotes: report.upvotes,
-    downvotes: report.downvotes,
-    expiresAt: new Date(report.expires_at || Date.now() + 2 * 60 * 60 * 1000),
+    id: sighting.id,
+    type: sighting.type === "parking_officer" ? "parking_enforcement" : sighting.type,
+    coordinates: { lat: sighting.latitude, lng: sighting.longitude },
+    address: sighting.address || "",
+    reportedAt: new Date(sighting.created_at),
+    reportedBy: sighting.user_id || "anonymous",
+    upvotes: sighting.upvotes,
+    downvotes: sighting.downvotes,
+    expiresAt: new Date(sighting.expires_at || Date.now() + 2 * 60 * 60 * 1000),
   }
 }
 
@@ -106,14 +105,14 @@ function toEnforcementSighting(report: DBCommunityReport): EnforcementSighting {
 function toPhotoEvidence(photo: DBPhotoEvidence): PhotoEvidence {
   return {
     id: photo.id,
-    photoUrl: photo.photo_url,
+    photoUrl: photo.storage_path,
     caption: photo.notes || "",
-    coordinates: photo.coordinates_lat && photo.coordinates_lng
-      ? { lat: photo.coordinates_lat, lng: photo.coordinates_lng }
+    coordinates: photo.latitude != null && photo.longitude != null
+      ? { lat: photo.latitude, lng: photo.longitude }
       : undefined,
-    address: photo.address,
+    address: photo.address ?? undefined,
     capturedAt: new Date(photo.created_at),
-    tags: [photo.type],
+    tags: photo.tags ?? [],
   }
 }
 
@@ -123,12 +122,13 @@ export async function reportEnforcement(
   coordinates: { lat: number; lng: number },
   address: string
 ): Promise<EnforcementSighting> {
-  const report = await dbAddCommunityReport({
-    type: "enforcement",
-    subtype: type,
-    coordinates_lat: coordinates.lat,
-    coordinates_lng: coordinates.lng,
+  const dbType = type === "parking_enforcement" ? "parking_officer" : type
+  const report = await dbAddSighting({
+    type: dbType as DBEnforcementSighting["type"],
+    latitude: coordinates.lat,
+    longitude: coordinates.lng,
     address,
+    notes: null,
     expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
   })
 
@@ -136,11 +136,8 @@ export async function reportEnforcement(
 }
 
 export async function getEnforcementSightings(): Promise<EnforcementSighting[]> {
-  // Get reports near a central point (this would be user's location in production)
-  const reports = await dbGetCommunityReports(0, 0, 1000)
-  return reports
-    .filter((r) => r.type === "enforcement")
-    .map(toEnforcementSighting)
+  const reports = await dbGetNearbySightings(0, 0, 1000)
+  return reports.map(toEnforcementSighting)
 }
 
 export async function getNearbyEnforcement(
@@ -148,9 +145,8 @@ export async function getNearbyEnforcement(
   lng: number,
   radiusKm: number = 1
 ): Promise<EnforcementSighting[]> {
-  const reports = await dbGetCommunityReports(lat, lng, radiusKm)
+  const reports = await dbGetNearbySightings(lat, lng, radiusKm)
   return reports
-    .filter((r) => r.type === "enforcement")
     .map(toEnforcementSighting)
     .sort((a, b) =>
       getDistanceKm(lat, lng, a.coordinates.lat, a.coordinates.lng) -
@@ -159,7 +155,7 @@ export async function getNearbyEnforcement(
 }
 
 export async function voteEnforcement(id: string, isUpvote: boolean): Promise<void> {
-  await dbVoteCommunityReport(id, isUpvote ? "up" : "down")
+  await dbVoteSighting(id, isUpvote ? "up" : "down")
 }
 
 // Meter Status (still uses localStorage for quick lookups)
@@ -195,7 +191,9 @@ export function reportMeterStatus(
     meters.push(meterReport)
   }
 
-  localStorage.setItem(METERS_KEY, JSON.stringify(meters))
+  if (typeof window !== "undefined") {
+    localStorage.setItem(METERS_KEY, JSON.stringify(meters))
+  }
   return meterReport
 }
 
@@ -235,7 +233,9 @@ export function reportAvailability(
 
   const existing = getAvailabilityReports()
   existing.push(report)
-  localStorage.setItem(AVAILABILITY_KEY, JSON.stringify(existing.slice(-100)))
+  if (typeof window !== "undefined") {
+    localStorage.setItem(AVAILABILITY_KEY, JSON.stringify(existing.slice(-100)))
+  }
 
   return report
 }
@@ -274,7 +274,9 @@ export function reportCorrection(
 
   const existing = getCorrections()
   existing.push(correction)
-  localStorage.setItem(CORRECTIONS_KEY, JSON.stringify(existing))
+  if (typeof window !== "undefined") {
+    localStorage.setItem(CORRECTIONS_KEY, JSON.stringify(existing))
+  }
 
   return correction
 }
@@ -299,11 +301,11 @@ export async function savePhotoEvidence(
   tags: string[] = []
 ): Promise<PhotoEvidence> {
   const photo = await dbAddPhotoEvidence({
-    type: (tags[0] as DBPhotoEvidence["type"]) || "sign",
-    photo_url: photoUrl,
-    coordinates_lat: coordinates?.lat,
-    coordinates_lng: coordinates?.lng,
-    address,
+    storage_path: photoUrl,
+    latitude: coordinates?.lat ?? null,
+    longitude: coordinates?.lng ?? null,
+    address: address ?? null,
+    tags: tags.length > 0 ? tags : ["sign"],
     notes: caption,
   })
 

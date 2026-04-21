@@ -1,19 +1,49 @@
 "use client"
 
+import dynamic from "next/dynamic"
+import { ParkLogo, Wordmark } from "@/components/park-logo"
 import { AppProvider, useAppContext } from "@/lib/app-context"
 import { ToastProvider, showToast } from "@/components/ui/toast-notification"
 import { BottomNav } from "@/components/bottom-nav"
 import { OfflineBanner } from "@/components/offline-banner"
 import { InstallPrompt } from "@/components/install-prompt"
-import { UpgradeModal } from "@/components/upgrade-modal"
-import { TimerModal } from "@/components/timer-modal"
-import { ScanSignModal } from "@/components/scan-sign-modal"
-import { PhotoVault } from "@/components/photo-vault"
-import { ReportIssueModal } from "@/components/report-issue-modal"
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { PermissionRequest } from "@/components/onboarding/permission-request"
 import { AuthScreen } from "@/components/auth/auth-screen"
 import { BiometricLock } from "@/components/biometric-lock"
+
+function ModalSpinner() {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  )
+}
+
+const ScanSignModal = dynamic(
+  () => import("@/components/scan-sign-modal").then(mod => ({ default: mod.ScanSignModal })),
+  { loading: () => <ModalSpinner /> }
+)
+
+const PhotoVault = dynamic(
+  () => import("@/components/photo-vault").then(mod => ({ default: mod.PhotoVault })),
+  { loading: () => <ModalSpinner /> }
+)
+
+const ReportIssueModal = dynamic(
+  () => import("@/components/report-issue-modal").then(mod => ({ default: mod.ReportIssueModal })),
+  { loading: () => <ModalSpinner /> }
+)
+
+const TimerModal = dynamic(
+  () => import("@/components/timer-modal").then(mod => ({ default: mod.TimerModal })),
+  { loading: () => <ModalSpinner /> }
+)
+
+const UpgradeModal = dynamic(
+  () => import("@/components/upgrade-modal").then(mod => ({ default: mod.UpgradeModal })),
+  { loading: () => <ModalSpinner /> }
+)
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const ctx = useAppContext()
@@ -21,9 +51,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   if (!ctx.authChecked) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-semibold text-foreground mb-2">Park</h1>
-          <p className="text-muted-foreground">Loading...</p>
+        <div className="flex flex-col items-center gap-3">
+          <ParkLogo size={56} />
+          <Wordmark size={28} />
         </div>
       </div>
     )
@@ -54,9 +84,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="app-shell bg-background">
       {!ctx.isOnline && <OfflineBanner cachedCount={ctx.cachedCount} />}
-      <div className={`max-w-md mx-auto ${!ctx.isOnline ? "pt-12" : ""}`}>
+      <div className={`app-scroll max-w-md mx-auto ${!ctx.isOnline ? "pt-12" : ""}`}>
         {children}
       </div>
       <BottomNav />

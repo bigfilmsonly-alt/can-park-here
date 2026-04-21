@@ -1,6 +1,4 @@
-"use client"
-
-// Simulated AI sign parsing - in production this would use GPT-4 Vision or similar
+// Parking sign text parser -- regex-based fallback when Claude Vision is unavailable
 export interface ParsedSign {
   type: "parking" | "no-parking" | "time-limit" | "permit" | "loading" | "handicap" | "unknown"
   status: "allowed" | "restricted" | "prohibited"
@@ -28,6 +26,7 @@ const SIGN_PATTERNS = [
     pattern: /(\d+)\s*(hr|hour|min|minute)/i,
     type: "time-limit" as const,
     status: "restricted" as const,
+    message: "Time-limited parking",
     extractTime: (match: RegExpMatchArray) => {
       const value = parseInt(match[1])
       const unit = match[2].toLowerCase()
@@ -69,51 +68,6 @@ const SIGN_PATTERNS = [
 // Time patterns
 const TIME_PATTERN = /(\d{1,2})\s*:?\s*(\d{2})?\s*(am|pm|a\.m\.|p\.m\.)/gi
 const DAY_PATTERN = /(mon|tue|wed|thu|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/gi
-
-// Simulated OCR results for demo
-const DEMO_SIGNS: ParsedSign[] = [
-  {
-    type: "time-limit",
-    status: "restricted",
-    timeLimit: 120,
-    hours: { start: "8:00 AM", end: "6:00 PM" },
-    days: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    message: "2 hour parking limit from 8AM-6PM, Monday through Friday",
-    confidence: 94,
-    rawText: ["2 HOUR PARKING", "8AM - 6PM", "MON THRU FRI"],
-  },
-  {
-    type: "no-parking",
-    status: "prohibited",
-    hours: { start: "8:00 AM", end: "10:00 AM" },
-    days: ["Tue"],
-    message: "No parking on Tuesdays 8-10AM for street cleaning",
-    confidence: 97,
-    rawText: ["NO PARKING", "8AM - 10AM", "TUESDAY", "STREET CLEANING"],
-  },
-  {
-    type: "permit",
-    status: "restricted",
-    permit: "Zone A",
-    message: "Permit parking only - Zone A residents",
-    confidence: 89,
-    rawText: ["PERMIT PARKING ONLY", "ZONE A"],
-  },
-  {
-    type: "handicap",
-    status: "restricted",
-    message: "Handicap accessible parking - valid placard required",
-    confidence: 98,
-    rawText: ["RESERVED PARKING", "HANDICAP ACCESSIBLE", "PERMIT REQUIRED"],
-  },
-  {
-    type: "parking",
-    status: "allowed",
-    message: "Free parking - no restrictions",
-    confidence: 85,
-    rawText: ["PARKING"],
-  },
-]
 
 export function parseSignText(ocrText: string[]): ParsedSign {
   const fullText = ocrText.join(" ").toLowerCase()
@@ -163,18 +117,6 @@ export function parseSignText(ocrText: string[]): ParsedSign {
     confidence: 60,
     rawText: ocrText,
   }
-}
-
-export function simulateScan(): Promise<ParsedSign> {
-  return new Promise((resolve) => {
-    // Simulate processing time
-    const delay = 1500 + Math.random() * 1000
-    setTimeout(() => {
-      // Return a random demo sign
-      const sign = DEMO_SIGNS[Math.floor(Math.random() * DEMO_SIGNS.length)]
-      resolve(sign)
-    }, delay)
-  })
 }
 
 export function interpretSignForUser(sign: ParsedSign): {
@@ -263,6 +205,48 @@ export function interpretSignForUser(sign: ParsedSign): {
     warnings,
     timeLimit: sign.timeLimit,
   }
+}
+
+// Simulated scan results for demo/development
+const DEMO_SIGNS: ParsedSign[] = [
+  {
+    type: "time-limit",
+    status: "restricted",
+    timeLimit: 120,
+    message: "2 hour parking limit",
+    confidence: 92,
+    rawText: ["2 HOUR PARKING", "8AM - 6PM", "MON THRU SAT"],
+    hours: { start: "8AM", end: "6PM" },
+    days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  },
+  {
+    type: "no-parking",
+    status: "prohibited",
+    message: "No Parking zone",
+    confidence: 95,
+    rawText: ["NO PARKING", "ANY TIME"],
+  },
+  {
+    type: "permit",
+    status: "restricted",
+    message: "Permit required",
+    permit: "Zone A",
+    confidence: 88,
+    rawText: ["PERMIT PARKING ONLY", "ZONE A"],
+  },
+  {
+    type: "parking",
+    status: "allowed",
+    message: "Free parking - no restrictions",
+    confidence: 85,
+    rawText: ["PARKING"],
+  },
+]
+
+export async function simulateScan(): Promise<ParsedSign> {
+  // Simulate network/processing delay
+  await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 1000))
+  return DEMO_SIGNS[Math.floor(Math.random() * DEMO_SIGNS.length)]
 }
 
 function parseTimeToHour(time: string): number {

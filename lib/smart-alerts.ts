@@ -38,9 +38,10 @@ const DEFAULT_PREFERENCES: AlertPreferences = {
 
 // Get user's alert preferences
 export function getAlertPreferences(): AlertPreferences {
+  if (typeof window === "undefined") return DEFAULT_PREFERENCES
   const stored = localStorage.getItem("park_alert_preferences")
   if (!stored) return DEFAULT_PREFERENCES
-  
+
   try {
     return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) }
   } catch {
@@ -50,6 +51,7 @@ export function getAlertPreferences(): AlertPreferences {
 
 // Save user's alert preferences
 export function saveAlertPreferences(prefs: Partial<AlertPreferences>): void {
+  if (typeof window === "undefined") return
   const current = getAlertPreferences()
   localStorage.setItem("park_alert_preferences", JSON.stringify({ ...current, ...prefs }))
 }
@@ -216,6 +218,7 @@ function checkNearbyEvents(location?: { lat: number; lng: number }): SmartAlert[
 }
 
 function checkEnforcementActivity(location?: { lat: number; lng: number }): SmartAlert[] {
+  if (typeof window === "undefined") return []
   // Check community reports for recent enforcement
   const stored = localStorage.getItem("park_community_reports")
   if (!stored || !location) return []
@@ -259,6 +262,7 @@ function checkEnforcementActivity(location?: { lat: number; lng: number }): Smar
 }
 
 function checkActiveTimers(): SmartAlert[] {
+  if (typeof window === "undefined") return []
   const stored = localStorage.getItem("park_active_timer")
   if (!stored) return []
   

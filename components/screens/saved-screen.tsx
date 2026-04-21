@@ -11,8 +11,9 @@ interface SavedScreenProps {
 
 export function SavedScreen({ savedLocations, onLocationClick, onRemoveLocation }: SavedScreenProps) {
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-20">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-20" role="main" aria-label="Saved locations">
       <h1 className="text-2xl font-semibold tracking-tight text-foreground">Saved</h1>
+      <p className="text-sm text-muted-foreground mt-1">Your favorite parking spots</p>
 
       {savedLocations.length > 0 ? (
         <div className="mt-8 space-y-1">

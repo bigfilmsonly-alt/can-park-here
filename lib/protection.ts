@@ -4,7 +4,6 @@
  */
 
 import {
-  dbGetUser,
   dbGetActiveSession,
   dbCreateSession,
   dbEndSession,
@@ -50,21 +49,28 @@ export interface UserProtection {
 
 // Convert DB session to app session
 function toAppSession(dbSession: DBParkingSession): ProtectionSession {
+  // Calculate max duration from started_at and ends_at
+  const startedAt = new Date(dbSession.started_at)
+  const endsAt = dbSession.ends_at ? new Date(dbSession.ends_at) : null
+  const maxDuration = endsAt
+    ? Math.round((endsAt.getTime() - startedAt.getTime()) / 60000)
+    : 480
+
   return {
     id: dbSession.id,
-    locationAddress: dbSession.location_address,
-    locationStreet: dbSession.location_street,
+    locationAddress: dbSession.address,
+    locationStreet: dbSession.address,
     coordinates: {
-      lat: dbSession.coordinates_lat,
-      lng: dbSession.coordinates_lng,
+      lat: dbSession.latitude,
+      lng: dbSession.longitude,
     },
-    startTime: new Date(dbSession.started_at),
+    startTime: startedAt,
     endTime: dbSession.ended_at ? new Date(dbSession.ended_at) : null,
-    maxDuration: dbSession.time_limit_minutes || 480,
+    maxDuration,
     status: dbSession.ended_at ? "completed" : "active",
     reminder: {
       enabled: dbSession.reminder_set,
-      scheduledFor: null,
+      scheduledFor: dbSession.reminder_time ? new Date(dbSession.reminder_time) : null,
       sent: false,
     },
   }
@@ -99,6 +105,7 @@ function getDefaultProtection(): UserProtection {
 }
 
 export function incrementCheckCount(): void {
+  if (typeof window === "undefined") return
   const protection = getProtectionStatus()
   protection.checksThisMonth++
   localStorage.setItem(STORAGE_KEY, JSON.stringify(protection))
@@ -116,6 +123,7 @@ export function getRemainingChecks(): number {
 }
 
 export function upgradeToProTier(): void {
+  if (typeof window === "undefined") return
   const protection = getProtectionStatus()
   protection.tier = "pro"
   protection.checksLimit = -1
@@ -131,16 +139,24 @@ export async function startParkingSession(
   coordinates: { lat: number; lng: number },
   maxDuration: number | null
 ): Promise<ProtectionSession> {
+  const now = new Date()
+  const durationMinutes = maxDuration || 480
+  const endsAt = new Date(now.getTime() + durationMinutes * 60000)
+
   const dbSession = await dbCreateSession({
-    location_address: address,
-    location_street: street,
-    coordinates_lat: coordinates.lat,
-    coordinates_lng: coordinates.lng,
+    check_id: null,
+    latitude: coordinates.lat,
+    longitude: coordinates.lng,
+    address,
     status: "allowed",
-    started_at: new Date().toISOString(),
-    time_limit_minutes: maxDuration || 480,
+    result: {},
+    started_at: now.toISOString(),
+    ends_at: endsAt.toISOString(),
+    ended_at: null,
     is_protected: true,
+    is_active: true,
     reminder_set: false,
+    reminder_time: null,
   })
 
   incrementCheckCount()
@@ -176,7 +192,7 @@ export function getActiveSessionSync(): ProtectionSession | null {
 
   try {
     const sessions: DBParkingSession[] = JSON.parse(stored)
-    const active = sessions.find((s) => !s.ended_at)
+    const active = sessions.find((s) => s.is_active)
     return active ? toAppSession(active) : null
   } catch {
     return null
@@ -187,21 +203,27 @@ export async function endParkingSession(): Promise<void> {
   const session = await getActiveSession()
   if (session) {
     await dbEndSession(session.id)
-    await dbUpdateUserStats("tickets_avoided", 1)
-    await dbUpdateUserStats("money_saved", 75)
+    await dbUpdateUserStats("ticketsAvoided", 1)
+    await dbUpdateUserStats("moneySaved", 75)
   }
 }
 
 export function clearSession(): void {
+  if (typeof window === "undefined") return
   // For backward compatibility
   const sessions = localStorage.getItem("park_db_sessions")
   if (sessions) {
-    const parsed: DBParkingSession[] = JSON.parse(sessions)
-    const updated = parsed.map((s) => ({
-      ...s,
-      ended_at: s.ended_at || new Date().toISOString(),
-    }))
-    localStorage.setItem("park_db_sessions", JSON.stringify(updated))
+    try {
+      const parsed: DBParkingSession[] = JSON.parse(sessions)
+      const updated = parsed.map((s) => ({
+        ...s,
+        ended_at: s.ended_at || new Date().toISOString(),
+        is_active: false,
+      }))
+      localStorage.setItem("park_db_sessions", JSON.stringify(updated))
+    } catch {
+      // Ignore corrupt data
+    }
   }
 }
 

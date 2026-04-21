@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { type User, updateUser, signOut } from "@/lib/auth"
+import { type User, updateUser } from "@/lib/auth"
 import { 
   ArrowLeft, 
   User as UserIcon, 
@@ -28,7 +28,7 @@ interface AccountScreenProps {
 
 export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate }: AccountScreenProps) {
   const [editing, setEditing] = useState(false)
-  const [name, setName] = useState(user.name)
+  const [name, setName] = useState(user.name ?? "")
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {
@@ -41,8 +41,10 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
     setEditing(false)
   }
 
-  const handleSignOut = async () => {
-    await signOut()
+  const handleSignOut = () => {
+    // Sign-out logic (clearing session, cache, redirect) is handled by the
+    // parent via `onSignOut`. No need to call signOut() directly here — that
+    // would result in a double call since the context handler already does it.
     onSignOut()
   }
 
@@ -58,8 +60,9 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
         <button
           onClick={onBack}
           className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
+          aria-label="Go back"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
         </button>
         <h1 className="text-xl font-semibold">Account</h1>
       </div>
@@ -69,11 +72,7 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
         <div className="bg-card rounded-2xl border border-border p-6 mb-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <UserIcon className="w-8 h-8 text-muted-foreground" />
-              )}
+              <UserIcon className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
             </div>
             <div className="flex-1">
               {editing ? (
@@ -84,7 +83,7 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
                   autoFocus
                 />
               ) : (
-                <h2 className="text-xl font-semibold text-foreground">{user.name}</h2>
+                <h2 className="text-xl font-semibold text-foreground">{user.name ?? "User"}</h2>
               )}
               <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
@@ -115,7 +114,7 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
         {/* Plan card */}
         <div className="bg-card rounded-2xl border border-border overflow-hidden mb-6">
           <div className="p-4 flex items-center gap-4">
-            {user.plan === "pro" ? (
+            {user.tier === "pro" ? (
               <div className="w-10 h-10 rounded-full bg-status-warning flex items-center justify-center">
                 <Crown className="w-5 h-5 text-background" />
               </div>
@@ -126,15 +125,15 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
             )}
             <div className="flex-1">
               <p className="font-medium text-foreground">
-                {user.plan === "pro" ? "Pro Plan" : "Free Plan"}
+                {user.tier === "pro" ? "Pro Plan" : "Free Plan"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {user.plan === "pro"
+                {user.tier === "pro"
                   ? "Unlimited checks + ticket protection"
                   : "10 checks per month"}
               </p>
             </div>
-            {user.plan !== "pro" && (
+            {user.tier !== "pro" && (
               <button
                 onClick={onUpgrade}
                 className="text-sm font-medium text-foreground hover:underline"

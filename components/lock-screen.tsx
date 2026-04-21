@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Fingerprint, ScanFace, Lock } from "lucide-react"
 
@@ -11,17 +11,27 @@ interface LockScreenProps {
 export function LockScreen({ onAuthenticate }: LockScreenProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const handleUnlock = async () => {
     setIsAuthenticating(true)
     setError(null)
 
     const success = await onAuthenticate()
-    
+
+    if (!mountedRef.current) return
+
     if (!success) {
       setError("Authentication failed. Please try again.")
     }
-    
+
     setIsAuthenticating(false)
   }
 

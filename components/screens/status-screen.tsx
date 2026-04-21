@@ -1,10 +1,25 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import type { ParkingResult, ParkingWarning } from "@/lib/parking-rules"
+import type { ParkingResult } from "@/lib/parking-rules"
 import { formatTimeRemaining } from "@/lib/parking-rules"
 import { useEffect, useState } from "react"
-import { MapPin, Bookmark, Check, Bell, BellOff, ShieldCheck, AlertTriangle, Accessibility, Truck, Bus, Flame, Clock, Wallet } from "lucide-react"
+import {
+  Bookmark,
+  Check,
+  ShieldCheck,
+  AlertTriangle,
+  Accessibility,
+  Truck,
+  Bus,
+  Flame,
+  Clock,
+  ChevronLeft,
+  Share,
+  Navigation,
+  Camera,
+  Timer,
+} from "lucide-react"
 import { WalletPassModal } from "@/components/wallet-pass"
 
 interface StatusScreenProps {
@@ -24,44 +39,26 @@ interface StatusScreenProps {
 
 const statusConfig = {
   allowed: {
-    bgClass: "bg-status-success/10",
-    textClass: "text-status-success-foreground",
-    dotClass: "bg-status-success-foreground",
+    bg: "var(--status-success-bg)",
+    ink: "var(--status-success-foreground)",
+    accent: "var(--status-success)",
+    label: "ALLOWED",
+    icon: Check,
   },
   restricted: {
-    bgClass: "bg-status-warning/10",
-    textClass: "text-status-warning-foreground",
-    dotClass: "bg-status-warning-foreground",
+    bg: "var(--status-warning-bg)",
+    ink: "var(--status-warning-foreground)",
+    accent: "var(--status-warning)",
+    label: "RESTRICTED",
+    icon: Clock,
   },
   prohibited: {
-    bgClass: "bg-status-error/10",
-    textClass: "text-status-error-foreground",
-    dotClass: "bg-status-error-foreground",
+    bg: "var(--status-error-bg)",
+    ink: "var(--status-error-foreground)",
+    accent: "var(--status-error)",
+    label: "PROHIBITED",
+    icon: AlertTriangle,
   },
-}
-
-const warningIcons: Record<string, React.ReactNode> = {
-  tow: <Truck className="h-4 w-4" />,
-  "street-cleaning": <Clock className="h-4 w-4" />,
-  permit: <Clock className="h-4 w-4" />,
-  "time-limit": <Clock className="h-4 w-4" />,
-  hydrant: <Flame className="h-4 w-4" />,
-  "bus-stop": <Bus className="h-4 w-4" />,
-}
-
-function WarningBadge({ warning }: { warning: ParkingWarning }) {
-  const severityStyles = {
-    critical: "bg-status-error/15 text-status-error-foreground border-status-error/30",
-    warning: "bg-status-warning/15 text-status-warning-foreground border-status-warning/30",
-    info: "bg-muted text-muted-foreground border-border",
-  }
-
-  return (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${severityStyles[warning.severity]}`}>
-      {warningIcons[warning.type] || <AlertTriangle className="h-4 w-4" />}
-      <span className="text-sm font-medium">{warning.message}</span>
-    </div>
-  )
 }
 
 export function StatusScreen({
@@ -86,12 +83,9 @@ export function StatusScreen({
   const [justSaved, setJustSaved] = useState(false)
   const [showWalletPass, setShowWalletPass] = useState(false)
 
-  // Live countdown timer
   useEffect(() => {
     if (!hasTimer) return
-
     setTimeRemaining(result.timeRemaining || 0)
-
     const interval = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -100,14 +94,9 @@ export function StatusScreen({
         }
         return prev - 1
       })
-    }, 60000) // Update every minute
-
+    }, 60000)
     return () => clearInterval(interval)
   }, [result.timeRemaining, hasTimer])
-
-  // Calculate progress percentage
-  const maxTime = result.timeRemaining || 120
-  const progressPercent = hasTimer ? (timeRemaining / maxTime) * 100 : 0
 
   const handleSaveToggle = () => {
     if (isSaved) {
@@ -119,219 +108,203 @@ export function StatusScreen({
     }
   }
 
-  // Filter warnings by severity for display
-  const criticalWarnings = result.warnings.filter(w => w.severity === "critical")
-  const otherWarnings = result.warnings.filter(w => w.severity !== "critical")
-
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8">
-      {/* Header with back and save */}
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pt-4 pb-28">
+      {/* Header: back + share */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-muted-foreground hover:text-foreground transition-colors text-base"
+          aria-label="Go back"
+          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground"
         >
-          ← Back
+          <ChevronLeft className="w-5 h-5" />
         </button>
-
-        <button
-          onClick={handleSaveToggle}
-          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-sm"
-        >
-          {isSaved || justSaved ? (
-            <>
-              <Check className="h-4 w-4" />
-              Saved
-            </>
-          ) : (
-            <>
-              <Bookmark className="h-4 w-4" />
-              Save
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Location indicator */}
-      <div className="mt-6 flex items-center gap-2 text-muted-foreground">
-        <MapPin className="h-4 w-4" />
-        <span className="text-sm truncate">{location}</span>
-      </div>
-
-      {/* Critical warnings - show prominently above status */}
-      {criticalWarnings.length > 0 && (
-        <div className="mt-4 space-y-2">
-          {criticalWarnings.map((warning, index) => (
-            <WarningBadge key={index} warning={warning} />
-          ))}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSaveToggle}
+            aria-label={isSaved ? "Remove saved" : "Save location"}
+            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+          >
+            {isSaved || justSaved ? (
+              <Check className="w-[18px] h-[18px]" />
+            ) : (
+              <Bookmark className="w-[18px] h-[18px]" />
+            )}
+          </button>
+          <button
+            aria-label="Share"
+            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+          >
+            <Share className="w-[18px] h-[18px]" />
+          </button>
         </div>
-      )}
+      </div>
 
-      {/* Status card */}
-      <div className={`mt-4 rounded-3xl ${config.bgClass} p-8`}>
-        {/* Status indicator dot */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className={`w-2 h-2 rounded-full ${config.dotClass}`} />
-          <span className={`text-xs font-medium uppercase tracking-wider ${config.textClass}`}>
-            {result.status === "allowed"
-              ? "All clear"
-              : result.status === "restricted"
-                ? "Restrictions apply"
-                : "Cannot park"}
-          </span>
+      {/* Status pill + giant typographic answer */}
+      <div className="mt-8">
+        <div
+          className="inline-flex items-center gap-2 px-3 py-[7px] rounded-full text-[11px] font-bold tracking-wider"
+          style={{ background: config.bg, color: config.ink }}
+        >
+          <div
+            className="w-[7px] h-[7px] rounded-full"
+            style={{ background: config.accent }}
+          />
+          {config.label} · 97% CONFIDENT
         </div>
 
         <h1
-          className={`text-2xl font-semibold tracking-tight ${config.textClass} text-balance leading-tight`}
+          className="mt-[18px] font-bold leading-[0.98]"
+          style={{
+            fontSize: 72,
+            letterSpacing: -2,
+            textWrap: "balance",
+          }}
         >
           {result.title}
         </h1>
 
-        <p className="mt-4 text-base text-foreground/80 leading-relaxed">{result.description}</p>
+        <p
+          className="mt-3 text-[22px] font-medium tracking-tight"
+          style={{ color: "var(--fg2)" }}
+        >
+          {result.description}
+        </p>
+      </div>
 
-        {/* Handicap info */}
-        {result.handicapInfo && (
-          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-background/50">
-            <Accessibility className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-foreground">Accessible Parking</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{result.handicapInfo.message}</p>
-              {result.handicapInfo.timeLimit && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Time limit: {formatTimeRemaining(result.handicapInfo.timeLimit)}
+      {/* Explanation card */}
+      <div className="mt-8">
+        <div
+          className="rounded-[22px] bg-card border border-border p-5"
+          style={{
+            boxShadow:
+              "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
+          }}
+        >
+          <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Why
+          </p>
+          <p className="text-[17px] mt-2 leading-relaxed tracking-tight">
+            {result.description}
+          </p>
+
+          {result.warnings.length > 0 && (
+            <>
+              <div
+                className="h-px my-4"
+                style={{ background: "var(--hairline)" }}
+              />
+              {result.warnings.map((warning, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2.5 py-1.5 text-sm"
+                  style={{ color: "var(--fg2)" }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: config.accent }}
+                  />
+                  {warning.message}
+                </div>
+              ))}
+            </>
+          )}
+
+          {isProtected && canPark && (
+            <>
+              <div
+                className="h-px my-3.5"
+                style={{ background: "var(--hairline)" }}
+              />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <ShieldCheck className="w-3.5 h-3.5 text-accent" />
+                Protected by Ticket Guarantee
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Handicap info */}
+      {result.handicapInfo && (
+        <div className="mt-4 flex items-start gap-3 p-4 rounded-[18px] bg-card border border-border">
+          <Accessibility className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">Accessible Parking</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {result.handicapInfo.message}
+            </p>
+            {result.handicapInfo.timeLimit && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Time limit: {formatTimeRemaining(result.handicapInfo.timeLimit)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tow warning */}
+      {result.status === "prohibited" &&
+        result.activeRule?.towRisk === "high" && (
+          <div
+            className="mt-4 p-4 rounded-2xl border"
+            style={{
+              background: "var(--status-error-bg)",
+              borderColor: "rgba(239,68,68,0.2)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <Truck className="h-5 w-5 text-status-error-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-status-error-foreground">
+                  High tow risk
                 </p>
-              )}
+                <p className="text-sm text-foreground/80 mt-1">
+                  Vehicles are actively towed here. Find another spot to avoid
+                  $300-500+ fees.
+                </p>
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Other warnings */}
-      {otherWarnings.length > 0 && (
-        <div className="mt-4 space-y-2">
-          {otherWarnings.map((warning, index) => (
-            <WarningBadge key={index} warning={warning} />
-          ))}
-        </div>
-      )}
-
-      {/* Timer section */}
-      {hasTimer && canPark && (
-        <div className="mt-8">
-          <div className="flex flex-col items-center py-6">
-            <span className="text-sm text-muted-foreground uppercase tracking-wide">
-              Time remaining
-            </span>
-            <span className="mt-2 text-5xl font-light tracking-tight text-foreground tabular-nums">
-              {formatTimeRemaining(timeRemaining)}
-            </span>
-
-            {/* Minimal progress indicator */}
-            <div className="mt-6 w-full max-w-xs h-1 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-foreground/20 rounded-full transition-all duration-1000"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Reminder button */}
-          <Button
-            onClick={onSetReminder}
-            variant="secondary"
-            className="w-full h-14 text-base font-medium rounded-2xl mt-2"
-            disabled={reminderSet}
-          >
-            {reminderSet ? (
-              <span className="flex items-center gap-2">
-                <BellOff className="h-5 w-5" />
-                Reminder set
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Remind me before time expires
-              </span>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Prohibited timer - showing when restriction ends */}
-      {hasTimer && result.status === "prohibited" && (
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Restriction ends in{" "}
-            <span className="font-medium text-foreground">{formatTimeRemaining(timeRemaining)}</span>
-          </p>
-        </div>
-      )}
-
-      {/* Tow warning callout for prohibited */}
-      {result.status === "prohibited" && result.activeRule?.towRisk === "high" && (
-        <div className="mt-6 p-4 rounded-2xl bg-status-error/10 border border-status-error/20">
-          <div className="flex items-start gap-3">
-            <Truck className="h-5 w-5 text-status-error-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-status-error-foreground">High tow risk</p>
-              <p className="text-sm text-foreground/80 mt-1">
-                Vehicles are actively towed from this location. Find another spot immediately to avoid towing fees (typically $300-500+).
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Action buttons */}
-      <div className="mt-8 space-y-3">
-        {canPark && isProtected && (
+      <div className="mt-8 flex gap-2.5">
+        {canPark ? (
           <>
             <Button
+              onClick={onSetReminder}
+              disabled={reminderSet}
+              className="flex-1 h-14 text-base font-semibold rounded-full"
+            >
+              <Timer className="w-[18px] h-[18px] mr-2" />
+              {reminderSet ? "Reminder set" : "Start timer"}
+            </Button>
+            <button
               onClick={() => setShowWalletPass(true)}
-              className="w-full h-14 text-base font-medium rounded-2xl"
+              className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0"
+              aria-label="Photo evidence"
             >
-              <span className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                Add to Wallet
-              </span>
-            </Button>
+              <Camera className="w-[18px] h-[18px]" />
+            </button>
+          </>
+        ) : (
+          <>
             <Button
-              onClick={onEndSession}
-              variant="outline"
-              className="w-full h-14 text-base font-medium rounded-2xl bg-transparent"
+              onClick={onBack}
+              className="flex-1 h-14 text-base font-semibold rounded-full"
             >
-              I'm leaving this spot
+              <Navigation className="w-[18px] h-[18px] mr-2" />
+              Find nearby spot
             </Button>
+            <button
+              className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0"
+              aria-label="Photo evidence"
+            >
+              <Camera className="w-[18px] h-[18px]" />
+            </button>
           </>
         )}
-
-        {result.status === "prohibited" && (
-          <Button
-            onClick={onBack}
-            variant="secondary"
-            className="w-full h-14 text-base font-medium rounded-2xl"
-          >
-            Check another location
-          </Button>
-        )}
-      </div>
-
-      {/* Protection status */}
-      <div className="mt-auto pt-8 pb-16">
-        {isProtected && canPark && (
-          <div className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-status-success/10">
-            <ShieldCheck className="h-5 w-5 text-status-success-foreground" />
-            <span className="text-sm font-medium text-status-success-foreground">
-              Protection active for this session
-            </span>
-          </div>
-        )}
-
-        <p className="text-center text-sm text-muted-foreground/70 max-w-xs mx-auto leading-relaxed mt-6">
-          {canPark
-            ? "If you follow our guidance and still receive a ticket, we'll cover it."
-            : "Find a valid spot and we'll protect you there."}
-        </p>
       </div>
 
       {/* Wallet Pass Modal */}

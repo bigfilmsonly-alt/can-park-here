@@ -65,8 +65,9 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
         <button
           onClick={onBack}
           className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
+          aria-label="Go back"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </button>
         <div className="flex-1">
           <h1 className="text-lg font-semibold">Parking Predictions</h1>
@@ -83,7 +84,7 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
           {days.map((day, index) => (
             <button
-              key={day}
+              key={`day-${index}`}
               onClick={() => setSelectedDay(index)}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 selectedDay === index

@@ -33,6 +33,11 @@ export function AuthScreen({ onSuccess, onSkip }: AuthScreenProps) {
 
     if (result.success && result.user) {
       onSuccess(result.user)
+    } else if (result.success && !result.user) {
+      // Session exists but profile not yet synced — treat as success with a
+      // minimal user object so the app can proceed. The full profile will be
+      // fetched asynchronously by the app context.
+      onSuccess({ id: "", email, name: email.split("@")[0], tier: "free", city: "", createdAt: new Date().toISOString(), karma: 0, level: 1, streak: 0, totalChecks: 0, ticketsAvoided: 0, moneySaved: 0, referralCode: null, handicapEnabled: false, vehiclePlate: null })
     } else {
       setError(result.error || "Sign in failed")
     }
@@ -48,6 +53,11 @@ export function AuthScreen({ onSuccess, onSkip }: AuthScreenProps) {
 
     if (result.success && result.user) {
       onSuccess(result.user)
+    } else if (result.success && !result.user) {
+      // Supabase email confirmation is required — user was created but session
+      // is not yet active. Show a success message instead of an error.
+      setSuccess("Check your email to confirm your account, then sign in.")
+      setMode("signin")
     } else {
       setError(result.error || "Sign up failed")
     }

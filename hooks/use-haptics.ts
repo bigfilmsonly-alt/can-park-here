@@ -6,6 +6,8 @@ type HapticType = "light" | "medium" | "heavy" | "success" | "warning" | "error"
 
 export function useHaptics() {
   const vibrate = useCallback((pattern: number | number[]) => {
+    // SSR guard
+    if (typeof navigator === "undefined") return
     if ("vibrate" in navigator) {
       navigator.vibrate(pattern)
     }

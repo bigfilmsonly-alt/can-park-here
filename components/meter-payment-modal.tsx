@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -44,6 +44,19 @@ export function MeterPaymentModal({
   const [selectedPayment, setSelectedPayment] = useState<string>("apple_pay")
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentComplete, setPaymentComplete] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+  }, [])
 
   const paymentMethods: PaymentMethod[] = [
     { id: "apple_pay", type: "apple_pay", label: "Apple Pay" },
@@ -73,19 +86,23 @@ export function MeterPaymentModal({
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
+    if (!mountedRef.current) return
+
     setIsProcessing(false)
     setPaymentComplete(true)
 
     // After showing success, close and trigger callback
-    setTimeout(() => {
-      onPaymentComplete(selectedMinutes)
+    timeoutRef.current = setTimeout(() => {
+      if (!mountedRef.current) return
+      const mins = selectedMinutes
+      onPaymentComplete(mins)
       setPaymentComplete(false)
       setSelectedMinutes(60)
       onClose()
       showToast(
         "success",
         "Meter paid",
-        `You have ${selectedMinutes} minutes of parking time`
+        `You have ${mins} minutes of parking time`
       )
     }, 1500)
   }

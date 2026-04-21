@@ -97,8 +97,14 @@ export function getGamificationState(): GamificationState {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultState))
     return defaultState
   }
-  
-  return JSON.parse(stored)
+
+  try {
+    return JSON.parse(stored)
+  } catch {
+    const defaultState = getDefaultState()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultState))
+    return defaultState
+  }
 }
 
 function getDefaultState(): GamificationState {
@@ -319,7 +325,7 @@ export interface LeaderboardEntry {
 }
 
 // Get mock leaderboard (in production, this would be from the server)
-export async function getLeaderboard(type: "global" | "local" | "friends" = "global"): Promise<LeaderboardEntry[]> {
+export async function getLeaderboard(_type: "global" | "local" | "friends" = "global"): Promise<LeaderboardEntry[]> {
   const state = getGamificationState()
   const user = await dbGetUser()
   

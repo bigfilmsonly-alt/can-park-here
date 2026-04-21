@@ -12,7 +12,7 @@ export default function OnboardingPage() {
       onComplete={() => router.push("/permissions")}
       onSkip={() => {
         completeOnboarding()
-        router.push("/")
+        router.push("/signin")
       }}
     />
   )

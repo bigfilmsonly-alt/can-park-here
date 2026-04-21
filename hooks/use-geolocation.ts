@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 
 export interface LocationData {
   latitude: number
@@ -23,6 +23,14 @@ export function useGeolocation() {
     loading: false,
     error: null,
   })
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const reverseGeocode = async (
     lat: number,
@@ -71,6 +79,11 @@ export function useGeolocation() {
   }
 
   const getCurrentLocation = useCallback(async (): Promise<LocationData | null> => {
+    // SSR guard
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      return null
+    }
+
     setState((prev) => ({ ...prev, loading: true, error: null }))
 
     if (!navigator.geolocation) {
@@ -87,6 +100,12 @@ export function useGeolocation() {
         async (position) => {
           const { latitude, longitude } = position.coords
           const geocoded = await reverseGeocode(latitude, longitude)
+
+          // Guard against setState after unmount
+          if (!mountedRef.current) {
+            resolve(null)
+            return
+          }
 
           const locationData: LocationData = {
             latitude,
@@ -106,6 +125,12 @@ export function useGeolocation() {
           resolve(locationData)
         },
         (error) => {
+          // Guard against setState after unmount
+          if (!mountedRef.current) {
+            resolve(null)
+            return
+          }
+
           let errorMessage = "Unable to retrieve your location"
 
           switch (error.code) {

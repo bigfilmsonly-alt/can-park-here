@@ -179,7 +179,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, []) // Fixed: removed `state` dep that caused re-subscribing on every state change
 
   return {
     ...state,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { X, AlertTriangle, Clock, CloudRain, Car, Calendar, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getActiveAlerts, type SmartAlert } from "@/lib/smart-alerts"
@@ -13,22 +13,23 @@ interface AlertsPanelProps {
 
 export function AlertsPanel({ location, onAction, onDismiss }: AlertsPanelProps) {
   const [alerts, setAlerts] = useState<SmartAlert[]>([])
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const dismissedRef = useRef<Set<string>>(new Set())
+
+  const fetchAlerts = useCallback(() => {
+    const activeAlerts = getActiveAlerts(location)
+    setAlerts(activeAlerts.filter(a => !dismissedRef.current.has(a.id)))
+  }, [location])
 
   useEffect(() => {
-    const fetchAlerts = () => {
-      const activeAlerts = getActiveAlerts(location)
-      setAlerts(activeAlerts.filter(a => !dismissed.has(a.id)))
-    }
-
     fetchAlerts()
     const interval = setInterval(fetchAlerts, 60000) // Check every minute
 
     return () => clearInterval(interval)
-  }, [location, dismissed])
+  }, [fetchAlerts])
 
   const handleDismiss = (alertId: string) => {
-    setDismissed(prev => new Set([...prev, alertId]))
+    dismissedRef.current.add(alertId)
+    setAlerts(prev => prev.filter(a => a.id !== alertId))
     onDismiss?.(alertId)
   }
 

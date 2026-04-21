@@ -19,6 +19,9 @@ export function useSavedLocations() {
 
   // Load from localStorage on mount
   useEffect(() => {
+    // SSR guard
+    if (typeof window === "undefined") return
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
@@ -38,8 +41,14 @@ export function useSavedLocations() {
 
   // Save to localStorage whenever locations change
   useEffect(() => {
-    if (isLoaded) {
+    if (!isLoaded) return
+    // SSR guard
+    if (typeof window === "undefined") return
+
+    try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(savedLocations))
+    } catch {
+      // localStorage may be full or unavailable
     }
   }, [savedLocations, isLoaded])
 

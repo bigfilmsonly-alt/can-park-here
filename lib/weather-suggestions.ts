@@ -242,7 +242,6 @@ export function getWeatherDescription(weather: WeatherData): string {
 
 // Check if weather will change soon
 export function willWeatherChange(weather: WeatherData): {
-  willChange: boolean
   changeHour: number
   newCondition: WeatherData["condition"]
   warning: string
@@ -257,7 +256,6 @@ export function willWeatherChange(weather: WeatherData): {
       
       if (isBadChange) {
         return {
-          willChange: true,
           changeHour: forecast.hour,
           newCondition: forecast.condition,
           warning: `${forecast.condition === "rain" ? "Rain" : forecast.condition === "storm" ? "Storm" : "Snow"} expected around ${formatHour(forecast.hour)}. Consider covered parking.`,

@@ -1,16 +1,41 @@
 import React from "react"
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/lib/contexts/auth-context'
+import { ShowcaseWrapper } from '@/components/iphone-showcase'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
 
 export const metadata: Metadata = {
-  title: 'Park — Can I park here?',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://canparkhere.com'),
+  title: {
+    default: 'Park — Can I park here?',
+    template: '%s | Park',
+  },
   description: 'Clear answers. No tickets. No confusion.',
-  generator: 'v0.app',
+  generator: 'Next.js',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -23,21 +48,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Park — Can I park here?',
     description: 'Clear answers. No tickets. No confusion.',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Park - Clear answers. No tickets.',
-      },
-    ],
+    siteName: 'Park',
     type: 'website',
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Park — Can I park here?',
     description: 'Clear answers. No tickets. No confusion.',
-    images: ['/og-image.jpg'],
   },
   icons: {
     icon: [
@@ -56,6 +74,10 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
@@ -64,16 +86,30 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
       </head>
-      <body className={`font-sans antialiased`}>
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <ShowcaseWrapper>
+              {children}
+            </ShowcaseWrapper>
+          </AuthProvider>
+        </ThemeProvider>
         <Analytics />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js',{scope:'/'})})}`
+          }}
+        />
       </body>
     </html>
   )

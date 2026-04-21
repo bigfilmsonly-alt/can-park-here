@@ -15,10 +15,10 @@ const TIMER_STORAGE_KEY = "park_active_timer"
 
 function loadTimerState(): TimerState | null {
   if (typeof window === "undefined") return null
-  const stored = localStorage.getItem(TIMER_STORAGE_KEY)
-  if (!stored) return null
-  
   try {
+    const stored = localStorage.getItem(TIMER_STORAGE_KEY)
+    if (!stored) return null
+
     const state = JSON.parse(stored) as TimerState
     // Check if timer has expired
     if (state.endTime && Date.now() > state.endTime) {
@@ -33,16 +33,21 @@ function loadTimerState(): TimerState | null {
 
 function saveTimerState(state: TimerState | null) {
   if (typeof window === "undefined") return
-  if (state) {
-    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state))
-  } else {
-    localStorage.removeItem(TIMER_STORAGE_KEY)
+  try {
+    if (state) {
+      localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state))
+    } else {
+      localStorage.removeItem(TIMER_STORAGE_KEY)
+    }
+  } catch {
+    // localStorage may be unavailable
   }
 }
 
 export function useTimer() {
   const [timerState, setTimerState] = useState<TimerState | null>(null)
-  const notificationTimeouts = useRef<NodeJS.Timeout[]>([])
+  const notificationTimeouts = useRef<ReturnType<typeof setTimeout>[]>([])
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Load timer state on mount
   useEffect(() => {
@@ -56,18 +61,26 @@ export function useTimer() {
   useEffect(() => {
     if (!timerState?.isActive || !timerState.endTime) return
 
-    const interval = setInterval(() => {
+    // Clear any previous interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+
+    intervalRef.current = setInterval(() => {
       const now = Date.now()
       const remaining = Math.max(0, Math.floor((timerState.endTime! - now) / 1000))
-      
+
       if (remaining === 0) {
         // Timer expired
-        clearInterval(interval)
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
         setTimerState(null)
         saveTimerState(null)
-        
+
         // Final notification
-        if ("Notification" in window && Notification.permission === "granted") {
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
           new Notification("Time's up!", {
             body: "Your parking timer has expired. Move your vehicle now.",
             icon: "/favicon.ico",
@@ -84,10 +97,26 @@ export function useTimer() {
       })
     }, 1000)
 
-    return () => clearInterval(interval)
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
   }, [timerState?.isActive, timerState?.endTime])
 
+  // Cleanup notification timeouts on unmount
+  useEffect(() => {
+    return () => {
+      notificationTimeouts.current.forEach(clearTimeout)
+      notificationTimeouts.current = []
+    }
+  }, [])
+
   const startTimer = useCallback(async (minutes: number) => {
+    // SSR guard
+    if (typeof window === "undefined") return null
+
     // Request notification permission
     if ("Notification" in window && Notification.permission !== "granted") {
       await Notification.requestPermission()
@@ -156,6 +185,10 @@ export function useTimer() {
   const cancelTimer = useCallback(() => {
     notificationTimeouts.current.forEach(clearTimeout)
     notificationTimeouts.current = []
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
     setTimerState(null)
     saveTimerState(null)
   }, [])
