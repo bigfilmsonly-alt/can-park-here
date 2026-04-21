@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://canparkhere.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://can-park-here.vercel.app'),
   title: {
     default: 'Park — Can I park here?',
     template: '%s | Park',
