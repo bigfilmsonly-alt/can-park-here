@@ -14,9 +14,8 @@ export default function HomePage() {
       onResumeSession={ctx.handleResumeSession}
       onScanSign={() => ctx.setShowScanSign(true)}
       onSetTimer={() => ctx.setShowTimer(true)}
-      onOpenPredictions={() => router.push("/predictions")}
-      onOpenRewards={() => router.push("/rewards")}
       onOpenMap={() => router.push("/map")}
+      onOpenSaved={() => router.push("/saved")}
       loading={ctx.loading}
       error={ctx.error}
       activeSession={ctx.activeSession}

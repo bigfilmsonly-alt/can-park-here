@@ -3,108 +3,65 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ===== DARK-ONLY DESIGN SYSTEM — System Green (#34C759) ===== */
 :root {
-  --background: #fafbff;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0f172a;
-  --primary-foreground: #fafbff;
-  --secondary: #f5f7fb;
-  --secondary-foreground: #334155;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #3b82f6;
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.07);
+  --card-foreground: #ffffff;
+  --popover: rgba(255, 255, 255, 0.07);
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: rgba(255, 255, 255, 0.05);
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: rgba(255, 255, 255, 0.55);
+  --accent: #34C759;
   --accent-foreground: #ffffff;
-  --accent-deep: #1d4ed8;
-  --accent-pale: #eff6ff;
-  --accent-ink: #1e3a8a;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #3b82f6;
-  --hairline: #eef2f7;
-  --fg2: #334155;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --navy: #0f1b2d;
-  --navy-light: #1e3a5f;
-  --radius: 0.75rem;
-  --sidebar: #f5f7fb;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #0f172a;
-  --sidebar-primary-foreground: #fafbff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #0f172a;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #3b82f6;
-
-  /* Status colors matching design */
-  --status-success: #10b981;
-  --status-success-bg: #d1fae5;
-  --status-success-foreground: #065f46;
-  --status-warning: #f59e0b;
-  --status-warning-bg: #fef3c7;
-  --status-warning-foreground: #92400e;
-  --status-error: #ef4444;
-  --status-error-bg: #fee2e2;
-  --status-error-foreground: #991b1b;
-}
-
-.dark {
-  --background: #0b0f17;
-  --foreground: #f8fafc;
-  --card: #1a1f2b;
-  --card-foreground: #f8fafc;
-  --popover: #1a1f2b;
-  --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-foreground: #0b0f17;
-  --secondary: #222838;
-  --secondary-foreground: #f8fafc;
-  --muted: #262c3b;
-  --muted-foreground: #94a3b8;
-  --accent: #3b82f6;
-  --accent-foreground: #ffffff;
-  --accent-deep: #1d4ed8;
-  --accent-pale: rgba(59, 130, 246, 0.15);
-  --accent-ink: #1e3a8a;
-  --destructive: #ef4444;
-  --destructive-foreground: #f87171;
-  --border: #2d3447;
-  --input: #2d3447;
-  --ring: #3b82f6;
-  --hairline: #232938;
-  --fg2: #cbd5e1;
+  --accent-deep: #28A745;
+  --accent-pale: rgba(52, 199, 89, 0.12);
+  --accent-ink: #34C759;
+  --destructive: #FF3B30;
+  --destructive-foreground: #FF6961;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #34C759;
+  --hairline: rgba(255, 255, 255, 0.06);
+  --fg2: rgba(255, 255, 255, 0.7);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #1a1f2b;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #f8fafc;
-  --sidebar-accent: #262c3b;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #2d3447;
-  --sidebar-ring: #3b82f6;
+  --radius: 0.75rem;
 
-  --status-success: #10b981;
-  --status-success-bg: rgba(16, 185, 129, 0.15);
-  --status-success-foreground: #34d399;
-  --status-warning: #f59e0b;
-  --status-warning-bg: rgba(245, 158, 11, 0.15);
-  --status-warning-foreground: #fbbf24;
-  --status-error: #ef4444;
-  --status-error-bg: rgba(239, 68, 68, 0.15);
-  --status-error-foreground: #f87171;
+  /* Named colors */
+  --green: #34C759;
+  --green-dark: #248A3D;
+  --amber: #FF9500;
+  --red: #FF3B30;
+  --blue: #007AFF;
+  --ink: #FFFFFF;
+  --ink2: rgba(255, 255, 255, 0.55);
+  --ink3: rgba(255, 255, 255, 0.28);
+  --bg: #000000;
+  --card-glass: rgba(255, 255, 255, 0.07);
+  --card2: rgba(255, 255, 255, 0.04);
+  --border2: rgba(255, 255, 255, 0.06);
+  --tab-inactive: rgba(255, 255, 255, 0.4);
+  --tab-bg: rgba(0, 0, 0, 0.82);
+
+  /* Status colors */
+  --status-success: #34C759;
+  --status-success-bg: rgba(52, 199, 89, 0.15);
+  --status-success-foreground: #30D158;
+  --status-warning: #FF9500;
+  --status-warning-bg: rgba(255, 149, 0, 0.15);
+  --status-warning-foreground: #FFB340;
+  --status-error: #FF3B30;
+  --status-error-bg: rgba(255, 59, 48, 0.15);
+  --status-error-foreground: #FF6961;
 }
 
 @theme inline {
@@ -143,14 +100,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
   --color-status-success: var(--status-success);
   --color-status-success-bg: var(--status-success-bg);
   --color-status-success-foreground: var(--status-success-foreground);
@@ -160,8 +109,9 @@
   --color-status-error: var(--status-error);
   --color-status-error-bg: var(--status-error-bg);
   --color-status-error-foreground: var(--status-error-foreground);
-  --color-navy: var(--navy);
-  --color-navy-light: var(--navy-light);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
 }
 
 @layer base {
@@ -175,16 +125,14 @@
     text-rendering: optimizeLegibility;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
+    color-scheme: dark;
   }
 
-  /* Premium scrollbar: invisible on mobile, subtle on desktop */
   ::-webkit-scrollbar { width: 0; height: 0; display: none; }
   * { scrollbar-width: none; }
 
-  /* Selection */
-  ::selection { background: rgba(59, 130, 246, 0.2); }
+  ::selection { background: rgba(52, 199, 89, 0.25); }
 
-  /* Safe area handling for PWA */
   .app-shell {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -192,91 +140,60 @@
     padding-right: env(safe-area-inset-right);
   }
 
-  /* Premium card default: shadow over border */
   .card-elevated {
     border-color: transparent;
     box-shadow:
-      0 0 0 0.5px rgba(0, 0, 0, 0.04),
-      0 1px 2px rgba(0, 0, 0, 0.03),
-      0 4px 16px rgba(0, 0, 0, 0.04);
-  }
-  .dark .card-elevated {
-    box-shadow:
       0 0 0 0.5px rgba(255, 255, 255, 0.06),
-      0 2px 8px rgba(0, 0, 0, 0.3);
+      0 2px 8px rgba(0, 0, 0, 0.4);
   }
 }
 
-/* Custom animations */
+/* ===== TYPOGRAPHY UTILITIES ===== */
+.text-hero { font-size: 34px; font-weight: 900; letter-spacing: -1px; line-height: 1.05; }
+.text-title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.15; }
+.text-body { font-size: 15px; font-weight: 400; line-height: 1.5; }
+.text-caption { font-size: 13px; font-weight: 500; color: var(--muted-foreground); }
+.text-micro { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse-soft {
@@ -296,12 +213,8 @@
 }
 
 @keyframes success-check {
-  0% {
-    stroke-dashoffset: 100;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
 }
 
 @keyframes checking-spin {
@@ -309,199 +222,133 @@
   to { transform: rotate(360deg); }
 }
 
-.animate-checking-spin {
-  animation: checking-spin 1.1s linear infinite;
+@keyframes conicSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes scanLine {
+  0% { top: 10%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 90%; opacity: 0; }
+}
+
+@keyframes tagPillIn {
+  from { opacity: 0; transform: scale(0.7) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes toast-out { to { opacity: 0; transform: translate(-50%, -12px); } }
 
-/* Apple-style ease: decelerate into rest — cubic-bezier(.2,.7,.3,1) */
-/* Animation utility classes */
-.animate-fade-in {
-  animation: fadeIn 0.24s cubic-bezier(.2,.7,.3,1);
-}
+.animate-checking-spin { animation: checking-spin 1.1s linear infinite; }
+.animate-conic-spin { animation: conicSpin 3s linear infinite; }
+.animate-scan-line { animation: scanLine 2s ease-in-out infinite; }
+.animate-tag-pill { animation: tagPillIn 0.35s cubic-bezier(.2,.7,.3,1) forwards; }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.32s cubic-bezier(.2,.7,.3,1) forwards;
-}
+.animate-fade-in { animation: fadeIn 0.24s cubic-bezier(.2,.7,.3,1); }
+.animate-fade-in-up { animation: fadeInUp 0.32s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-fade-in-down { animation: fadeInDown 0.32s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-scale-in { animation: scaleIn 0.24s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-slide-up { animation: slideUp 0.4s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-slide-in-right { animation: slideInRight 0.32s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-slide-in-left { animation: slideInLeft 0.32s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-slide-in-up { animation: slideInUp 0.36s cubic-bezier(.2,.7,.3,1) forwards; }
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+.animate-bounce-soft { animation: bounce-soft 1s ease-in-out infinite; }
+.animate-shake { animation: shake 0.4s ease-in-out; }
 
-.animate-fade-in-down {
-  animation: fadeInDown 0.32s cubic-bezier(.2,.7,.3,1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.24s cubic-bezier(.2,.7,.3,1) forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.32s cubic-bezier(.2,.7,.3,1) forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.32s cubic-bezier(.2,.7,.3,1) forwards;
-}
-
-.animate-slide-in-up {
-  animation: slideInUp 0.36s cubic-bezier(.2,.7,.3,1) forwards;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
-}
-
-.animate-bounce-soft {
-  animation: bounce-soft 1s ease-in-out infinite;
-}
-
-.animate-shake {
-  animation: shake 0.4s ease-in-out;
-}
-
-/* Stagger children animations */
+/* Stagger children */
 .stagger-children > * {
   opacity: 0;
-  animation: fadeInUp 0.3s ease-out forwards;
+  animation: slideUp 0.4s cubic-bezier(.2,.7,.3,1) forwards;
 }
-
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
-.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
-.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 320ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 480ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 560ms; }
 
-/* Press effect — tactile, iOS-caliber */
+/* Press effect */
 .press-effect {
   transition: transform 0.12s cubic-bezier(.2,.7,.3,1), opacity 0.12s;
   will-change: transform;
 }
-
 .press-effect:active {
   transform: scale(0.975);
   opacity: 0.9;
 }
 
-/* Smooth transitions */
-.transition-smooth {
-  transition: all 0.22s cubic-bezier(.2,.7,.3,1);
-}
+.transition-smooth { transition: all 0.22s cubic-bezier(.2,.7,.3,1); }
 
-/* Card hover lift */
 .hover-lift {
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
-
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== GLASS CARD ===== */
+.glass-card {
+  background: var(--card-glass);
+  border: 1px solid var(--border);
+  border-radius: 18px;
 }
 
 /* ===== ACCESSIBILITY MODES ===== */
-
-/* High Contrast Mode */
 .high-contrast {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0 0 0);
-  --muted: oklch(0.95 0 0);
-  --muted-foreground: oklch(0.2 0 0);
-  --border: oklch(0 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0 0 0);
+  --background: #000000;
+  --foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.15);
+  --muted-foreground: #ffffff;
+  --border: #ffffff;
+  --card: rgba(255, 255, 255, 0.12);
+  --card-foreground: #ffffff;
 }
 
-.high-contrast * {
-  border-color: oklch(0 0 0) !important;
-}
-
-.high-contrast button,
-.high-contrast a {
+.high-contrast * { border-color: #ffffff !important; }
+.high-contrast button, .high-contrast a {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.high-contrast .bg-status-success {
-  background-color: oklch(0.5 0.2 145) !important;
-}
-
-.high-contrast .bg-status-warning {
-  background-color: oklch(0.5 0.2 85) !important;
-}
-
-.high-contrast .bg-status-error {
-  background-color: oklch(0.4 0.2 25) !important;
-}
-
-/* Large Text Mode */
-.large-text {
-  font-size: 118.75%;
-}
-
-.large-text h1 {
-  font-size: 2.5rem !important;
-}
-
-.large-text h2 {
-  font-size: 2rem !important;
-}
-
-.large-text h3 {
-  font-size: 1.5rem !important;
-}
-
-.large-text p,
-.large-text span,
-.large-text button,
-.large-text a {
+.large-text { font-size: 118.75%; }
+.large-text h1 { font-size: 2.5rem !important; }
+.large-text h2 { font-size: 2rem !important; }
+.large-text h3 { font-size: 1.5rem !important; }
+.large-text p, .large-text span, .large-text button, .large-text a {
   font-size: 1.125rem !important;
   line-height: 1.6 !important;
 }
 
-.large-text .text-xs {
-  font-size: 0.9375rem !important;
-}
-
-.large-text .text-sm {
-  font-size: 1rem !important;
-}
-
-/* Reduced Motion Mode */
-.reduced-motion *,
-.reduced-motion *::before,
-.reduced-motion *::after {
+.reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
 
-/* Dyslexia-friendly Font */
 .dyslexia-font {
   font-family: "OpenDyslexic", "Comic Sans MS", "Arial", sans-serif !important;
   letter-spacing: 0.05em;
   word-spacing: 0.1em;
 }
+.dyslexia-font * { font-family: inherit !important; }
 
-.dyslexia-font * {
-  font-family: inherit !important;
-}
-
-/* Screen Reader Mode - adds visual focus indicators */
 .screen-reader-mode *:focus {
-  outline: 3px solid oklch(0.6 0.2 250) !important;
+  outline: 3px solid var(--accent) !important;
   outline-offset: 2px !important;
 }
-
-.screen-reader-mode button:focus,
-.screen-reader-mode a:focus,
-.screen-reader-mode input:focus,
-.screen-reader-mode select:focus,
+.screen-reader-mode button:focus, .screen-reader-mode a:focus,
+.screen-reader-mode input:focus, .screen-reader-mode select:focus,
 .screen-reader-mode textarea:focus {
-  box-shadow: 0 0 0 4px oklch(0.6 0.2 250 / 0.3) !important;
+  box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.3) !important;
 }
 
-/* Skip to main content link */
 .skip-link {
   position: absolute;
   top: -40px;
@@ -512,12 +359,8 @@
   z-index: 100;
   transition: top 0.2s;
 }
+.skip-link:focus { top: 0; }
 
-.skip-link:focus {
-  top: 0;
-}
-
-/* Visually hidden but accessible to screen readers */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -532,43 +375,27 @@
 
 /* ===== iPHONE SHOWCASE FRAME ===== */
 
-/* ---------- Mobile: frame is invisible, app renders normally ---------- */
-.showcase-root,
-.iphone-device,
-.iphone-frame,
-.iphone-screen,
-.iphone-app {
+/* Mobile: frame invisible */
+.showcase-root, .iphone-device, .iphone-frame, .iphone-screen, .iphone-app {
   display: contents;
 }
-
-.showcase-header,
-.showcase-footer,
-.iphone-island,
-.iphone-home,
-.iphone-btn {
+.showcase-header, .showcase-footer, .iphone-island, .iphone-home, .iphone-btn {
   display: none;
 }
 
-/* ---------- App shell (used by (app) layout) ---------- */
+/* App shell */
 .app-shell {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
+.app-scroll { flex: 1; }
 
-.app-scroll {
-  flex: 1;
-}
-
-/* ---------- Desktop: show iPhone showcase ---------- */
+/* Desktop: show iPhone showcase */
 @media (min-width: 768px) {
-  /* Force dark body behind the showcase */
-  body {
-    background: #070b14 !important;
-  }
+  body { background: #000000 !important; }
 
-  /* Showcase root: dark gradient, centered */
   .showcase-root {
     display: flex;
     flex-direction: column;
@@ -578,22 +405,20 @@
     min-height: 100dvh;
     padding: 20px;
     gap: 20px;
-    background: linear-gradient(160deg, #070b14 0%, #0c1322 40%, #0a0f1a 70%, #060a12 100%);
+    background: linear-gradient(160deg, #000000 0%, #0a0a0a 40%, #050505 70%, #000000 100%);
     position: relative;
     overflow: hidden;
   }
 
-  /* Subtle dot grid overlay */
   .showcase-root::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(52, 199, 89, 0.03) 1px, transparent 1px);
     background-size: 28px 28px;
     pointer-events: none;
   }
 
-  /* Blue glow behind iPhone */
   .showcase-root::after {
     content: "";
     position: absolute;
@@ -602,7 +427,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -45%);
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(52, 199, 89, 0.05) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -614,12 +439,8 @@
     z-index: 1;
   }
 
-  .showcase-footer {
-    display: block;
-    z-index: 1;
-  }
+  .showcase-footer { display: block; z-index: 1; }
 
-  /* iPhone device container */
   .iphone-device {
     display: block;
     position: relative;
@@ -627,22 +448,20 @@
     flex-shrink: 0;
   }
 
-  /* Titanium frame */
   .iphone-frame {
     display: block;
     position: relative;
-    background: linear-gradient(145deg, #3a3a3e 0%, #1f1f23 20%, #2a2a2e 80%, #3a3a3e 100%);
+    background: linear-gradient(145deg, #2a2a2e 0%, #1a1a1e 20%, #222226 80%, #2a2a2e 100%);
     padding: 12px;
     border-radius: 52px;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-      0 0 0 1px rgba(0, 0, 0, 0.5),
-      0 25px 50px rgba(0, 0, 0, 0.45),
-      0 10px 20px rgba(0, 0, 0, 0.3);
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+      0 0 0 1px rgba(0, 0, 0, 0.8),
+      0 30px 60px rgba(0, 0, 0, 0.6),
+      0 10px 20px rgba(0, 0, 0, 0.4);
   }
 
-  /* Screen area */
   .iphone-screen {
     display: block;
     position: relative;
@@ -651,11 +470,9 @@
     border-radius: 42px;
     overflow: hidden;
     background: var(--background);
-    /* Contain fixed-position descendants */
     transform: translateZ(0);
   }
 
-  /* Dynamic Island */
   .iphone-island {
     display: block;
     position: absolute;
@@ -669,7 +486,6 @@
     z-index: 30;
   }
 
-  /* Home indicator */
   .iphone-home {
     display: block;
     position: absolute;
@@ -678,13 +494,12 @@
     transform: translateX(-50%);
     width: 134px;
     height: 5px;
-    background: rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
     z-index: 30;
     pointer-events: none;
   }
 
-  /* App area fills screen */
   .iphone-app {
     display: block;
     width: 100%;
@@ -692,52 +507,19 @@
     overflow: hidden;
   }
 
-  /* Side buttons */
   .iphone-btn {
     display: block;
     position: absolute;
-    background: linear-gradient(180deg, #3a3a3e, #2a2a2e);
+    background: linear-gradient(180deg, #2a2a2e, #1a1a1e);
     z-index: -1;
   }
+  .iphone-btn-silent { left: -3px; top: 120px; width: 3px; height: 28px; border-radius: 2px 0 0 2px; }
+  .iphone-btn-vol-up { left: -3px; top: 175px; width: 3px; height: 52px; border-radius: 2px 0 0 2px; }
+  .iphone-btn-vol-down { left: -3px; top: 237px; width: 3px; height: 52px; border-radius: 2px 0 0 2px; }
+  .iphone-btn-power { right: -3px; top: 200px; width: 3px; height: 76px; border-radius: 0 2px 2px 0; }
 
-  .iphone-btn-silent {
-    left: -3px;
-    top: 120px;
-    width: 3px;
-    height: 28px;
-    border-radius: 2px 0 0 2px;
-  }
+  .iphone-screen * { --vh-override: 1; }
 
-  .iphone-btn-vol-up {
-    left: -3px;
-    top: 175px;
-    width: 3px;
-    height: 52px;
-    border-radius: 2px 0 0 2px;
-  }
-
-  .iphone-btn-vol-down {
-    left: -3px;
-    top: 237px;
-    width: 3px;
-    height: 52px;
-    border-radius: 2px 0 0 2px;
-  }
-
-  .iphone-btn-power {
-    right: -3px;
-    top: 200px;
-    width: 3px;
-    height: 76px;
-    border-radius: 0 2px 2px 0;
-  }
-
-  /* Override viewport-relative min-heights inside iPhone frame */
-  .iphone-screen * {
-    --vh-override: 1;
-  }
-
-  /* App shell: fill iPhone screen, enable internal scrolling */
   .app-shell {
     min-height: 0 !important;
     height: 100% !important;
@@ -751,49 +533,5 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
-  .app-scroll::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* ---------- Marketing pages: bypass iPhone showcase ---------- */
-  /* When a .marketing-page is inside the showcase, flatten the frame */
-  .showcase-root:has(.marketing-page) {
-    display: block;
-    padding: 0;
-    gap: 0;
-    background: none;
-    min-height: 0;
-    overflow: visible;
-  }
-
-  .showcase-root:has(.marketing-page)::before,
-  .showcase-root:has(.marketing-page)::after {
-    display: none;
-  }
-
-  .showcase-root:has(.marketing-page) .showcase-header,
-  .showcase-root:has(.marketing-page) .showcase-footer,
-  .showcase-root:has(.marketing-page) .iphone-island,
-  .showcase-root:has(.marketing-page) .iphone-home,
-  .showcase-root:has(.marketing-page) .iphone-btn {
-    display: none;
-  }
-
-  .showcase-root:has(.marketing-page) .iphone-device,
-  .showcase-root:has(.marketing-page) .iphone-frame,
-  .showcase-root:has(.marketing-page) .iphone-screen,
-  .showcase-root:has(.marketing-page) .iphone-app {
-    display: contents;
-  }
-
-  .showcase-root:has(.marketing-page) .iphone-frame {
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  body:has(.marketing-page) {
-    background: var(--background) !important;
-  }
+  .app-scroll::-webkit-scrollbar { display: none; }
 }
