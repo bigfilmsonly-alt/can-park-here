@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { type User, updateUser } from "@/lib/auth"
+import { showToast } from "@/components/ui/toast-notification"
 import { 
   ArrowLeft, 
   User as UserIcon, 
@@ -175,6 +176,7 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
           </h3>
           <div className="bg-card rounded-2xl border border-border overflow-hidden">
             <button
+              onClick={() => showToast("info", "Coming soon", "Email change will be available in the next update")}
               className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
             >
               <Mail className="w-5 h-5 text-muted-foreground" />
@@ -187,6 +189,7 @@ export function AccountScreen({ user, onBack, onSignOut, onUpgrade, onUserUpdate
             <div className="h-px bg-border mx-4" />
             
             <button
+              onClick={() => showToast("info", "Coming soon", "Password change will be available in the next update")}
               className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
             >
               <Shield className="w-5 h-5 text-muted-foreground" />

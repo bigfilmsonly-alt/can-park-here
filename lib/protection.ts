@@ -104,6 +104,25 @@ function getDefaultProtection(): UserProtection {
   }
 }
 
+/**
+ * Fetch the user's protection status from the server.
+ * This allows the client to read the authoritative tier after a Stripe
+ * webhook (or other server-side process) updates it.
+ */
+export async function getProtectionStatusFromServer(): Promise<UserProtection | null> {
+  try {
+    const res = await fetch("/api/user/protection")
+    if (!res.ok) return null
+
+    const json = await res.json()
+    if (!json.ok || !json.data?.protection) return null
+
+    return json.data.protection as UserProtection
+  } catch {
+    return null
+  }
+}
+
 export function incrementCheckCount(): void {
   if (typeof window === "undefined") return
   const protection = getProtectionStatus()

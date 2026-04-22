@@ -61,27 +61,59 @@ export function WalletPassModal({
   const handleAddToWallet = async (type: "apple" | "google") => {
     setIsAdding(true)
 
-    // Simulate adding to wallet
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const res = await fetch("/api/wallet/pass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          location,
+          address,
+          timeLimit: timeLimit ?? null,
+          expiresAt: expiresAt ? expiresAt.toISOString() : null,
+          isProtected,
+          sessionId: null,
+        }),
+      })
 
-    if (!mountedRef.current) return
-
-    setIsAdding(false)
-    setIsAdded(true)
-
-    showToast(
-      "success",
-      "Pass created",
-      type === "apple"
-        ? "Check your Apple Wallet"
-        : "Check your Google Wallet"
-    )
-
-    timeoutRef.current = setTimeout(() => {
       if (!mountedRef.current) return
-      onClose()
-      setIsAdded(false)
-    }, 2000)
+
+      const json = await res.json()
+
+      if (!res.ok || !json.ok) {
+        setIsAdding(false)
+        showToast("error", "Failed to create pass", json.error || "Please try again")
+        return
+      }
+
+      // Trigger download of the HTML receipt
+      const link = document.createElement("a")
+      link.href = json.data.url
+      link.download = "park-receipt.html"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      setIsAdding(false)
+      setIsAdded(true)
+
+      showToast(
+        "success",
+        "Receipt downloaded",
+        type === "apple"
+          ? "Receipt saved — wallet pass coming soon"
+          : "Receipt saved — wallet pass coming soon"
+      )
+
+      timeoutRef.current = setTimeout(() => {
+        if (!mountedRef.current) return
+        onClose()
+        setIsAdded(false)
+      }, 2000)
+    } catch {
+      if (!mountedRef.current) return
+      setIsAdding(false)
+      showToast("error", "Network error", "Please check your connection and try again")
+    }
   }
 
   const now = new Date()

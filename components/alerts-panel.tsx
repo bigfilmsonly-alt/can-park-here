@@ -154,7 +154,7 @@ export function AlertsBadge({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border border-border shadow-sm hover:shadow-md transition-shadow"
+      className="flex items-center gap-2 px-3 py-2 bg-card rounded-full card-elevated hover:shadow-md transition-shadow"
     >
       <span className={`w-2 h-2 rounded-full ${getSeverityColor(topAlert?.severity)} animate-pulse`} />
       <span className="text-sm font-medium">

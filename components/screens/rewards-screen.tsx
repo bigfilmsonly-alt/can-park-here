@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import {
   getGamificationState,
   getUserBadges,
@@ -39,6 +38,7 @@ import {
   Check,
   Lock,
 } from "lucide-react"
+import { showToast } from "@/components/ui/toast-notification"
 
 interface RewardsScreenProps {
   onBack: () => void
@@ -106,87 +106,60 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
   if (!state) return null
 
   const allBadges = [...badges.unlocked, ...badges.locked].slice(0, 12)
+  const streakDays = state.currentStreak
+  const dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pt-4 pb-28">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5.5 pt-16 pb-28">
       {/* Header */}
       <div>
-        <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">
-          Rewards
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          REWARDS
         </p>
-        <h1
-          className="font-bold mt-1"
-          style={{ fontSize: 32, letterSpacing: -0.8, lineHeight: 1 }}
-        >
-          Alex
+        <h1 className="text-[32px] font-bold tracking-tight mt-1">
+          Hey, {state.karma.toLocaleString()} karma.
         </h1>
+        <p className="text-sm text-[var(--fg2)] mt-0.5">
+          {streakDays}-day streak &middot; top 8% in San Francisco
+        </p>
       </div>
 
-      {/* Karma card with gradient header */}
+      {/* Streak card */}
       <div
-        className="mt-6 rounded-[22px] border border-border overflow-hidden bg-card"
+        className="mt-6 rounded-[22px] p-5 text-white"
         style={{
-          boxShadow: "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
+          background: "linear-gradient(150deg, var(--accent), var(--accent-deep))",
         }}
       >
-        <div
-          className="px-[22px] py-5 text-white"
-          style={{
-            background:
-              "linear-gradient(135deg, var(--accent), var(--accent-deep))",
-          }}
-        >
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs font-semibold opacity-75 uppercase tracking-wider">
-                Karma
-              </p>
-              <p
-                className="font-bold mt-0.5"
-                style={{
-                  fontSize: 44,
-                  letterSpacing: -1.5,
-                  lineHeight: 1,
-                }}
-              >
-                {state.karma.toLocaleString()}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-semibold opacity-75 uppercase tracking-wider">
-                Streak
-              </p>
-              <p className="text-[22px] font-bold mt-1">
-                <Flame className="w-5 h-5 inline-block mr-1" />
-                {state.currentStreak}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="px-[22px] py-3.5 flex gap-5">
-          <div>
-            <p className="text-xl font-bold">${savingsStats.total}</p>
-            <p className="text-xs text-muted-foreground">saved</p>
-          </div>
-          <div>
-            <p className="text-xl font-bold">{state.totalChecks || 48}</p>
-            <p className="text-xs text-muted-foreground">checks</p>
-          </div>
-          <div>
-            <p className="text-xl font-bold">{badges.unlocked.length}</p>
-            <p className="text-xs text-muted-foreground">badges</p>
-          </div>
+        <p className="text-xs font-extrabold tracking-wider opacity-85 uppercase">
+          STREAK &middot; {streakDays} DAYS
+        </p>
+        <h2 className="text-[32px] font-bold tracking-tight mt-1">
+          Keep it going.
+        </h2>
+        <div className="flex gap-1.5 mt-4">
+          {dayLabels.map((day, i) => (
+            <div
+              key={i}
+              className={`flex-1 h-10 rounded-lg ${
+                i < streakDays ? "bg-white/40" : "bg-white/10"
+              }`}
+            />
+          ))}
         </div>
       </div>
 
       {/* Badges grid */}
       <div className="mt-6">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Badges · {badges.unlocked.length} of{" "}
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Badges &middot; {badges.unlocked.length} of{" "}
             {badges.unlocked.length + badges.locked.length}
           </p>
-          <button className="text-[13px] font-semibold text-accent">
+          <button
+            className="text-xs font-bold text-[var(--accent)]"
+            onClick={() => showToast("info", "All badges", "Full badge collection coming soon")}
+          >
             See all
           </button>
         </div>
@@ -197,37 +170,24 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
             return (
               <div
                 key={badge.id}
-                className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-border aspect-square"
-                style={{
-                  background: isUnlocked
-                    ? "var(--accent-pale)"
-                    : "var(--muted)",
-                  opacity: isUnlocked ? 1 : 0.5,
-                }}
+                className={`aspect-square rounded-2xl border p-1.5 flex flex-col items-center justify-center gap-1.5 ${
+                  isUnlocked
+                    ? "bg-[var(--accent-pale)] border-[var(--accent)]"
+                    : "bg-muted border-border opacity-60"
+                }`}
               >
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{
-                    background: isUnlocked
-                      ? "var(--accent)"
-                      : "var(--border)",
-                    color: "#fff",
-                  }}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-white ${
+                    isUnlocked ? "bg-[var(--accent)]" : "bg-border"
+                  }`}
                 >
                   {isUnlocked ? (
-                    <Icon className="w-3.5 h-3.5" />
+                    <Star className="w-3.5 h-3.5" />
                   ) : (
                     <Lock className="w-3 h-3" />
                   )}
                 </div>
-                <p
-                  className="text-[10.5px] font-semibold text-center px-1 leading-tight"
-                  style={{
-                    color: isUnlocked
-                      ? "var(--foreground)"
-                      : "var(--muted-foreground)",
-                  }}
-                >
+                <p className="text-[10px] font-bold text-center leading-tight">
                   {badge.name}
                 </p>
               </div>
@@ -238,7 +198,7 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
 
       {/* Leaderboard preview */}
       <div className="mt-6">
-        <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
           Leaderboard
         </p>
         <div className="space-y-2">
@@ -311,18 +271,16 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
           <span className="flex-1 font-mono text-lg font-semibold tracking-wider">
             {referralStats.code}
           </span>
-          <Button
-            size="sm"
-            variant="outline"
+          <button
             onClick={copyReferralCode}
-            className="shrink-0"
+            className="shrink-0 px-3 py-1.5 rounded-lg border border-border bg-card text-sm"
           >
             {copied ? (
               <Check className="w-4 h-4" />
             ) : (
               <Copy className="w-4 h-4" />
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

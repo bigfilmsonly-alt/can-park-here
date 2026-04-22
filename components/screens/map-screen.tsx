@@ -14,6 +14,7 @@ import {
   Check,
   AlertTriangle,
   Compass,
+  ShieldAlert,
 } from "lucide-react"
 import {
   getNearbyParkingSpots,
@@ -27,6 +28,12 @@ import {
   type ParkingGarage,
   type EVStation,
 } from "@/lib/mapping"
+import {
+  getEnforcementSightings,
+  getEnforcementTypeLabel,
+  getTimeAgo,
+  type EnforcementSighting,
+} from "@/lib/community"
 import { MapWrapper } from "@/components/map/map-wrapper"
 import type { MapMarker } from "@/components/map/leaflet-map"
 
@@ -35,25 +42,32 @@ interface MapScreenProps {
   currentLocation?: { lat: number; lng: number }
 }
 
-type ViewMode = "all" | "street" | "garages" | "ev"
+type ViewMode = "all" | "street" | "garages" | "ev" | "enforcement"
 
 export function MapScreen({ onBack, currentLocation }: MapScreenProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("all")
   const [spots, setSpots] = useState<ParkingSpot[]>([])
   const [garages, setGarages] = useState<ParkingGarage[]>([])
   const [evStations, setEVStations] = useState<EVStation[]>([])
-  const [selectedItem, setSelectedItem] = useState<ParkingSpot | ParkingGarage | EVStation | null>(null)
+  const [enforcementSightings, setEnforcementSightings] = useState<EnforcementSighting[]>([])
+  const [selectedItem, setSelectedItem] = useState<ParkingSpot | ParkingGarage | EVStation | EnforcementSighting | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
   const defaultLocation = { lat: 37.7749, lng: -122.4194 }
   const location = currentLocation || defaultLocation
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     setSpots(getNearbyParkingSpots(location.lat, location.lng))
     setGarages(getNearbyGarages(location.lat, location.lng))
     setEVStations(getNearbyEVStations(location.lat, location.lng))
+    try {
+      const sightings = await getEnforcementSightings()
+      setEnforcementSightings(sightings)
+    } catch {
+      // Enforcement sightings are non-critical; continue without them
+    }
     setLoading(false)
   }, [location.lat, location.lng])
 
@@ -68,12 +82,21 @@ export function MapScreen({ onBack, currentLocation }: MapScreenProps) {
     setTimeout(() => setRefreshing(false), 500)
   }
 
-  const getItemDistance = (item: { lat: number; lng: number }) =>
-    calculateDistance(location.lat, location.lng, item.lat, item.lng)
+  const getItemDistance = (item: { lat: number; lng: number } | EnforcementSighting) => {
+    if ("coordinates" in item && "reportedAt" in item) {
+      return calculateDistance(location.lat, location.lng, item.coordinates.lat, item.coordinates.lng)
+    }
+    const p = item as { lat: number; lng: number }
+    return calculateDistance(location.lat, location.lng, p.lat, p.lng)
+  }
 
   const availableSpots = spots.filter(s => s.status === "available").sort((a, b) => getItemDistance(a) - getItemDistance(b))
   const sortedGarages = [...garages].sort((a, b) => getItemDistance(a) - getItemDistance(b))
   const sortedEVStations = [...evStations].sort((a, b) => getItemDistance(a) - getItemDistance(b))
+  const sortedEnforcement = [...enforcementSightings].sort((a, b) =>
+    calculateDistance(location.lat, location.lng, a.coordinates.lat, a.coordinates.lng) -
+    calculateDistance(location.lat, location.lng, b.coordinates.lat, b.coordinates.lng)
+  )
 
   const mapMarkers = useMemo(() => {
     const markers: MapMarker[] = [
@@ -98,25 +121,58 @@ export function MapScreen({ onBack, currentLocation }: MapScreenProps) {
         markers.push({ lat: station.lat, lng: station.lng, type: "ev", label: station.name, details: `${station.availablePorts}/${station.totalPorts} ports | ${station.chargerTypes.join(", ")}` })
       })
     }
+    if (viewMode === "all" || viewMode === "enforcement") {
+      sortedEnforcement.forEach((sighting) => {
+        const dist = calculateDistance(location.lat, location.lng, sighting.coordinates.lat, sighting.coordinates.lng)
+        markers.push({
+          lat: sighting.coordinates.lat,
+          lng: sighting.coordinates.lng,
+          type: "enforcement",
+          label: getEnforcementTypeLabel(sighting.type),
+          details: [getTimeAgo(sighting.reportedAt), formatDistance(dist) + " away"].join(" · "),
+        })
+      })
+    }
     return markers
-  }, [viewMode, availableSpots, sortedGarages, sortedEVStations, location.lat, location.lng])
+  }, [viewMode, availableSpots, sortedGarages, sortedEVStations, sortedEnforcement, location.lat, location.lng])
+
+  const handleMarkerClick = (marker: MapMarker) => {
+    if (marker.type === "user") return
+    // Find the real data item matching this marker's coordinates
+    if (marker.type === "street") {
+      const spot = availableSpots.find(s => s.lat === marker.lat && s.lng === marker.lng)
+      if (spot) setSelectedItem(spot)
+    } else if (marker.type === "garage") {
+      const garage = sortedGarages.find(g => g.lat === marker.lat && g.lng === marker.lng)
+      if (garage) setSelectedItem(garage)
+    } else if (marker.type === "ev") {
+      const station = sortedEVStations.find(s => s.lat === marker.lat && s.lng === marker.lng)
+      if (station) setSelectedItem(station)
+    } else if (marker.type === "enforcement") {
+      const sighting = sortedEnforcement.find(s => s.coordinates.lat === marker.lat && s.coordinates.lng === marker.lng)
+      if (sighting) setSelectedItem(sighting)
+    }
+  }
 
   const handleNavigate = (lat: number, lng: number) => {
     window.open(getDirectionsUrl(lat, lng), "_blank")
   }
 
-  const isSpot = (item: ParkingSpot | ParkingGarage | EVStation): item is ParkingSpot =>
-    "status" in item && "type" in item && !("totalSpaces" in item) && !("chargerTypes" in item)
-  const isGarage = (item: ParkingSpot | ParkingGarage | EVStation): item is ParkingGarage =>
+  type SelectedItem = ParkingSpot | ParkingGarage | EVStation | EnforcementSighting
+  const isEnforcement = (item: SelectedItem): item is EnforcementSighting =>
+    "coordinates" in item && "reportedAt" in item && "expiresAt" in item
+  const isSpot = (item: SelectedItem): item is ParkingSpot =>
+    "status" in item && "type" in item && !("totalSpaces" in item) && !("chargerTypes" in item) && !isEnforcement(item)
+  const isGarage = (item: SelectedItem): item is ParkingGarage =>
     "totalSpaces" in item
-  const isEVStation = (item: ParkingSpot | ParkingGarage | EVStation): item is EVStation =>
+  const isEVStation = (item: SelectedItem): item is EVStation =>
     "chargerTypes" in item
 
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
       {/* Full-screen map */}
       <div className="absolute inset-0">
-        <MapWrapper center={location} zoom={14} markers={mapMarkers} />
+        <MapWrapper center={location} zoom={14} markers={mapMarkers} onMarkerClick={handleMarkerClick} />
       </div>
 
       {/* Top search bar */}
@@ -146,8 +202,9 @@ export function MapScreen({ onBack, currentLocation }: MapScreenProps) {
         <div className="flex gap-1.5 mt-2.5 justify-center">
           {[
             { id: "all", label: "Open", dot: "var(--status-success)" },
-            { id: "garages", label: "Garages", dot: "var(--status-warning)" },
-            { id: "ev", label: "EV", dot: "var(--accent)" },
+            { id: "garages", label: "Limited", dot: "var(--status-warning)" },
+            { id: "ev", label: "Prohibited", dot: "var(--status-error)" },
+            { id: "enforcement", label: "Enforcement", dot: "#dc2626" },
           ].map((item) => (
             <button
               key={item.id}
@@ -169,25 +226,27 @@ export function MapScreen({ onBack, currentLocation }: MapScreenProps) {
       <div className="absolute bottom-24 left-3.5 right-3.5 z-[1000]">
         {selectedItem ? (
           <div
-            className="animate-fade-in-up bg-card border border-border rounded-[18px] p-4"
+            className="animate-fade-in-up bg-card card-elevated rounded-[18px] p-4"
             style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{
-                  background: isSpot(selectedItem) ? "var(--status-success-bg)" : isGarage(selectedItem) ? "var(--status-warning-bg)" : "var(--accent-pale)",
-                  color: isSpot(selectedItem) ? "var(--status-success-foreground)" : isGarage(selectedItem) ? "var(--status-warning-foreground)" : "var(--accent)",
+                  background: isEnforcement(selectedItem) ? "#fee2e2" : isSpot(selectedItem) ? "var(--status-success-bg)" : isGarage(selectedItem) ? "var(--status-warning-bg)" : "var(--accent-pale)",
+                  color: isEnforcement(selectedItem) ? "#dc2626" : isSpot(selectedItem) ? "var(--status-success-foreground)" : isGarage(selectedItem) ? "var(--status-warning-foreground)" : "var(--accent)",
                 }}
               >
-                {isSpot(selectedItem) ? <Check className="w-5 h-5" /> : isGarage(selectedItem) ? <Building2 className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
+                {isEnforcement(selectedItem) ? <ShieldAlert className="w-5 h-5" /> : isSpot(selectedItem) ? <Check className="w-5 h-5" /> : isGarage(selectedItem) ? <Building2 className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-base font-bold">
-                  {isSpot(selectedItem) ? `${selectedItem.type.charAt(0).toUpperCase() + selectedItem.type.slice(1)} parking` : (selectedItem as ParkingGarage | EVStation).name}
+                  {isEnforcement(selectedItem) ? getEnforcementTypeLabel(selectedItem.type) : isSpot(selectedItem) ? `${selectedItem.type.charAt(0).toUpperCase() + selectedItem.type.slice(1)} parking` : (selectedItem as ParkingGarage | EVStation).name}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  {formatDistance(getItemDistance(selectedItem))} · {estimateWalkingTime(getItemDistance(selectedItem))} walk
+                  {isEnforcement(selectedItem)
+                    ? `${getTimeAgo(selectedItem.reportedAt)} · ${formatDistance(getItemDistance(selectedItem))} away`
+                    : `${formatDistance(getItemDistance(selectedItem))} · ${estimateWalkingTime(getItemDistance(selectedItem))} walk`}
                 </div>
               </div>
               <button
@@ -205,17 +264,23 @@ export function MapScreen({ onBack, currentLocation }: MapScreenProps) {
                 Close
               </button>
               <button
-                onClick={() => handleNavigate(selectedItem.lat, selectedItem.lng)}
+                onClick={() => {
+                  if (isEnforcement(selectedItem)) {
+                    handleNavigate(selectedItem.coordinates.lat, selectedItem.coordinates.lng)
+                  } else {
+                    handleNavigate(selectedItem.lat, selectedItem.lng)
+                  }
+                }}
                 className="flex-[2] py-2.5 rounded-full text-sm font-semibold text-white flex items-center justify-center gap-2 press-effect"
                 style={{ background: "var(--accent)" }}
               >
-                <Navigation className="w-3.5 h-3.5" /> Navigate here
+                <Navigation className="w-3.5 h-3.5" /> {isEnforcement(selectedItem) ? "View on map" : "Navigate here"}
               </button>
             </div>
           </div>
         ) : (
           <div
-            className="bg-card border border-border rounded-[18px] p-3.5 flex items-center gap-2.5"
+            className="bg-card card-elevated rounded-[18px] p-3.5 flex items-center gap-2.5"
             style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}
           >
             <div className="text-[13px] flex-1" style={{ color: "var(--fg2)" }}>

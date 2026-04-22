@@ -93,6 +93,10 @@ interface AppContextValue {
   setUser: (u: User | null) => void
   setHistory: (h: HistoryItem[] | ((prev: HistoryItem[]) => HistoryItem[])) => void
 
+  // Checking animation
+  checking: boolean
+  setChecking: (v: boolean) => void
+
   // Hooks data
   loading: boolean
   error: string | null
@@ -141,6 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState<number | null>(null)
   const [remainingChecks, setRemainingChecks] = useState(10)
   const [reminderSet, setReminderSet] = useState(false)
+  const [checking, setChecking] = useState(false)
 
   const { loading, error, getCurrentLocation } = useGeolocation()
   const { savedLocations, saveLocation, removeLocation, isLocationSaved, getLocationByCoords } = useSavedLocations()
@@ -207,8 +212,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setShowUpgrade(true)
       return
     }
+    setChecking(true)
     const location = await getCurrentLocation()
-    if (!location) return
+    if (!location) {
+      setChecking(false)
+      return
+    }
 
     const userAccessibility = getUserAccessibility()
     let result: ParkingResult
@@ -636,6 +645,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     handleScanResult,
     setUser,
     setHistory,
+    checking,
+    setChecking,
     loading,
     error,
     savedLocations,

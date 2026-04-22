@@ -116,7 +116,7 @@ export function LeafletMap({ center, zoom = 14, markers, onMarkerClick }: Leafle
     <MapContainer
       center={[center.lat, center.lng]}
       zoom={zoom}
-      style={{ height: "calc(100vh - 200px)", width: "100%", minHeight: "250px" }}
+      style={{ height: "100%", width: "100%", minHeight: "250px" }}
       zoomControl={false}
     >
       <TileLayer

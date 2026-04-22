@@ -181,9 +181,9 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
   ]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pb-20 overflow-y-auto">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5.5 pb-10 overflow-y-auto">
       {/* Header */}
-      <div className="pt-16 pb-6">
+      <div className="pt-16 pb-6 flex items-center gap-3">
         <button
           onClick={onOpenAccount}
           className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
@@ -191,28 +191,28 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <h1 className="text-3xl font-bold text-foreground mt-4">Settings</h1>
+        <h1 className="text-[32px] font-bold tracking-tight">Settings</h1>
       </div>
 
       {/* Profile card */}
-      <div className="bg-card border border-border rounded-[18px] p-4 flex items-center gap-3.5">
-        <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-deep)] flex items-center justify-center text-white text-lg font-semibold">
+      <div className="bg-card card-elevated rounded-[18px] p-4 flex items-center gap-3.5">
+        <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-deep)] flex items-center justify-center text-white text-lg font-extrabold">
           {userInitials}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-base font-semibold text-foreground truncate">
+          <p className="text-base font-bold text-foreground truncate">
             {user?.name ?? "Alex Morton"}
           </p>
-          <p className="text-sm text-muted-foreground truncate">
-            {user?.email ?? (isPro ? "Pro plan" : "Free plan")}
+          <p className="text-xs text-muted-foreground truncate">
+            {isPro ? "Pro plan" : "Free plan"}
           </p>
         </div>
       </div>
 
       {/* Pro upgrade banner */}
       {!isPro && (
-        <div className="bg-foreground text-background rounded-2xl p-3.5 mt-4 flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 shrink-0" />
+        <div className="bg-foreground text-background rounded-2xl p-3.5 mt-3 flex items-center gap-3">
+          <ShieldCheck className="w-5 h-5 shrink-0 text-[var(--accent)]" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold">Ticket Protection Pro</p>
             <p className="text-xs opacity-70">3 claims/yr &middot; $4.99/mo</p>
@@ -233,7 +233,7 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
         </p>
 
         {/* Theme row */}
-        <div className="bg-card border border-border rounded-[18px]">
+        <div className="bg-card card-elevated rounded-[18px]">
           <div className="px-4 py-3.5 flex items-center gap-3">
             <span className="text-sm text-foreground flex-1">Theme</span>
             <div className="flex gap-1.5">
@@ -247,7 +247,7 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
                       : "bg-muted text-[var(--fg2)]"
                   }`}
                 >
-                  {t === "aaa" ? "AAA" : t.charAt(0).toUpperCase() + t.slice(1)}
+                  {t === "aaa" ? "hc" : t}
                 </button>
               ))}
             </div>
@@ -263,9 +263,9 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
                 <button
                   key={swatch.id}
                   onClick={() => setAccentColor(swatch.id)}
-                  className={`w-7 h-7 rounded-full transition-all ${
+                  className={`w-[26px] h-[22px] rounded-[7px] transition-all ${
                     accentColor === swatch.id
-                      ? "ring-2 ring-offset-2 ring-offset-card ring-[var(--accent)]"
+                      ? "border-2 border-foreground"
                       : ""
                   }`}
                   style={{ backgroundColor: swatch.color }}
@@ -282,7 +282,7 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
         <p className="text-xs font-bold tracking-wider uppercase text-muted-foreground px-2 pb-1.5">
           Notifications
         </p>
-        <div className="bg-card border border-border rounded-[18px]">
+        <div className="bg-card card-elevated rounded-[18px]">
           {/* Timer reminders */}
           <div className="px-4 py-3.5 flex items-center gap-3">
             <span className="text-sm text-foreground flex-1">Timer reminders</span>
@@ -309,7 +309,7 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
 
       {/* Info rows card */}
       <div className="mt-8">
-        <div className="bg-card border border-border rounded-[18px]">
+        <div className="bg-card card-elevated rounded-[18px]">
           {/* Vehicle */}
           <button
             onClick={() => onOpenAccessibilitySettings?.()}
@@ -327,7 +327,7 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
 
           {/* Payment methods */}
           <button
-            onClick={() => {}}
+            onClick={() => showToast("info", "Coming soon", "Payment methods will be available in the next update")}
             className="w-full px-4 py-3.5 flex items-center gap-3 text-left"
           >
             <CreditCard className="w-5 h-5 text-muted-foreground" />
@@ -342,7 +342,7 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
 
           {/* Photo vault */}
           <button
-            onClick={() => {}}
+            onClick={() => showToast("info", "Photo vault", "Photo vault viewer coming soon")}
             className="w-full px-4 py-3.5 flex items-center gap-3 text-left"
           >
             <Camera className="w-5 h-5 text-muted-foreground" />
@@ -356,10 +356,10 @@ export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpe
       </div>
 
       {/* Reset button */}
-      <div className="mt-8 pb-8">
+      <div className="mt-8">
         <button
           onClick={handleReset}
-          className="w-full py-3 bg-muted rounded-[18px] text-sm font-medium text-red-500"
+          className="w-full p-3.5 rounded-[14px] bg-muted text-[var(--status-error)] font-semibold text-sm"
         >
           Reset all settings
         </button>

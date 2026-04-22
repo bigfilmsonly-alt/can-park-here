@@ -1,6 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import type { ParkingResult } from "@/lib/parking-rules"
 import { formatTimeRemaining } from "@/lib/parking-rules"
 import { useEffect, useState } from "react"
@@ -11,14 +10,9 @@ import {
   AlertTriangle,
   Accessibility,
   Truck,
-  Bus,
-  Flame,
   Clock,
   ChevronLeft,
   Share,
-  Navigation,
-  Camera,
-  Timer,
 } from "lucide-react"
 import { WalletPassModal } from "@/components/wallet-pass"
 
@@ -109,7 +103,7 @@ export function StatusScreen({
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pt-4 pb-28">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-[22px] pt-4 pb-28">
       {/* Header: back + share */}
       <div className="flex items-center justify-between">
         <button
@@ -134,6 +128,14 @@ export function StatusScreen({
           <button
             aria-label="Share"
             className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+            onClick={async () => {
+              const text = `${result.title} — ${location}\n${result.description}`
+              if (navigator.share) {
+                try { await navigator.share({ title: "Park — Can I park here?", text }) } catch {}
+              } else {
+                await navigator.clipboard.writeText(text)
+              }
+            }}
           >
             <Share className="w-[18px] h-[18px]" />
           </button>
@@ -150,14 +152,14 @@ export function StatusScreen({
             className="w-[7px] h-[7px] rounded-full"
             style={{ background: config.accent }}
           />
-          {config.label} · 97% CONFIDENT
+          {config.label} · {(result as ParkingResult & { confidence?: number }).confidence ?? 97}% CONFIDENT
         </div>
 
         <h1
           className="mt-[18px] font-bold leading-[0.98]"
           style={{
-            fontSize: 72,
-            letterSpacing: -2,
+            fontSize: 56,
+            letterSpacing: -2.2,
             textWrap: "balance",
           }}
         >
@@ -165,69 +167,75 @@ export function StatusScreen({
         </h1>
 
         <p
-          className="mt-3 text-[22px] font-medium tracking-tight"
-          style={{ color: "var(--fg2)" }}
+          className="mt-[14px]"
+          style={{ fontSize: 15, color: "var(--fg2)", lineHeight: 1.5 }}
         >
           {result.description}
         </p>
       </div>
 
-      {/* Explanation card */}
-      <div className="mt-8">
-        <div
-          className="rounded-[22px] bg-card border border-border p-5"
-          style={{
-            boxShadow:
-              "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
-          }}
-        >
-          <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Why
-          </p>
-          <p className="text-[17px] mt-2 leading-relaxed tracking-tight">
-            {result.description}
-          </p>
-
-          {result.warnings.length > 0 && (
-            <>
+      {/* Warnings card */}
+      {result.warnings.length > 0 && (
+        <div className="mt-8 bg-card card-elevated rounded-[18px] overflow-hidden">
+          {result.warnings.map((warning, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2.5 px-3.5 py-3 text-sm"
+              style={{
+                color: "var(--fg2)",
+                borderTop: i > 0 ? "1px solid var(--hairline)" : undefined,
+              }}
+            >
               <div
-                className="h-px my-4"
-                style={{ background: "var(--hairline)" }}
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ background: config.accent }}
               />
-              {result.warnings.map((warning, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2.5 py-1.5 text-sm"
-                  style={{ color: "var(--fg2)" }}
-                >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: config.accent }}
-                  />
-                  {warning.message}
-                </div>
-              ))}
-            </>
-          )}
+              {warning.message}
+            </div>
+          ))}
+        </div>
+      )}
 
-          {isProtected && canPark && (
-            <>
-              <div
-                className="h-px my-3.5"
-                style={{ background: "var(--hairline)" }}
-              />
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="w-3.5 h-3.5 text-accent" />
-                Protected by Ticket Guarantee
-              </div>
-            </>
+      {/* Why this answer card */}
+      <div className="mt-4 bg-card card-elevated rounded-[18px] p-3.5">
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+          WHY THIS ANSWER
+        </p>
+        <p className="text-[13px] mt-2 leading-relaxed" style={{ color: "var(--fg2)" }}>
+          {result.description}
+        </p>
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {result.timeRemaining && result.timeRemaining > 0 && (
+            <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
+              {formatTimeRemaining(result.timeRemaining)} limit
+            </span>
           )}
+          {result.activeRule && (
+            <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
+              Meter active
+            </span>
+          )}
+          {result.warnings.map((w, i) => (
+            <span key={i} className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
+              {w.type.replace("-", " ")}
+            </span>
+          ))}
         </div>
       </div>
 
+      {/* Protection card */}
+      {isProtected && canPark && (
+        <div className="mt-4 bg-[var(--accent-pale)] border border-[var(--accent)] rounded-[18px] p-3.5 flex items-center gap-2.5"
+          style={{ color: "var(--accent-ink, var(--accent))" }}
+        >
+          <ShieldCheck className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-medium">This answer is protected. Get a ticket? We pay.</p>
+        </div>
+      )}
+
       {/* Handicap info */}
       {result.handicapInfo && (
-        <div className="mt-4 flex items-start gap-3 p-4 rounded-[18px] bg-card border border-border">
+        <div className="mt-4 flex items-start gap-3 p-4 rounded-[18px] bg-card card-elevated">
           <Accessibility className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium">Accessible Parking</p>
@@ -270,40 +278,29 @@ export function StatusScreen({
 
       {/* Action buttons */}
       <div className="mt-8 flex gap-2.5">
+        <button
+          onClick={onEndSession}
+          className="flex-1 py-3.5 rounded-full border border-border font-semibold"
+        >
+          Done
+        </button>
         {canPark ? (
-          <>
-            <Button
-              onClick={onSetReminder}
-              disabled={reminderSet}
-              className="flex-1 h-14 text-base font-semibold rounded-full"
-            >
-              <Timer className="w-[18px] h-[18px] mr-2" />
-              {reminderSet ? "Reminder set" : "Start timer"}
-            </Button>
-            <button
-              onClick={() => setShowWalletPass(true)}
-              className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0"
-              aria-label="Photo evidence"
-            >
-              <Camera className="w-[18px] h-[18px]" />
-            </button>
-          </>
+          <button
+            onClick={onSetReminder}
+            disabled={reminderSet}
+            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold"
+          >
+            {reminderSet
+              ? "Reminder set"
+              : `Start ${result.timeRemaining ? formatTimeRemaining(result.timeRemaining) : "2-hour"} timer`}
+          </button>
         ) : (
-          <>
-            <Button
-              onClick={onBack}
-              className="flex-1 h-14 text-base font-semibold rounded-full"
-            >
-              <Navigation className="w-[18px] h-[18px] mr-2" />
-              Find nearby spot
-            </Button>
-            <button
-              className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0"
-              aria-label="Photo evidence"
-            >
-              <Camera className="w-[18px] h-[18px]" />
-            </button>
-          </>
+          <button
+            onClick={onBack}
+            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold"
+          >
+            Find legal spot nearby
+          </button>
         )}
       </div>
 

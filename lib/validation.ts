@@ -50,6 +50,8 @@ export const ParkingCheckBodySchema = z.object({
   latitude: LatitudeSchema,
   longitude: LongitudeSchema,
   accessibility: AccessibilitySchema.optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
 })
 
 export type ParkingCheckBody = z.infer<typeof ParkingCheckBodySchema>

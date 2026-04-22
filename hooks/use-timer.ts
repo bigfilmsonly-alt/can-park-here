@@ -44,6 +44,47 @@ function saveTimerState(state: TimerState | null) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Server-side push scheduling helpers
+// ---------------------------------------------------------------------------
+
+const SERVER_PUSH_MILESTONES = [
+  { minutesBefore: 15, title: "15 minutes left", body: "Your parking timer expires in 15 minutes." },
+  { minutesBefore: 5, title: "5 minutes left", body: "Your parking timer expires in 5 minutes!" },
+  { minutesBefore: 1, title: "1 minute left!", body: "Your parking timer expires in 1 minute. Move your vehicle now!" },
+  { minutesBefore: 0, title: "Time's up!", body: "Your parking timer has expired. Move your vehicle now." },
+]
+
+async function scheduleServerPush(minutes: number): Promise<void> {
+  try {
+    // Only schedule milestones that are within the timer duration
+    const notifications = SERVER_PUSH_MILESTONES.filter(
+      (m) => m.minutesBefore <= minutes,
+    )
+    if (notifications.length === 0) return
+
+    await fetch("/api/push/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ minutes, notifications }),
+    })
+  } catch {
+    // Server push is best-effort; local notifications are the fallback
+  }
+}
+
+async function cancelServerPush(): Promise<void> {
+  try {
+    await fetch("/api/push/schedule", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    })
+  } catch {
+    // Best-effort cancellation
+  }
+}
+
 export function useTimer() {
   const [timerState, setTimerState] = useState<TimerState | null>(null)
   const notificationTimeouts = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -141,7 +182,7 @@ export function useTimer() {
     notificationTimeouts.current.forEach(clearTimeout)
     notificationTimeouts.current = []
 
-    // Schedule notifications
+    // Schedule local notifications (fallback for when app is in foreground)
     if ("Notification" in window && Notification.permission === "granted") {
       // 20-minute warning
       if (minutes > 20) {
@@ -179,6 +220,9 @@ export function useTimer() {
       }
     }
 
+    // Schedule server-side push notifications (works even when app is backgrounded)
+    scheduleServerPush(minutes)
+
     return newState
   }, [])
 
@@ -191,6 +235,9 @@ export function useTimer() {
     }
     setTimerState(null)
     saveTimerState(null)
+
+    // Cancel server-side scheduled notifications
+    cancelServerPush()
   }, [])
 
   const formatTimeDisplay = useCallback((seconds: number) => {

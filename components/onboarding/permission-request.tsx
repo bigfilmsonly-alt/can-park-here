@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { MapPin, Check } from "lucide-react"
+import { MapPin, Bell, Check } from "lucide-react"
+import { subscribeToPush } from "@/lib/push-notifications"
 
 interface PermissionRequestProps {
   onComplete: () => void
@@ -9,34 +10,61 @@ interface PermissionRequestProps {
 
 export function PermissionRequest({ onComplete }: PermissionRequestProps) {
   const [requesting, setRequesting] = useState(false)
+  const [step, setStep] = useState(0) // 0 = location, 1 = notifications
 
   const requestLocation = async () => {
     setRequesting(true)
     try {
       const permission = await navigator.permissions.query({ name: "geolocation" })
       if (permission.state === "granted") {
-        onComplete()
+        setStep(1)
       } else if (permission.state === "denied") {
-        onComplete()
+        setStep(1)
       } else {
         navigator.geolocation.getCurrentPosition(
-          () => onComplete(),
-          () => onComplete()
+          () => setStep(1),
+          () => setStep(1)
         )
       }
     } catch {
       navigator.geolocation.getCurrentPosition(
-        () => onComplete(),
-        () => onComplete()
+        () => setStep(1),
+        () => setStep(1)
       )
+    } finally {
+      setRequesting(false)
     }
   }
 
-  const features = [
+  const requestNotifications = async () => {
+    setRequesting(true)
+    try {
+      const result = await Notification.requestPermission()
+      if (result === "granted") {
+        await subscribeToPush()
+      }
+    } catch {
+      // Notification API not available or user dismissed
+    } finally {
+      setRequesting(false)
+      onComplete()
+    }
+  }
+
+  const locationFeatures = [
     { title: "Instant answers by block", sub: "Accurate to 10 meters" },
     { title: "Street cleaning alerts", sub: "Auto-set by city" },
     { title: "Find open spots nearby", sub: "Real-time from drivers" },
   ]
+
+  const notificationFeatures = [
+    { title: "Timer alerts at 15, 5, and 1 min", sub: "Never overstay your meter" },
+    { title: "Street cleaning warnings", sub: "Move before the sweeper" },
+    { title: "Nearby spot reports", sub: "Community-sourced updates" },
+  ]
+
+  const features = step === 0 ? locationFeatures : notificationFeatures
+  const Icon = step === 0 ? MapPin : Bell
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col animate-fade-in" style={{ background: "var(--background)", color: "var(--foreground)" }}>
@@ -47,7 +75,7 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
             className="w-[180px] h-[180px] rounded-full flex items-center justify-center"
             style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
           >
-            <MapPin className="w-[88px] h-[88px]" />
+            <Icon className="w-[88px] h-[88px]" />
           </div>
           {[0, 1, 2].map((i) => (
             <div
@@ -67,12 +95,20 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
           className="text-center font-bold tracking-tight leading-[1.1] mt-8"
           style={{ fontSize: 34 }}
         >
-          Where are you,
-          <br />
-          right now?
+          {step === 0 ? (
+            <>
+              Where are you,
+              <br />
+              right now?
+            </>
+          ) : (
+            <>Never miss a move.</>
+          )}
         </div>
         <div className="text-[17px] mt-3 leading-relaxed text-center" style={{ color: "var(--fg2)" }}>
-          Park uses your location to read the signs and rules on your block. We never sell it.
+          {step === 0
+            ? "Park uses your location to read the signs and rules on your block. We never sell it."
+            : "Get reminders before your time runs out, street cleaning alerts, and community spot updates."}
         </div>
 
         {/* Features */}
@@ -101,15 +137,15 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
       {/* Bottom */}
       <div className="px-6 pb-11">
         <button
-          onClick={requestLocation}
+          onClick={step === 0 ? requestLocation : requestNotifications}
           disabled={requesting}
           className="w-full py-4 rounded-full text-base font-bold press-effect disabled:opacity-70"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
-          Allow location
+          {step === 0 ? "Allow location" : "Allow notifications"}
         </button>
         <button
-          onClick={onComplete}
+          onClick={step === 0 ? () => setStep(1) : onComplete}
           className="w-full mt-2.5 py-2 text-sm text-muted-foreground"
         >
           Maybe later

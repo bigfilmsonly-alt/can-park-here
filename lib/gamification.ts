@@ -133,6 +133,9 @@ function generateReferralCode(): string {
 function saveGamificationState(state: GamificationState): void {
   if (typeof window === "undefined") return
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+
+  // Fire-and-forget sync to Supabase
+  syncGamificationToSupabase()
 }
 
 // Calculate level from karma
@@ -392,5 +395,69 @@ export function getMoneySavedStats(): { total: number; thisMonth: number; ticket
     total: state.moneySaved,
     thisMonth: Math.floor(state.moneySaved * 0.3), // Simulated monthly portion
     ticketsAvoided: state.ticketsAvoided,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Supabase sync
+// ---------------------------------------------------------------------------
+
+/**
+ * Sync current gamification state to Supabase (fire-and-forget).
+ * Silently fails if Supabase is not configured or the request errors.
+ */
+export async function syncGamificationToSupabase(): Promise<void> {
+  try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return
+
+    const state = getGamificationState()
+    await fetch("/api/user/sync-gamification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        karma: state.karma,
+        level: state.level,
+        streak: state.currentStreak,
+        longest_streak: state.longestStreak,
+        last_check_date: state.lastActiveDate,
+      }),
+    })
+  } catch {
+    // Silently fail – don't break the app
+  }
+}
+
+/**
+ * Load gamification state from Supabase and merge with localStorage,
+ * taking the higher value for numeric fields.
+ * Returns the merged state, or null if the fetch fails.
+ */
+export async function loadGamificationFromSupabase(): Promise<GamificationState | null> {
+  try {
+    const res = await fetch("/api/user/sync-gamification")
+    if (!res.ok) return null
+
+    const json = await res.json()
+    if (!json.ok || !json.data) return null
+
+    const remote = json.data
+    const local = getGamificationState()
+
+    const merged: GamificationState = {
+      ...local,
+      karma: Math.max(local.karma, remote.karma ?? 0),
+      level: Math.max(local.level, remote.level ?? 1),
+      currentStreak: Math.max(local.currentStreak, remote.streak ?? 0),
+      longestStreak: Math.max(local.longestStreak, remote.longest_streak ?? 0),
+      lastActiveDate: remote.last_check_date || local.lastActiveDate,
+    }
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+    }
+
+    return merged
+  } catch {
+    return null
   }
 }

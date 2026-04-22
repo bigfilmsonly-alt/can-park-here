@@ -31,9 +31,11 @@ export const POST = withErrorHandler(async (request: Request) => {
   const { imageDataUrl } = await validateBody(request, ScanBodySchema)
 
   let sign
+  let aiPowered = false
 
   if (process.env.ANTHROPIC_API_KEY) {
     sign = await analyzeSignImage(imageDataUrl)
+    aiPowered = true
   } else {
     // No API key configured -- fall back to the regex-based parser.
     // Without OCR the image cannot actually be read, so we return a
@@ -44,5 +46,5 @@ export const POST = withErrorHandler(async (request: Request) => {
 
   const interpretation = interpretSignForUser(sign)
 
-  return apiSuccess({ sign, interpretation })
+  return apiSuccess({ sign, interpretation, aiPowered })
 })

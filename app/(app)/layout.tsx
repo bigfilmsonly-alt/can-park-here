@@ -11,6 +11,7 @@ import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { PermissionRequest } from "@/components/onboarding/permission-request"
 import { AuthScreen } from "@/components/auth/auth-screen"
 import { BiometricLock } from "@/components/biometric-lock"
+import { CheckingScreen } from "@/components/screens/checking-screen"
 
 function ModalSpinner() {
   return (
@@ -120,6 +121,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         currentAddress={ctx.currentLocation?.address}
         showToast={showToast}
       />
+      {ctx.checking && (
+        <CheckingScreen onComplete={() => ctx.setChecking(false)} />
+      )}
     </main>
   )
 }

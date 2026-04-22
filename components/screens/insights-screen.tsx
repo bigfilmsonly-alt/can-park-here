@@ -86,22 +86,22 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
   const weatherChange = weather ? willWeatherChange(weather) : null
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-24">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-6 py-8 pb-28">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">Insights</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Insights</h1>
         <p className="text-sm text-muted-foreground mt-1">AI-powered parking predictions</p>
       </div>
 
       {/* Active Alerts */}
       {alerts.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Active Alerts</h2>
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Active Alerts</h2>
           <div className="space-y-2">
             {alerts.slice(0, 3).map((alert) => (
               <div
                 key={alert.id}
-                className={`p-4 rounded-2xl border ${
+                className={`p-4 rounded-[22px] border ${
                   alert.severity === "critical" 
                     ? "bg-red-50 border-red-200" 
                     : alert.severity === "warning"
@@ -134,8 +134,8 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
       {/* Weather & Suggestions */}
       {weather && (
         <div className="mb-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Weather Parking Tips</h2>
-          <div className="bg-card rounded-2xl border border-border p-4">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Weather Parking Tips</h2>
+          <div className="bg-card rounded-[22px] border border-border shadow-sm p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 {getWeatherIcon(weather.condition)}
@@ -174,8 +174,8 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
       {/* Best Times Today */}
       {predictions && (
         <div className="mb-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Best Times Today</h2>
-          <div className="bg-card rounded-2xl border border-border p-4">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Best Times Today</h2>
+          <div className="bg-card rounded-[22px] border border-border shadow-sm p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-emerald-500" />
@@ -214,12 +214,12 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
       {/* Your Patterns */}
       {insights.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Your Patterns</h2>
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Your Patterns</h2>
           <div className="space-y-2">
             {insights.map((insight, i) => (
               <div
                 key={i}
-                className="bg-card rounded-2xl border border-border p-4"
+                className="bg-card rounded-[22px] border border-border shadow-sm p-4"
               >
                 <div className="flex items-start gap-3">
                   {getInsightIcon(insight.type)}
@@ -252,8 +252,8 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
       {/* Frequent Locations */}
       {frequentLocations.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Frequent Spots</h2>
-          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Frequent Spots</h2>
+          <div className="bg-card rounded-[22px] border border-border shadow-sm overflow-hidden">
             {frequentLocations.slice(0, 3).map((location, i) => (
               <div key={location.id}>
                 {i > 0 && <div className="h-px bg-border mx-4" />}
@@ -281,8 +281,8 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
       {/* Personalized Suggestions */}
       {suggestions.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">For You</h2>
-          <div className="bg-card rounded-2xl border border-border p-4">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">For You</h2>
+          <div className="bg-card rounded-[22px] border border-border shadow-sm p-4">
             <div className="space-y-3">
               {suggestions.map((suggestion, i) => (
                 <div key={i} className="flex items-start gap-3">
@@ -298,7 +298,7 @@ export function InsightsScreen({ currentLocation, onCheckParking, showToast }: I
       {/* Prediction Confidence */}
       {nextPrediction && (
         <div className="mb-6">
-          <div className="bg-muted/50 rounded-2xl p-4 text-center">
+          <div className="bg-muted/50 rounded-[22px] p-4 text-center">
             <p className="text-sm text-muted-foreground">
               Prediction confidence: <span className="font-medium text-foreground">{nextPrediction.confidence}%</span>
             </p>

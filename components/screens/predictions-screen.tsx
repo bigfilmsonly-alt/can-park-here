@@ -70,7 +70,7 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
           <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </button>
         <div className="flex-1">
-          <h1 className="text-lg font-semibold">Parking Predictions</h1>
+          <h1 className="text-lg font-bold tracking-tight">Parking Predictions</h1>
           <p className="text-sm text-muted-foreground">AI-powered insights</p>
         </div>
         <div className="flex items-center gap-1 px-2 py-1 bg-muted rounded-full">
@@ -79,7 +79,7 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 pb-24 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 pb-28 space-y-6">
         {/* Day Selector */}
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
           {days.map((day, index) => (
@@ -100,7 +100,7 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
         {/* Best & Worst Times */}
         {dailyPrediction && (
           <div className="grid grid-cols-2 gap-3">
-            <div className={`p-4 rounded-2xl border ${getScoreBgColor(dailyPrediction.bestTime.score)}`}>
+            <div className={`p-4 rounded-[22px] border shadow-sm ${getScoreBgColor(dailyPrediction.bestTime.score)}`}>
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-emerald-600" />
                 <span className="text-xs font-medium text-emerald-700">Best Time</span>
@@ -108,7 +108,7 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
               <p className="text-2xl font-semibold text-emerald-900">{dailyPrediction.bestTime.timeSlot}</p>
               <p className="text-xs text-emerald-700 mt-1">{dailyPrediction.bestTime.score}% availability</p>
             </div>
-            <div className={`p-4 rounded-2xl border ${getScoreBgColor(dailyPrediction.worstTime.score)}`}>
+            <div className={`p-4 rounded-[22px] border shadow-sm ${getScoreBgColor(dailyPrediction.worstTime.score)}`}>
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="h-4 w-4 text-red-600" />
                 <span className="text-xs font-medium text-red-700">Avoid</span>
@@ -121,8 +121,8 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
 
         {/* Hourly Timeline */}
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Hourly Breakdown</h2>
-          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Hourly Breakdown</h2>
+          <div className="bg-card rounded-[22px] card-elevated overflow-hidden">
             {dailyPrediction?.predictions.map((prediction, index) => (
               <div
                 key={prediction.hour}
@@ -149,8 +149,8 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
 
         {/* Weekly Overview */}
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">This Week</h2>
-          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">This Week</h2>
+          <div className="bg-card rounded-[22px] card-elevated overflow-hidden">
             {weeklyBest.map((day, index) => (
               <button
                 key={day.day}
@@ -176,12 +176,12 @@ export function PredictionsScreen({ onBack, currentLocation }: PredictionsScreen
         {/* Personalized Suggestions */}
         {suggestions.length > 0 && (
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">Your Insights</h2>
+            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Your Insights</h2>
             <div className="space-y-2">
               {suggestions.map((suggestion, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-4 bg-card rounded-2xl border border-border"
+                  className="flex items-start gap-3 p-4 bg-card rounded-[22px] card-elevated"
                 >
                   <Sparkles className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <p className="text-sm text-foreground">{suggestion}</p>

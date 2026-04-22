@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Button } from "@/components/ui/button"
 import { Plus, Check, Flag, ArrowUp, Trash2 } from "lucide-react"
 import {
   type EnforcementSighting,
@@ -159,26 +158,25 @@ export function CommunityScreen({
   ]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5 pb-28 overflow-y-auto">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-[22px] pt-16 pb-28 overflow-y-auto">
       {/* Header */}
-      <div className="pt-16">
+      <div>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Community
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              COMMUNITY
             </p>
-            <h1 className="text-3xl font-bold mt-1">Spots near you</h1>
+            <h1 className="text-[32px] font-bold tracking-tight mt-1">Spots near you</h1>
           </div>
-          <Button
-            size="icon"
-            className="h-10 w-10 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
+          <button
+            className="w-11 h-11 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shrink-0"
             onClick={onOpenReportIssue}
             aria-label="New report"
           >
-            <Plus className="w-5 h-5 text-white" />
-          </Button>
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="text-sm mt-2" style={{ color: "var(--fg2)" }}>
           {recentSightings.length} recent reports in 0.3 mi
         </p>
       </div>
@@ -201,7 +199,7 @@ export function CommunityScreen({
       </div>
 
       {/* Sighting Cards */}
-      <div className="mt-5 space-y-3">
+      <div className="mt-5 flex flex-col gap-2.5">
         {recentSightings.map((sighting) => {
           const Icon = getSightingIcon(sighting.type)
           const colors = getSightingColors(sighting.type)
@@ -211,7 +209,7 @@ export function CommunityScreen({
           return (
             <div
               key={sighting.id}
-              className="bg-card border border-border rounded-[18px] p-3.5"
+              className="bg-card card-elevated rounded-[18px] p-3.5"
             >
               <div className="flex items-center gap-3">
                 {/* Icon circle */}
@@ -235,9 +233,9 @@ export function CommunityScreen({
                 <button
                   onClick={() => handleVote(sighting.id, true)}
                   disabled={hasVoted}
-                  className={`px-2.5 py-1.5 rounded-[10px] text-xs font-bold flex items-center gap-1 shrink-0 transition-colors ${
+                  className={`px-2.5 py-[7px] rounded-[10px] text-xs font-bold flex items-center gap-1 shrink-0 transition-colors ${
                     hasVoted
-                      ? "bg-accent/20 text-accent"
+                      ? "bg-[var(--accent-pale)] text-[var(--accent)]"
                       : "bg-muted text-foreground"
                   }`}
                   aria-label={`Upvote sighting, ${sighting.upvotes} upvotes`}
@@ -251,7 +249,7 @@ export function CommunityScreen({
         })}
 
         {recentSightings.length === 0 && (
-          <div className="bg-card border border-border rounded-[18px] p-6 text-center">
+          <div className="bg-card card-elevated rounded-[18px] p-6 text-center">
             <p className="text-sm font-medium text-muted-foreground">
               No reports in this area yet
             </p>

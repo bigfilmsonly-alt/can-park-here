@@ -194,6 +194,206 @@ const rulesDatabase: Record<string, ParkingRule[]> = {
       fine: 115,
     },
   ],
+  valencia: [
+    {
+      id: "valencia-time-limit",
+      type: "time-limit",
+      days: [1, 2, 3, 4, 5], // Weekdays
+      startTime: "08:00",
+      endTime: "18:00",
+      description: "2-hour parking limit",
+      towRisk: "low",
+      fine: 65,
+    },
+    {
+      id: "valencia-street-cleaning",
+      type: "street-cleaning",
+      days: [2], // Tuesday
+      startTime: "08:00",
+      endTime: "10:00",
+      description: "Street cleaning in effect",
+      towRisk: "high",
+      fine: 75,
+    },
+    {
+      id: "valencia-metered",
+      type: "metered",
+      days: [1, 2, 3, 4, 5, 6], // Mon-Sat
+      startTime: "09:00",
+      endTime: "18:00",
+      description: "Metered parking - pay at kiosk",
+      towRisk: "low",
+      fine: 85,
+    },
+    {
+      id: "valencia-permit-evening",
+      type: "permit-only",
+      days: [1, 2, 3, 4, 5, 6, 0], // Every day
+      startTime: "18:00",
+      endTime: "23:59",
+      description: "Permit parking only - Zone Q evenings",
+      towRisk: "medium",
+      fine: 95,
+    },
+  ],
+  mission: [
+    {
+      id: "mission-time-limit",
+      type: "time-limit",
+      days: [1, 2, 3, 4, 5], // Weekdays
+      startTime: "08:00",
+      endTime: "18:00",
+      description: "2-hour parking limit",
+      towRisk: "low",
+      fine: 65,
+    },
+    {
+      id: "mission-street-cleaning-mon",
+      type: "street-cleaning",
+      days: [1], // Monday
+      startTime: "08:00",
+      endTime: "10:00",
+      description: "Street cleaning in effect",
+      towRisk: "high",
+      fine: 75,
+    },
+    {
+      id: "mission-street-cleaning-thu",
+      type: "street-cleaning",
+      days: [4], // Thursday
+      startTime: "08:00",
+      endTime: "10:00",
+      description: "Street cleaning in effect",
+      towRisk: "high",
+      fine: 75,
+    },
+    {
+      id: "mission-no-parking-overnight",
+      type: "no-parking",
+      days: [0, 1, 2, 3, 4, 5, 6],
+      startTime: "02:00",
+      endTime: "06:00",
+      description: "No parking 2 AM – 6 AM",
+      towRisk: "high",
+      fine: 95,
+    },
+    {
+      id: "mission-tow-zone-rush",
+      type: "tow-zone",
+      days: [1, 2, 3, 4, 5], // Weekdays
+      startTime: "07:00",
+      endTime: "09:00",
+      description: "Tow-away zone - rush hour",
+      towRisk: "high",
+      fine: 500,
+    },
+  ],
+  soma: [
+    {
+      id: "soma-metered",
+      type: "metered",
+      days: [1, 2, 3, 4, 5, 6], // Mon-Sat
+      startTime: "07:00",
+      endTime: "18:00",
+      description: "Metered parking - pay at kiosk",
+      towRisk: "low",
+      fine: 85,
+    },
+    {
+      id: "soma-time-limit",
+      type: "time-limit",
+      days: [1, 2, 3, 4, 5, 6], // Mon-Sat
+      startTime: "07:00",
+      endTime: "18:00",
+      description: "1-hour parking limit",
+      towRisk: "low",
+      fine: 65,
+    },
+    {
+      id: "soma-tow-zone-evening",
+      type: "tow-zone",
+      days: [1, 2, 3, 4, 5], // Weekdays
+      startTime: "16:00",
+      endTime: "18:00",
+      description: "Tow-away zone - evening rush",
+      towRisk: "high",
+      fine: 500,
+    },
+    {
+      id: "soma-no-parking-overnight",
+      type: "no-parking",
+      days: [0, 1, 2, 3, 4, 5, 6],
+      startTime: "00:00",
+      endTime: "06:00",
+      description: "No parking 12 AM – 6 AM",
+      towRisk: "high",
+      fine: 95,
+    },
+  ],
+  castro: [
+    {
+      id: "castro-permit",
+      type: "permit-only",
+      days: [0, 1, 2, 3, 4, 5, 6],
+      startTime: "00:00",
+      endTime: "23:59",
+      description: "Permit parking only - Zone S",
+      towRisk: "medium",
+      fine: 95,
+    },
+    {
+      id: "castro-time-limit",
+      type: "time-limit",
+      days: [1, 2, 3, 4, 5], // Weekdays
+      startTime: "08:00",
+      endTime: "18:00",
+      description: "2-hour limit for non-residents",
+      towRisk: "low",
+      fine: 65,
+    },
+    {
+      id: "castro-street-cleaning",
+      type: "street-cleaning",
+      days: [3], // Wednesday
+      startTime: "08:00",
+      endTime: "10:00",
+      description: "Street cleaning in effect",
+      towRisk: "high",
+      fine: 75,
+    },
+  ],
+  marina: [
+    {
+      id: "marina-time-limit",
+      type: "time-limit",
+      days: [1, 2, 3, 4, 5, 6], // Mon-Sat
+      startTime: "08:00",
+      endTime: "18:00",
+      description: "2-hour parking limit",
+      towRisk: "low",
+      fine: 65,
+    },
+    {
+      id: "marina-permit-evening",
+      type: "permit-only",
+      days: [1, 2, 3, 4, 5, 6, 0], // Every day
+      startTime: "18:00",
+      endTime: "23:59",
+      description: "Permit parking only - Zone K evenings/weekends",
+      towRisk: "medium",
+      fine: 95,
+    },
+    {
+      id: "marina-street-cleaning",
+      type: "street-cleaning",
+      days: [5], // Friday
+      startTime: "08:00",
+      endTime: "10:00",
+      description: "Street cleaning in effect",
+      towRisk: "high",
+      fine: 75,
+    },
+  ],
 }
 
 function parseTime(timeStr: string): { hours: number; minutes: number } {
@@ -323,6 +523,33 @@ function getZoneForLocation(lat: number, lng: number): string {
   return "default"
 }
 
+export function getZoneFromAddress(street?: string, city?: string): string {
+  if (!street) return "default"
+
+  const normalized = street.toLowerCase()
+
+  // SF street-name patterns mapped to zones
+  const streetPatterns: { patterns: string[]; zone: string }[] = [
+    { patterns: ["market"], zone: "downtown" },
+    { patterns: ["valencia", "mission", "guerrero"], zone: "mission" },
+    { patterns: ["noe", "castro", "sanchez"], zone: "castro" },
+    { patterns: ["howard", "folsom", "harrison"], zone: "soma" },
+    { patterns: ["chestnut", "lombard", "fillmore", "marina"], zone: "marina" },
+  ]
+
+  for (const { patterns, zone } of streetPatterns) {
+    for (const pattern of patterns) {
+      if (normalized.includes(pattern)) {
+        // "valencia" street matches the valencia zone specifically
+        if (pattern === "valencia") return "valencia"
+        return zone
+      }
+    }
+  }
+
+  return "default"
+}
+
 function generateWarnings(rules: ParkingRule[], date: Date): ParkingWarning[] {
   const warnings: ParkingWarning[] = []
   
@@ -379,12 +606,15 @@ function generateWarnings(rules: ParkingRule[], date: Date): ParkingWarning[] {
 }
 
 export function checkParking(
-  lat: number, 
-  lng: number, 
-  userAccessibility?: UserAccessibility
+  lat: number,
+  lng: number,
+  userAccessibility?: UserAccessibility,
+  street?: string,
+  city?: string,
 ): ParkingResult {
   const now = new Date()
-  const zone = getZoneForLocation(lat, lng)
+  const addressZone = getZoneFromAddress(street, city)
+  const zone = addressZone !== "default" ? addressZone : getZoneForLocation(lat, lng)
   const rules = rulesDatabase[zone] || rulesDatabase.default
   const warnings = generateWarnings(rules, now)
 

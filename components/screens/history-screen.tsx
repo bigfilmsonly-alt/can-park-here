@@ -47,7 +47,7 @@ export function HistoryScreen({ history, onItemClick, onCheckParking }: HistoryS
       <div className="pt-16 px-5.5">
         {/* Header */}
         <div className="px-0.5">
-          <div className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
+          <div className="text-[13px] font-semibold tracking-wider uppercase text-muted-foreground">
             Activity
           </div>
           <div className="text-[32px] font-bold tracking-tight mt-0.5">History</div>
@@ -60,7 +60,8 @@ export function HistoryScreen({ history, onItemClick, onCheckParking }: HistoryS
         <div className="mt-5">
           {history.length === 0 ? (
             <div
-              className="bg-card border border-border rounded-[18px] p-6 text-center"
+              className="bg-card card-elevated rounded-[22px] p-6 text-center"
+            style={{ boxShadow: "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)" }}
             >
               <div className="w-14 h-14 rounded-[18px] bg-muted text-muted-foreground flex items-center justify-center mx-auto">
                 <HistoryIcon className="w-7 h-7" />
@@ -80,7 +81,10 @@ export function HistoryScreen({ history, onItemClick, onCheckParking }: HistoryS
               </div>
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-[18px] overflow-hidden">
+            <div
+              className="bg-card card-elevated rounded-[22px] overflow-hidden"
+              style={{ boxShadow: "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)" }}
+            >
               {history.map((item, i) => (
                 <button
                   key={item.id}

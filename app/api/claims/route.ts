@@ -18,12 +18,11 @@ const CLAIM_COLUMNS =
 // ---------------------------------------------------------------------------
 
 const CreateClaimBodySchema = z.object({
-  session_id: z.string().uuid("session_id must be a valid UUID"),
+  session_id: z.string().uuid("session_id must be a valid UUID").optional(),
   ticket_amount: z
     .number()
     .positive("ticket_amount must be positive")
-    .nullable()
-    .optional(),
+    .max(100, "ticket_amount must be $100 or less"),
   ticket_number: z
     .string()
     .max(100, "ticket_number must be 100 characters or fewer")
@@ -31,9 +30,8 @@ const CreateClaimBodySchema = z.object({
     .optional(),
   description: z
     .string()
-    .max(2000, "description must be 2000 characters or fewer")
-    .nullable()
-    .optional(),
+    .min(1, "description is required")
+    .max(2000, "description must be 2000 characters or fewer"),
 })
 
 // ---------------------------------------------------------------------------
@@ -91,30 +89,38 @@ export const POST = withErrorHandler(async (request: Request) => {
     return apiError("Unauthorized", 401)
   }
 
-  // Verify the session belongs to the user and has protection enabled
-  const { data: session, error: sessionError } = await supabase
-    .from("parking_sessions")
-    .select("id, is_protected")
-    .eq("id", body.session_id)
-    .eq("user_id", user.id)
-    .single()
+  // When a session_id is provided, verify it belongs to the user and has
+  // protection enabled. The claim form may omit session_id when the user
+  // submits directly from the claim modal.
+  let sessionId: string | null = null
 
-  if (sessionError || !session) {
-    return apiError("Session not found", 404)
-  }
+  if (body.session_id) {
+    const { data: session, error: sessionError } = await supabase
+      .from("parking_sessions")
+      .select("id, is_protected")
+      .eq("id", body.session_id)
+      .eq("user_id", user.id)
+      .single()
 
-  if (!session.is_protected) {
-    return apiError("Session does not have protection enabled", 400)
+    if (sessionError || !session) {
+      return apiError("Session not found", 404)
+    }
+
+    if (!session.is_protected) {
+      return apiError("Session does not have protection enabled", 400)
+    }
+
+    sessionId = session.id
   }
 
   const { data, error } = await supabase
     .from("protection_claims")
     .insert({
       user_id: user.id,
-      session_id: body.session_id,
-      ticket_amount: body.ticket_amount ?? null,
+      session_id: sessionId,
+      ticket_amount: body.ticket_amount,
       ticket_number: body.ticket_number ?? null,
-      description: body.description ?? null,
+      description: body.description,
       status: "submitted",
     })
     .select(CLAIM_COLUMNS)

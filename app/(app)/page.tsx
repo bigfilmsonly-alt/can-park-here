@@ -28,6 +28,8 @@ export default function HomePage() {
       timerRemainingSeconds={ctx.timerRemainingSeconds ?? 0}
       formatTimerDisplay={ctx.formatTimeDisplay}
       onCancelTimer={ctx.handleCancelTimer}
+      onOpenSettings={() => router.push("/settings")}
+      onOpenHistory={() => router.push("/history")}
     />
   )
 }

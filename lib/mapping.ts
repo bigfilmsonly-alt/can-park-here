@@ -54,101 +54,65 @@ const SPOTS_KEY = "park_parking_spots"
 const GARAGES_KEY = "park_garages"
 const EV_STATIONS_KEY = "park_ev_stations"
 
-// Generate mock data for demo
-function generateMockSpots(centerLat: number, centerLng: number, count: number): ParkingSpot[] {
-  const spots: ParkingSpot[] = []
-  const types: ParkingSpot["type"][] = ["street", "metered", "free", "handicap"]
+// Curated San Francisco street parking data
+const SF_STREET_SPOTS: Omit<ParkingSpot, "status" | "lastUpdated">[] = [
+  { id: "spot-0", lat: 37.7588, lng: -122.4213, type: "metered", timeLimit: 120, rate: 2.50 },
+  { id: "spot-1", lat: 37.7576, lng: -122.4218, type: "metered", timeLimit: 120, rate: 2.50 },
+  { id: "spot-2", lat: 37.7617, lng: -122.4350, type: "metered", timeLimit: 60, rate: 3.50 },
+  { id: "spot-3", lat: 37.7650, lng: -122.4196, type: "metered", timeLimit: 120, rate: 2.00 },
+  { id: "spot-4", lat: 37.7525, lng: -122.4183, type: "metered", timeLimit: 120, rate: 2.00 },
+  { id: "spot-5", lat: 37.7615, lng: -122.4260, type: "free", timeLimit: 120 },
+  { id: "spot-6", lat: 37.7763, lng: -122.4262, type: "metered", timeLimit: 120, rate: 3.00 },
+  { id: "spot-7", lat: 37.7710, lng: -122.4370, type: "metered", timeLimit: 120, rate: 2.50 },
+  { id: "spot-8", lat: 37.7985, lng: -122.4340, type: "metered", timeLimit: 120, rate: 3.50 },
+  { id: "spot-9", lat: 37.7960, lng: -122.4220, type: "metered", timeLimit: 60, rate: 3.00 },
+  { id: "spot-10", lat: 37.7660, lng: -122.4490, type: "free", timeLimit: 120 },
+  { id: "spot-11", lat: 37.7635, lng: -122.4665, type: "metered", timeLimit: 120, rate: 2.00 },
+]
+
+// Generate realistic SF street parking spots
+function generateMockSpots(_centerLat: number, _centerLng: number, _count: number): ParkingSpot[] {
   const statuses: ParkingSpot["status"][] = ["available", "occupied", "unknown"]
-  
-  for (let i = 0; i < count; i++) {
-    const latOffset = (Math.random() - 0.5) * 0.02
-    const lngOffset = (Math.random() - 0.5) * 0.02
-    
-    spots.push({
-      id: `spot-${i}`,
-      lat: centerLat + latOffset,
-      lng: centerLng + lngOffset,
-      type: types[Math.floor(Math.random() * types.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      timeLimit: Math.random() > 0.5 ? [30, 60, 120, 240][Math.floor(Math.random() * 4)] : undefined,
-      rate: Math.random() > 0.3 ? Math.round(Math.random() * 4 + 1) : undefined,
-      lastUpdated: new Date(Date.now() - Math.random() * 3600000),
-    })
-  }
-  
-  return spots
+
+  return SF_STREET_SPOTS.map((spot) => ({
+    ...spot,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    lastUpdated: new Date(Date.now() - Math.random() * 3600000),
+  }))
 }
 
-function generateMockGarages(centerLat: number, centerLng: number): ParkingGarage[] {
-  const garageNames = [
-    "City Center Parking",
-    "Main Street Garage",
-    "Downtown Plaza",
-    "Metro Park",
-    "Central Station Parking",
-  ]
-  
-  return garageNames.map((name, i) => {
-    const latOffset = (Math.random() - 0.5) * 0.015
-    const lngOffset = (Math.random() - 0.5) * 0.015
-    const total = [200, 350, 150, 500, 280][i]
-    const available = Math.floor(Math.random() * total * 0.4)
-    
-    return {
-      id: `garage-${i}`,
-      name,
-      lat: centerLat + latOffset,
-      lng: centerLng + lngOffset,
-      address: `${100 + i * 100} ${["Main", "Oak", "Elm", "Park", "Center"][i]} St`,
-      totalSpaces: total,
-      availableSpaces: available,
-      rate: [3, 4, 2.5, 5, 3.5][i],
-      maxRate: [25, 30, 20, 40, 28][i],
-      hours: i % 2 === 0 ? "24/7" : "6am - 11pm",
-      features: [
-        ["Covered", "Security", "EV Charging"],
-        ["Covered", "Valet", "Car Wash"],
-        ["Security", "Handicap Access"],
-        ["Covered", "Security", "EV Charging", "Valet"],
-        ["Covered", "Handicap Access"],
-      ][i],
-      lastUpdated: new Date(),
-    }
-  })
+// Curated San Francisco parking garage data
+const SF_GARAGES: Omit<ParkingGarage, "availableSpaces" | "lastUpdated">[] = [
+  { id: "garage-0", name: "Sutter Stockton Garage", lat: 37.7880, lng: -122.4070, address: "444 Stockton St", totalSpaces: 1865, rate: 5, maxRate: 36, hours: "24/7", features: ["Covered", "Security", "Handicap Access"] },
+  { id: "garage-1", name: "5th & Mission Garage", lat: 37.7835, lng: -122.4055, address: "833 Mission St", totalSpaces: 2585, rate: 4, maxRate: 30, hours: "6am - 12am", features: ["Covered", "Security", "EV Charging"] },
+  { id: "garage-2", name: "Civic Center Garage", lat: 37.7790, lng: -122.4175, address: "355 McAllister St", totalSpaces: 840, rate: 3.50, maxRate: 25, hours: "24/7", features: ["Covered", "Security", "Handicap Access"] },
+  { id: "garage-3", name: "Japan Center Garage", lat: 37.7855, lng: -122.4295, address: "1610 Geary Blvd", totalSpaces: 500, rate: 4, maxRate: 28, hours: "8am - 10pm", features: ["Covered", "Security"] },
+  { id: "garage-4", name: "Ghirardelli Square", lat: 37.8060, lng: -122.4225, address: "900 North Point St", totalSpaces: 300, rate: 6, maxRate: 40, hours: "7am - 11pm", features: ["Covered", "Security", "Valet"] },
+]
+
+function generateMockGarages(_centerLat: number, _centerLng: number): ParkingGarage[] {
+  return SF_GARAGES.map((garage) => ({
+    ...garage,
+    availableSpaces: Math.floor(Math.random() * garage.totalSpaces * 0.4),
+    lastUpdated: new Date(),
+  }))
 }
 
-function generateMockEVStations(centerLat: number, centerLng: number): EVStation[] {
-  const stations = [
-    { name: "ChargePoint Station", network: "ChargePoint" },
-    { name: "Tesla Supercharger", network: "Tesla" },
-    { name: "Electrify America", network: "Electrify America" },
-    { name: "EVgo Fast Charging", network: "EVgo" },
-  ]
-  
-  return stations.map((station, i) => {
-    const latOffset = (Math.random() - 0.5) * 0.018
-    const lngOffset = (Math.random() - 0.5) * 0.018
-    const total = [4, 8, 6, 4][i]
-    
-    return {
-      id: `ev-${i}`,
-      name: station.name,
-      lat: centerLat + latOffset,
-      lng: centerLng + lngOffset,
-      address: `${200 + i * 150} ${["Broadway", "1st Ave", "Market St", "Union St"][i]}`,
-      networkName: station.network,
-      chargerTypes: [
-        ["Level2", "DCFast"],
-        ["Tesla"],
-        ["DCFast"],
-        ["Level2", "DCFast"],
-      ][i] as EVStation["chargerTypes"],
-      totalPorts: total,
-      availablePorts: Math.floor(Math.random() * total),
-      pricePerKwh: station.network === "Tesla" ? undefined : [0.35, 0.43, 0.39, 0.32][i],
-      lastUpdated: new Date(),
-    }
-  })
+// Curated San Francisco EV charging station data
+const SF_EV_STATIONS: Omit<EVStation, "availablePorts" | "lastUpdated">[] = [
+  { id: "ev-0", name: "ChargePoint at Whole Foods Market", lat: 37.7645, lng: -122.4260, address: "399 4th St", networkName: "ChargePoint", chargerTypes: ["Level2", "DCFast"], totalPorts: 6, pricePerKwh: 0.35 },
+  { id: "ev-1", name: "Tesla Supercharger SoMa", lat: 37.7755, lng: -122.3985, address: "180 Townsend St", networkName: "Tesla", chargerTypes: ["Tesla"], totalPorts: 12 },
+  { id: "ev-2", name: "ChargePoint at Safeway", lat: 37.7640, lng: -122.4660, address: "730 Taraval St", networkName: "ChargePoint", chargerTypes: ["Level2"], totalPorts: 4, pricePerKwh: 0.32 },
+  { id: "ev-3", name: "EVgo at Potrero Center", lat: 37.7610, lng: -122.4075, address: "2300 16th St", networkName: "EVgo", chargerTypes: ["DCFast"], totalPorts: 4, pricePerKwh: 0.39 },
+  { id: "ev-4", name: "ChargePoint at Metreon", lat: 37.7840, lng: -122.4030, address: "135 4th St", networkName: "ChargePoint", chargerTypes: ["Level2", "DCFast"], totalPorts: 8, pricePerKwh: 0.35 },
+]
+
+function generateMockEVStations(_centerLat: number, _centerLng: number): EVStation[] {
+  return SF_EV_STATIONS.map((station) => ({
+    ...station,
+    availablePorts: Math.floor(Math.random() * station.totalPorts),
+    lastUpdated: new Date(),
+  }))
 }
 
 // Get parking spots near a location
