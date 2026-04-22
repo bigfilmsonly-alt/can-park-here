@@ -293,6 +293,128 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+/* ===== PREMIUM MICRO-INTERACTIONS ===== */
+
+/* Sonar pulse ring — used on active status dots */
+@keyframes sonar {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.sonar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  animation: sonar 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Breathing glow — subtle background pulse for CTAs */
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+  50% { box-shadow: 0 0 24px 6px rgba(52, 199, 89, 0.18); }
+}
+.breathe-glow {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Radial gradient pulse — ambient background energy */
+@keyframes radialPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+.radial-pulse {
+  animation: radialPulse 4s ease-in-out infinite;
+}
+
+/* Count up transition for numbers */
+@keyframes countFadeIn {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.count-reveal {
+  animation: countFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Shimmer sweep — for metallic/premium surfaces */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Magnetic hover lift — cards that feel physical */
+.hover-lift-interactive {
+  transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.24s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.hover-lift-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+.hover-lift-interactive:active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* Elastic spring — for bouncy entrances */
+@keyframes springIn {
+  0% { transform: scale(0.85); opacity: 0; }
+  60% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.spring-in {
+  animation: springIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Gradient sweep text — for premium reveals */
+@keyframes gradientSweep {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+.text-gradient-sweep {
+  background: linear-gradient(90deg, currentColor 0%, var(--accent) 50%, currentColor 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientSweep 2s ease-in-out forwards;
+}
+
+/* Progress ring glow — dynamic shadow matching ring color */
+.ring-glow-success { filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.3)); }
+.ring-glow-warning { filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.3)); }
+.ring-glow-error { filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.4)); }
+
+/* Slide up sheet entrance */
+@keyframes sheetUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.sheet-enter {
+  animation: sheetUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger with spring for grid items */
+.stagger-spring > * {
+  opacity: 0;
+  animation: springIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.stagger-spring > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-spring > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-spring > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-spring > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-spring > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-spring > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-spring > *:nth-child(7) { animation-delay: 240ms; }
+.stagger-spring > *:nth-child(8) { animation-delay: 280ms; }
+.stagger-spring > *:nth-child(9) { animation-delay: 320ms; }
+.stagger-spring > *:nth-child(10) { animation-delay: 360ms; }
+.stagger-spring > *:nth-child(11) { animation-delay: 400ms; }
+.stagger-spring > *:nth-child(12) { animation-delay: 440ms; }
+
 /* ===== GLASS CARD ===== */
 .glass-card {
   background: var(--card-glass);

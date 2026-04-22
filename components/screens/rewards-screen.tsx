@@ -112,12 +112,12 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
   return (
     <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5.5 pt-16 pb-28">
       {/* Header */}
-      <div>
+      <div className="spring-in">
         <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           REWARDS
         </p>
         <h1 className="text-[32px] font-bold tracking-tight mt-1">
-          Hey, {state.karma.toLocaleString()} karma.
+          Hey, <span className="count-reveal">{state.karma.toLocaleString()}</span> karma.
         </h1>
         <p className="text-sm text-[var(--fg2)] mt-0.5">
           {streakDays}-day streak &middot; top 8% in San Francisco
@@ -163,7 +163,7 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
             See all
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="stagger-spring grid grid-cols-4 gap-2.5">
           {allBadges.map((badge) => {
             const isUnlocked = badges.unlocked.some((b) => b.id === badge.id)
             const Icon = ICON_MAP[badge.icon] || Star
@@ -217,7 +217,7 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
               }
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${entry.rank <= 3 ? "shimmer" : ""}`}
                 style={{
                   background:
                     entry.rank === 1
@@ -257,7 +257,7 @@ export function RewardsScreen({ onBack }: RewardsScreenProps) {
 
       {/* Referral card */}
       <div
-        className="mt-6 rounded-[22px] bg-card border border-border p-5"
+        className="hover-lift-interactive mt-6 rounded-[22px] bg-card border border-border p-5"
         style={{
           boxShadow: "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
         }}

@@ -19,7 +19,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed md:absolute bottom-3.5 left-3.5 right-3.5 z-50 max-w-md mx-auto">
+    <nav className="fixed md:absolute bottom-3.5 left-3.5 right-3.5 z-50 max-w-md mx-auto sheet-enter">
       <div
         className="grid grid-cols-5 items-center h-[62px] rounded-full"
         style={{
@@ -49,7 +49,8 @@ export function BottomNav() {
                     width: 36,
                     height: 36,
                     background: isActive ? ACCENT : "transparent",
-                    transition: "background 0.2s",
+                    transition: "background 0.2s, transform 0.25s cubic-bezier(.2,.7,.3,1)",
+                    transform: isActive ? "scale(1.1)" : "scale(1)",
                   }}
                 >
                   <Icon
@@ -59,9 +60,19 @@ export function BottomNav() {
                   />
                 </span>
               ) : (
-                <Icon className="w-[22px] h-[22px]" strokeWidth={1.75} />
+                <Icon
+                  className="w-[22px] h-[22px]"
+                  strokeWidth={1.75}
+                  style={{
+                    transition: "transform 0.25s cubic-bezier(.2,.7,.3,1)",
+                    transform: isActive ? "scale(1.1)" : "scale(1)",
+                  }}
+                />
               )}
               <span className="text-[10px] font-semibold">{tab.label}</span>
+              {isActive && (
+                <div className="bg-accent rounded-full w-1 h-1 mt-0.5" style={{ background: ACCENT }} />
+              )}
             </Link>
           )
         })}

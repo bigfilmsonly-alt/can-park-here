@@ -213,10 +213,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return
     }
     setChecking(true)
-    const location = await getCurrentLocation()
+    let location = await getCurrentLocation()
+
+    // Desktop / permission-denied fallback: use demo SF location so
+    // visitors always experience the full check → result flow.
     if (!location) {
-      setChecking(false)
-      return
+      location = {
+        latitude: 37.7599,
+        longitude: -122.4148,
+        address: "Valencia St & 20th St, San Francisco, CA",
+        street: "Valencia & 20th",
+        city: "San Francisco",
+        timestamp: new Date(),
+      }
     }
 
     const userAccessibility = getUserAccessibility()

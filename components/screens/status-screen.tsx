@@ -148,15 +148,21 @@ export function StatusScreen({
           className="inline-flex items-center gap-2 px-3 py-[7px] rounded-full text-[11px] font-bold tracking-wider"
           style={{ background: config.bg, color: config.ink }}
         >
-          <div
-            className="w-[7px] h-[7px] rounded-full"
-            style={{ background: config.accent }}
-          />
+          <div className="relative w-[7px] h-[7px]">
+            <div
+              className="w-[7px] h-[7px] rounded-full relative z-10"
+              style={{ background: config.accent }}
+            />
+            <div
+              className="sonar-ring absolute inset-0 rounded-full"
+              style={{ borderColor: config.accent }}
+            />
+          </div>
           {config.label} · {(result as ParkingResult & { confidence?: number }).confidence ?? 97}% CONFIDENT
         </div>
 
         <h1
-          className="mt-[18px] font-bold leading-[0.98]"
+          className="mt-[18px] font-bold leading-[0.98] count-reveal"
           style={{
             fontSize: 56,
             letterSpacing: -2.2,
@@ -197,7 +203,7 @@ export function StatusScreen({
       )}
 
       {/* Why this answer card */}
-      <div className="mt-4 bg-card card-elevated rounded-[18px] p-3.5">
+      <div className="mt-4 bg-card card-elevated rounded-[18px] p-3.5 spring-in">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
           WHY THIS ANSWER
         </p>
@@ -280,7 +286,7 @@ export function StatusScreen({
       <div className="mt-8 flex gap-2.5">
         <button
           onClick={onEndSession}
-          className="flex-1 py-3.5 rounded-full border border-border font-semibold"
+          className="flex-1 py-3.5 rounded-full border border-border font-semibold hover-lift-interactive"
         >
           Done
         </button>
@@ -288,7 +294,7 @@ export function StatusScreen({
           <button
             onClick={onSetReminder}
             disabled={reminderSet}
-            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold"
+            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold hover-lift-interactive"
           >
             {reminderSet
               ? "Reminder set"
@@ -297,7 +303,7 @@ export function StatusScreen({
         ) : (
           <button
             onClick={onBack}
-            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold"
+            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold hover-lift-interactive"
           >
             Find legal spot nearby
           </button>

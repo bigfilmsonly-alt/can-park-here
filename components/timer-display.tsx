@@ -55,7 +55,12 @@ export function TimerDisplay({
 
       {/* Circular progress ring */}
       <div className="relative w-[280px] h-[280px]">
-        <svg width="280" height="280" viewBox="0 0 280 280">
+        <svg
+          width="280"
+          height="280"
+          viewBox="0 0 280 280"
+          className={isCritical ? "ring-glow-error" : isUrgent ? "ring-glow-warning" : "ring-glow-success"}
+        >
           <circle
             cx="140"
             cy="140"
@@ -85,7 +90,7 @@ export function TimerDisplay({
             {label}
           </p>
           <p
-            className="text-[56px] font-bold tracking-tight mt-1.5"
+            className="text-[56px] font-bold tracking-tight mt-1.5 count-reveal"
             style={{
               letterSpacing: -2,
               fontVariantNumeric: "tabular-nums",
@@ -113,7 +118,7 @@ export function TimerDisplay({
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Notifications
         </p>
-        <div className="mt-2.5">
+        <div className="mt-2.5 stagger-spring">
           {[
             {
               t: "20 min",
@@ -156,13 +161,13 @@ export function TimerDisplay({
 
       {/* Bottom actions */}
       <div className="flex gap-2.5 w-full mt-6">
-        <button className="flex-1 h-14 rounded-full bg-muted flex items-center justify-center gap-2 text-base font-semibold">
+        <button className="flex-1 h-14 rounded-full bg-muted flex items-center justify-center gap-2 text-base font-semibold hover-lift-interactive">
           <Plus className="w-[18px] h-[18px]" />
           Extend
         </button>
         <button
           onClick={onCancel}
-          className="flex-1 h-14 rounded-full flex items-center justify-center text-base font-semibold text-white"
+          className="flex-1 h-14 rounded-full flex items-center justify-center text-base font-semibold text-white hover-lift-interactive"
           style={{ background: "var(--foreground)" }}
         >
           Stop timer

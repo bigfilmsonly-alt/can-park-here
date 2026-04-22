@@ -126,9 +126,9 @@ export function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps) {
       }}
     >
       <div className="flex-1 flex flex-col justify-center pt-16">
-        {slide.vis}
+        <div className="spring-in">{slide.vis}</div>
         <div className="px-8 pt-10">
-          <div className="text-[30px] font-bold tracking-tight leading-[1.1]" style={{ textWrap: "balance" as never }}>
+          <div className="count-reveal text-[30px] font-bold tracking-tight leading-[1.1]" style={{ textWrap: "balance" as never }}>
             {slide.title}
           </div>
           <div className="text-base opacity-75 mt-3 leading-relaxed">{slide.sub}</div>
@@ -142,7 +142,7 @@ export function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps) {
           {slides.map((_, i) => (
             <div
               key={i}
-              className="h-1.5 rounded-[3px] transition-all duration-200"
+              className="h-1.5 rounded-[3px] transition-all duration-300"
               style={{
                 width: i === step ? 22 : 6,
                 background:
@@ -161,7 +161,7 @@ export function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps) {
         {/* CTA */}
         <button
           onClick={handleNext}
-          className="w-full py-4 rounded-full text-base font-bold press-effect"
+          className="hover-lift-interactive w-full py-4 rounded-full text-base font-bold press-effect"
           style={{
             background: slide.isDark ? "#fff" : "var(--foreground)",
             color: slide.isDark ? "var(--accent-deep)" : "var(--background)",

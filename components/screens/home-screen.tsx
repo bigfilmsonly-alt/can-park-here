@@ -80,10 +80,16 @@ export function HomeScreen({
           }}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <span
-              className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse"
-              style={{ background: "var(--accent)" }}
-            />
+            <span className="relative shrink-0 w-2.5 h-2.5" style={{ color: "var(--accent)" }}>
+              <span
+                className="absolute inset-0 rounded-full animate-pulse"
+                style={{ background: "currentColor" }}
+              />
+              <span
+                className="sonar-ring absolute inset-0 rounded-full"
+                style={{ borderColor: "currentColor" }}
+              />
+            </span>
             <div className="min-w-0">
               <p
                 className="text-sm font-semibold truncate"
@@ -149,7 +155,7 @@ export function HomeScreen({
             className="font-bold tracking-tight"
             style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}
           >
-            {greeting}, Alex
+            {greeting}
           </p>
           <div className="flex items-center gap-2 mt-1.5">
             <span
@@ -195,11 +201,11 @@ export function HomeScreen({
       </div>
 
       {/* ── Circular Scan Button ── */}
-      <div className="flex flex-col items-center mt-10">
+      <div className="flex flex-col items-center mt-10 spring-in">
         <button
           onClick={onScanSign}
           disabled={loading}
-          className="relative flex items-center justify-center disabled:opacity-50"
+          className="relative flex items-center justify-center disabled:opacity-50 breathe-glow"
           style={{ width: 120, height: 120 }}
           aria-label="Scan a sign"
         >
@@ -240,12 +246,12 @@ export function HomeScreen({
       </div>
 
       {/* ── 2x2 Quick Action Grid ── */}
-      <div className="grid grid-cols-2 gap-3 mt-10">
+      <div className="grid grid-cols-2 gap-3 mt-10 stagger-spring">
         {/* Check Here */}
         <button
           onClick={onCheckParking}
           disabled={loading || remainingChecks === 0}
-          className="glass-card p-4 text-left press-effect disabled:opacity-50"
+          className="glass-card p-4 text-left press-effect hover-lift-interactive disabled:opacity-50"
           style={{
             background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -270,7 +276,7 @@ export function HomeScreen({
         <button
           onClick={onSetTimer}
           disabled={loading || timerActive}
-          className="glass-card p-4 text-left press-effect disabled:opacity-50"
+          className="glass-card p-4 text-left press-effect hover-lift-interactive disabled:opacity-50"
           style={{
             background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -294,7 +300,7 @@ export function HomeScreen({
         {/* Saved Spots */}
         <button
           onClick={onOpenSaved}
-          className="glass-card p-4 text-left press-effect"
+          className="glass-card p-4 text-left press-effect hover-lift-interactive"
           style={{
             background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -318,7 +324,7 @@ export function HomeScreen({
         {/* Map */}
         <button
           onClick={onOpenMap}
-          className="glass-card p-4 text-left press-effect"
+          className="glass-card p-4 text-left press-effect hover-lift-interactive"
           style={{
             background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.08)",

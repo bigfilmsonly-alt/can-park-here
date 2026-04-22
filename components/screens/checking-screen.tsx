@@ -34,8 +34,16 @@ export function CheckingScreen({ onComplete }: CheckingScreenProps) {
       className="absolute inset-0 z-50 flex flex-col items-center justify-center animate-fade-in"
       style={{ background: "var(--background)" }}
     >
+      {/* Subtle radial gradient pulse background */}
+      <div
+        className="absolute inset-0 radial-pulse pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at 50% 45%, rgba(52,199,89,0.08) 0%, transparent 60%)",
+        }}
+      />
+
       {/* Spinning ring + pin */}
-      <div className="relative" style={{ width: 140, height: 140 }}>
+      <div className="relative breathe-glow rounded-full" style={{ width: 140, height: 140 }}>
         {/* Outer spinning ring */}
         <svg
           className="absolute inset-0 animate-checking-spin"
@@ -89,9 +97,10 @@ export function CheckingScreen({ onComplete }: CheckingScreenProps) {
         Reading your spot
       </h2>
 
-      {/* Phase text */}
+      {/* Phase text with count-reveal transition */}
       <p
-        className="mt-2"
+        key={phase}
+        className="mt-2 count-reveal"
         style={{
           fontSize: 14,
           color: "var(--muted-foreground)",
@@ -101,21 +110,34 @@ export function CheckingScreen({ onComplete }: CheckingScreenProps) {
         {phases[phase]}
       </p>
 
-      {/* Progress dots */}
-      <div className="flex items-center gap-1.5 mt-6">
-        {phases.map((_, i) => (
-          <div
-            key={i}
-            className="rounded-full"
-            style={{
-              width: 8,
-              height: 8,
-              background: i <= phase ? "var(--accent)" : "transparent",
-              border: i <= phase ? "none" : "1.5px solid var(--border)",
-              transition: "all 0.3s ease",
-            }}
-          />
-        ))}
+      {/* Progress dots with sonar ring on active */}
+      <div className="flex items-center gap-3 mt-6">
+        {phases.map((_, i) => {
+          const isCurrentPhase = i === phase
+          const isFilled = i <= phase
+
+          return (
+            <div key={i} className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>
+              {/* Sonar ring on the currently active dot */}
+              {isCurrentPhase && (
+                <div
+                  className="sonar-ring"
+                  style={{ color: "var(--accent)" }}
+                />
+              )}
+              <div
+                className="rounded-full"
+                style={{
+                  width: 8,
+                  height: 8,
+                  background: isFilled ? "var(--accent)" : "transparent",
+                  border: isFilled ? "none" : "1.5px solid var(--border)",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )

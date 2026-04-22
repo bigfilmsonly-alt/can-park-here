@@ -169,7 +169,7 @@ export function CommunityScreen({
             <h1 className="text-[32px] font-bold tracking-tight mt-1">Spots near you</h1>
           </div>
           <button
-            className="w-11 h-11 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shrink-0"
+            className="breathe-glow w-11 h-11 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shrink-0"
             onClick={onOpenReportIssue}
             aria-label="New report"
           >
@@ -187,7 +187,7 @@ export function CommunityScreen({
           <button
             key={filter.value}
             onClick={() => setActiveFilter(filter.value)}
-            className={`px-3.5 py-2 rounded-full text-[13px] font-semibold transition-colors ${
+            className={`px-3.5 py-2 rounded-full text-[13px] font-semibold transition-all duration-300 ${
               activeFilter === filter.value
                 ? "bg-foreground text-background"
                 : "bg-muted text-foreground"
@@ -209,7 +209,7 @@ export function CommunityScreen({
           return (
             <div
               key={sighting.id}
-              className="bg-card card-elevated rounded-[18px] p-3.5"
+              className="hover-lift-interactive bg-card card-elevated rounded-[18px] p-3.5"
             >
               <div className="flex items-center gap-3">
                 {/* Icon circle */}
