@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { X, Camera, Upload, ImageIcon, CheckCircle, AlertTriangle, XCircle, Clock, RefreshCw } from "lucide-react"
+import { X, Camera, Upload, Check, AlertTriangle, Clock, RefreshCw, ShieldCheck, Loader2 } from "lucide-react"
 import { interpretSignForUser, type ParsedSign } from "@/lib/sign-parser"
 
 interface ScanSignModalProps {
@@ -23,19 +22,14 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraStreamRef = useRef<MediaStream | null>(null)
 
-  // Keep ref in sync for cleanup
-  useEffect(() => {
-    cameraStreamRef.current = cameraStream
-  }, [cameraStream])
+  useEffect(() => { cameraStreamRef.current = cameraStream }, [cameraStream])
 
-  // Cleanup camera stream on unmount or when modal closes
   useEffect(() => {
     if (!isOpen && cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach(track => track.stop())
       cameraStreamRef.current = null
       setCameraStream(null)
     }
-
     return () => {
       if (cameraStreamRef.current) {
         cameraStreamRef.current.getTracks().forEach(track => track.stop())
@@ -45,24 +39,16 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
   }, [isOpen])
 
   const startCamera = useCallback(async () => {
-    // SSR guard
     if (typeof navigator === "undefined" || !navigator.mediaDevices) {
       fileInputRef.current?.click()
       return
     }
-
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
       setCameraStream(stream)
       setState("camera")
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
+      if (videoRef.current) videoRef.current.srcObject = stream
     } catch {
-      // Camera not available, show upload option
       fileInputRef.current?.click()
     }
   }, [])
@@ -84,13 +70,9 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
         body: JSON.stringify({ imageDataUrl }),
       })
       const data = await res.json()
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Scan failed")
-      }
+      if (!res.ok || !data.ok) throw new Error(data.error || "Scan failed")
       setScanResult(data.data.sign as ParsedSign)
-    } catch (err) {
-      console.error("Scan error:", err)
-      // Surface an unknown result so the user knows something went wrong
+    } catch {
       setScanResult({
         type: "unknown",
         status: "allowed",
@@ -105,20 +87,16 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
   const capturePhoto = useCallback(async () => {
     let imageDataUrl = ""
     if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current
       const canvas = canvasRef.current
-
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-
+      canvas.width = videoRef.current.videoWidth
+      canvas.height = videoRef.current.videoHeight
       const ctx = canvas.getContext("2d")
       if (ctx) {
-        ctx.drawImage(video, 0, 0)
+        ctx.drawImage(videoRef.current, 0, 0)
         imageDataUrl = canvas.toDataURL("image/jpeg")
         setCapturedImage(imageDataUrl)
       }
     }
-
     stopCamera()
     await scanImage(imageDataUrl)
   }, [stopCamera, scanImage])
@@ -128,32 +106,20 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
     if (file) {
       const reader = new FileReader()
       reader.onload = async (event) => {
-        const imageDataUrl = event.target?.result as string
-        setCapturedImage(imageDataUrl)
-        await scanImage(imageDataUrl)
+        const url = event.target?.result as string
+        setCapturedImage(url)
+        await scanImage(url)
       }
       reader.readAsDataURL(file)
     }
   }, [scanImage])
 
-  const handleClose = () => {
-    stopCamera()
-    setState("idle")
-    setCapturedImage(null)
-    setScanResult(null)
-    onClose()
-  }
-
-  const handleRetry = () => {
-    setCapturedImage(null)
-    setScanResult(null)
-    setState("idle")
-  }
-
+  const handleClose = () => { stopCamera(); setState("idle"); setCapturedImage(null); setScanResult(null); onClose() }
+  const handleRetry = () => { setCapturedImage(null); setScanResult(null); setState("idle") }
   const handleConfirm = () => {
     if (scanResult) {
-      const interpretation = interpretSignForUser(scanResult)
-      onResult(interpretation.canPark, interpretation.timeLimit)
+      const interp = interpretSignForUser(scanResult)
+      onResult(interp.canPark, interp.timeLimit)
     }
     handleClose()
   }
@@ -161,193 +127,185 @@ export function ScanSignModal({ isOpen, onClose, onResult }: ScanSignModalProps)
   if (!isOpen) return null
 
   const interpretation = scanResult ? interpretSignForUser(scanResult) : null
+  const lowConfidence = scanResult ? scanResult.confidence < 70 : false
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end justify-center">
-      <div className="w-full max-w-md bg-card rounded-t-3xl p-6 pb-10 animate-in slide-in-from-bottom duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">
-            {state === "result" ? "Sign Analysis" : "Scan a street sign"}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0b0f17" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-14 pb-3">
+        <button onClick={handleClose} className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "#1a1f2b" }}>
+          <X className="w-5 h-5" style={{ color: "#f8fafc" }} />
+        </button>
+        <span className="text-sm font-semibold" style={{ color: "#94a3b8" }}>
+          {state === "result" ? "Result" : state === "scanning" ? "Analyzing..." : "Scan Sign"}
+        </span>
+        <div className="w-10" />
+      </div>
+
+      {/* ── IDLE ── */}
+      {state === "idle" && (
+        <div className="flex-1 flex flex-col items-center justify-center px-8">
+          <div className="w-24 h-24 rounded-[28px] flex items-center justify-center mb-6" style={{ background: "#1a1f2b", border: "1px solid #2d3447" }}>
+            <Camera className="w-12 h-12" style={{ color: "#64748b" }} />
+          </div>
+          <h2 className="text-2xl font-bold text-center" style={{ color: "#f8fafc" }}>Point at any parking sign</h2>
+          <p className="text-sm text-center mt-2" style={{ color: "#94a3b8", maxWidth: 280 }}>
+            Our AI reads the sign and tells you exactly what it means
+          </p>
+          <div className="w-full mt-10 space-y-3 max-w-xs">
+            <button onClick={startCamera} className="w-full py-4 rounded-full font-bold text-base press-effect" style={{ background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", color: "#fff" }}>
+              Open Camera
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} className="w-full py-3 rounded-full font-semibold text-sm" style={{ color: "#94a3b8" }}>
+              <Upload className="w-4 h-4 inline mr-2" />Upload photo
+            </button>
+          </div>
         </div>
+      )}
 
-        {/* Idle state */}
-        {state === "idle" && (
-          <>
-            <div className="aspect-4/3 rounded-2xl bg-muted flex flex-col items-center justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-muted-foreground/10 flex items-center justify-center mb-4">
-                <ImageIcon className="h-8 w-8 text-muted-foreground" />
+      {/* ── CAMERA ── */}
+      {state === "camera" && (
+        <div className="flex-1 flex flex-col relative">
+          <div className="flex-1 relative overflow-hidden">
+            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            {/* Scanning frame */}
+            <div className="absolute inset-[15%] border-2 border-dashed border-white/50 rounded-2xl pointer-events-none" />
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+              <div className="px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", color: "#f8fafc" }}>
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#f59e0b" }} />
+                Hold steady on the sign
               </div>
-              <p className="text-muted-foreground text-center px-8">
-                Point your camera at the parking sign
-              </p>
             </div>
+          </div>
+          {/* Shutter */}
+          <div className="flex justify-center py-8" style={{ background: "#0b0f17" }}>
+            <button onClick={capturePhoto} className="w-20 h-20 rounded-full flex items-center justify-center press-effect" style={{ background: "#fff", border: "4px solid rgba(255,255,255,0.4)" }}>
+              <div className="w-16 h-16 rounded-full" style={{ background: "#fff", border: "2px solid rgba(0,0,0,0.06)" }} />
+            </button>
+          </div>
+        </div>
+      )}
 
-            <div className="space-y-3">
-              <Button
-                onClick={startCamera}
-                className="w-full h-14 text-base font-medium rounded-2xl"
-              >
-                <span className="flex items-center gap-2">
-                  <Camera className="h-5 w-5" />
-                  Open Camera
-                </span>
-              </Button>
-
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-4 text-base text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Upload className="h-5 w-5" />
-                Upload from library
-              </button>
+      {/* ── SCANNING (animated) ── */}
+      {state === "scanning" && (
+        <div className="flex-1 flex flex-col items-center justify-center px-8">
+          {capturedImage && (
+            <div className="w-48 h-48 rounded-[28px] overflow-hidden mb-8 relative" style={{ border: "1px solid #2d3447" }}>
+              <img src={capturedImage} alt="Sign" className="w-full h-full object-cover opacity-40" />
+              {/* Scan line */}
+              <div className="absolute left-0 right-0 h-0.5" style={{ background: "#3b82f6", boxShadow: "0 0 20px #3b82f6", animation: "scanLine 1.4s ease-in-out infinite" }} />
             </div>
-          </>
-        )}
+          )}
+          <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: "#3b82f6" }} />
+          <h2 className="text-lg font-bold" style={{ color: "#f8fafc" }}>Analyzing sign...</h2>
+          <p className="text-sm mt-1" style={{ color: "#94a3b8" }}>Reading text and interpreting rules</p>
+        </div>
+      )}
 
-        {/* Camera state */}
-        {state === "camera" && (
-          <>
-            <div className="aspect-4/3 rounded-2xl overflow-hidden bg-black mb-6 relative">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
-              {/* Camera frame overlay */}
-              <div className="absolute inset-4 border-2 border-white/50 rounded-xl pointer-events-none" />
+      {/* ── RESULT (slide up) ── */}
+      {state === "result" && interpretation && (
+        <div className="flex-1 flex flex-col animate-slide-in-up">
+          {/* Image */}
+          {capturedImage && (
+            <div className="h-48 overflow-hidden relative">
+              <img src={capturedImage} alt="Sign" className="w-full h-full object-cover opacity-30" />
             </div>
+          )}
 
-            <Button
-              onClick={capturePhoto}
-              className="w-full h-14 text-base font-medium rounded-2xl"
+          {/* Result card */}
+          <div className="flex-1 px-5 -mt-8 relative z-10">
+            {/* Success card (green) or warning card (yellow) */}
+            <div
+              className="p-5 rounded-[22px]"
+              style={{
+                background: lowConfidence
+                  ? "rgba(245,158,11,0.12)"
+                  : interpretation.canPark
+                    ? "rgba(16,185,129,0.12)"
+                    : "rgba(239,68,68,0.12)",
+                border: `1px solid ${lowConfidence ? "rgba(245,158,11,0.25)" : interpretation.canPark ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.25)"}`,
+              }}
             >
-              <span className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Capture Sign
-              </span>
-            </Button>
-          </>
-        )}
-
-        {/* Scanning state */}
-        {state === "scanning" && (
-          <>
-            <div className="aspect-4/3 rounded-2xl overflow-hidden bg-muted mb-6 relative">
-              {capturedImage && (
-                <img src={capturedImage} alt="Captured sign" className="w-full h-full object-cover" />
-              )}
-              <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin mb-4" />
-                <p className="text-sm font-medium text-foreground">Analyzing sign...</p>
-                <p className="text-xs text-muted-foreground mt-1">Reading text and interpreting rules</p>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Result state */}
-        {state === "result" && interpretation && (
-          <>
-            <div className="aspect-4/3 rounded-2xl overflow-hidden bg-muted mb-6 relative">
-              {capturedImage && (
-                <img src={capturedImage} alt="Captured sign" className="w-full h-full object-cover opacity-50" />
-              )}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-                  interpretation.canPark ? "bg-status-success/20" : "bg-status-error/20"
-                }`}>
-                  {interpretation.canPark ? (
-                    <CheckCircle className="h-8 w-8 text-status-success-foreground" />
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: lowConfidence ? "rgba(245,158,11,0.2)" : interpretation.canPark ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)",
+                  }}
+                >
+                  {lowConfidence ? (
+                    <AlertTriangle className="w-6 h-6" style={{ color: "#f59e0b" }} />
+                  ) : interpretation.canPark ? (
+                    <Check className="w-6 h-6" style={{ color: "#10b981" }} />
                   ) : (
-                    <XCircle className="h-8 w-8 text-status-error-foreground" />
+                    <X className="w-6 h-6" style={{ color: "#ef4444" }} />
                   )}
                 </div>
-                <h3 className={`text-xl font-semibold text-center ${
-                  interpretation.canPark ? "text-status-success-foreground" : "text-status-error-foreground"
-                }`}>
-                  {interpretation.headline}
-                </h3>
+                <div>
+                  <p className="text-base font-bold" style={{
+                    color: lowConfidence ? "#f59e0b" : interpretation.canPark ? "#10b981" : "#ef4444",
+                  }}>
+                    {lowConfidence ? "Low confidence" : interpretation.headline}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>
+                    {scanResult?.confidence || 0}% confidence
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Details */}
-            <div className="mb-6 space-y-4">
-              <div className="p-4 bg-muted rounded-xl">
-                <p className="text-sm text-foreground">{interpretation.explanation}</p>
-                
-                {interpretation.timeLimit && (
-                  <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>{interpretation.timeLimit / 60} hour limit</span>
+            {/* Explanation */}
+            <div className="mt-4 p-4 rounded-2xl" style={{ background: "#1a1f2b", border: "1px solid #2d3447" }}>
+              <p className="text-sm" style={{ color: "#cbd5e1", lineHeight: 1.5 }}>
+                {interpretation.explanation}
+              </p>
+              {interpretation.timeLimit && (
+                <div className="flex items-center gap-2 mt-3 text-xs" style={{ color: "#94a3b8" }}>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{Math.round(interpretation.timeLimit / 60)} hour limit</span>
+                </div>
+              )}
+            </div>
+
+            {/* Low confidence warning */}
+            {lowConfidence && (
+              <div className="mt-3 p-3.5 rounded-2xl flex items-start gap-3" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)" }}>
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#f59e0b" }} />
+                <p className="text-xs" style={{ color: "#fbbf24", lineHeight: 1.5 }}>
+                  We couldn't read this sign clearly. Double-check the rules before parking, or try scanning again from a different angle.
+                </p>
+              </div>
+            )}
+
+            {/* Warnings */}
+            {interpretation.warnings.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {interpretation.warnings.map((w, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs" style={{ color: "#f59e0b" }}>
+                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span>{w}</span>
                   </div>
-                )}
+                ))}
               </div>
+            )}
+          </div>
 
-              {interpretation.warnings.length > 0 && (
-                <div className="space-y-2">
-                  {interpretation.warnings.map((warning, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm text-status-warning-foreground">
-                      <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-                      <span>{warning}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* Bottom actions */}
+          <div className="px-5 pt-4 pb-10" style={{ borderTop: "1px solid #2d3447" }}>
+            <button onClick={handleConfirm} className="w-full py-4 rounded-full font-bold text-base press-effect" style={{ background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", color: "#fff" }}>
+              {interpretation.canPark ? "Park Here" : "Got It"}
+            </button>
+            <button onClick={handleRetry} className="w-full py-3 mt-2 flex items-center justify-center gap-2 text-sm font-semibold" style={{ color: "#94a3b8" }}>
+              <RefreshCw className="w-4 h-4" /> Scan Another Sign
+            </button>
+          </div>
+        </div>
+      )}
 
-              {/* Confidence indicator */}
-              {scanResult && (
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Confidence</span>
-                  <span>{scanResult.confidence}%</span>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="space-y-3">
-              <Button
-                onClick={handleConfirm}
-                className="w-full h-14 text-base font-medium rounded-2xl"
-              >
-                {interpretation.canPark ? "Start Parking Here" : "Got It"}
-              </Button>
-
-              <button
-                onClick={handleRetry}
-                className="w-full flex items-center justify-center gap-2 py-4 text-base text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <RefreshCw className="h-5 w-5" />
-                Scan Another Sign
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Hidden elements */}
-        <canvas ref={canvasRef} className="hidden" />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-
-        {state === "idle" && (
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Our AI reads the sign and tells you the rules
-          </p>
-        )}
-      </div>
+      {/* Hidden */}
+      <canvas ref={canvasRef} className="hidden" />
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+      <style>{`@keyframes scanLine { 0% { top: 10%; } 100% { top: 90%; } }`}</style>
     </div>
   )
 }

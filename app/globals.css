@@ -3,32 +3,32 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ===== DARK-ONLY DESIGN SYSTEM — System Green (#34C759) ===== */
+/* ===== DARK-ONLY DESIGN SYSTEM — Blue Accent (#3b82f6) ===== */
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.07);
-  --card-foreground: #ffffff;
-  --popover: rgba(255, 255, 255, 0.07);
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: rgba(255, 255, 255, 0.05);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: rgba(255, 255, 255, 0.55);
-  --accent: #34C759;
+  --background: #0b0f17;
+  --foreground: #f8fafc;
+  --card: #1a1f2b;
+  --card-foreground: #f8fafc;
+  --popover: #1a1f2b;
+  --popover-foreground: #f8fafc;
+  --primary: #f8fafc;
+  --primary-foreground: #0b0f17;
+  --secondary: #262c3b;
+  --secondary-foreground: #f8fafc;
+  --muted: #262c3b;
+  --muted-foreground: #94a3b8;
+  --accent: #3b82f6;
   --accent-foreground: #ffffff;
-  --accent-deep: #28A745;
-  --accent-pale: rgba(52, 199, 89, 0.12);
-  --accent-ink: #34C759;
-  --destructive: #FF3B30;
-  --destructive-foreground: #FF6961;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #34C759;
-  --hairline: rgba(255, 255, 255, 0.06);
-  --fg2: rgba(255, 255, 255, 0.7);
+  --accent-deep: #1d4ed8;
+  --accent-pale: rgba(59, 130, 246, 0.12);
+  --accent-ink: #3b82f6;
+  --destructive: #ef4444;
+  --destructive-foreground: #f87171;
+  --border: #2d3447;
+  --input: #2d3447;
+  --ring: #3b82f6;
+  --hairline: rgba(45, 52, 71, 0.8);
+  --fg2: #cbd5e1;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -37,31 +37,31 @@
   --radius: 0.75rem;
 
   /* Named colors */
-  --green: #34C759;
-  --green-dark: #248A3D;
-  --amber: #FF9500;
-  --red: #FF3B30;
-  --blue: #007AFF;
-  --ink: #FFFFFF;
-  --ink2: rgba(255, 255, 255, 0.55);
-  --ink3: rgba(255, 255, 255, 0.28);
-  --bg: #000000;
-  --card-glass: rgba(255, 255, 255, 0.07);
-  --card2: rgba(255, 255, 255, 0.04);
-  --border2: rgba(255, 255, 255, 0.06);
-  --tab-inactive: rgba(255, 255, 255, 0.4);
-  --tab-bg: rgba(0, 0, 0, 0.82);
+  --green: #10b981;
+  --green-dark: #059669;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --ink: #f8fafc;
+  --ink2: #cbd5e1;
+  --ink3: #64748b;
+  --bg: #0b0f17;
+  --card-glass: rgba(26, 31, 43, 0.9);
+  --card2: rgba(26, 31, 43, 0.6);
+  --border2: #2d3447;
+  --tab-inactive: #94a3b8;
+  --tab-bg: rgba(11, 15, 23, 0.82);
 
   /* Status colors */
-  --status-success: #34C759;
-  --status-success-bg: rgba(52, 199, 89, 0.15);
-  --status-success-foreground: #30D158;
-  --status-warning: #FF9500;
-  --status-warning-bg: rgba(255, 149, 0, 0.15);
-  --status-warning-foreground: #FFB340;
-  --status-error: #FF3B30;
-  --status-error-bg: rgba(255, 59, 48, 0.15);
-  --status-error-foreground: #FF6961;
+  --status-success: #10b981;
+  --status-success-bg: rgba(16, 185, 129, 0.15);
+  --status-success-foreground: #34d399;
+  --status-warning: #f59e0b;
+  --status-warning-bg: rgba(245, 158, 11, 0.15);
+  --status-warning-foreground: #fbbf24;
+  --status-error: #ef4444;
+  --status-error-bg: rgba(239, 68, 68, 0.15);
+  --status-error-foreground: #f87171;
 }
 
 @theme inline {
@@ -131,7 +131,7 @@
   ::-webkit-scrollbar { width: 0; height: 0; display: none; }
   * { scrollbar-width: none; }
 
-  ::selection { background: rgba(52, 199, 89, 0.25); }
+  ::selection { background: rgba(59, 130, 246, 0.25); }
 
   .app-shell {
     padding-top: env(safe-area-inset-top);
@@ -310,8 +310,8 @@
 
 /* Breathing glow — subtle background pulse for CTAs */
 @keyframes breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
-  50% { box-shadow: 0 0 24px 6px rgba(52, 199, 89, 0.18); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 24px 6px rgba(59, 130, 246, 0.18); }
 }
 .breathe-glow {
   animation: breathe 3s ease-in-out infinite;
@@ -468,7 +468,7 @@
 .screen-reader-mode button:focus, .screen-reader-mode a:focus,
 .screen-reader-mode input:focus, .screen-reader-mode select:focus,
 .screen-reader-mode textarea:focus {
-  box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.3) !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3) !important;
 }
 
 .skip-link {
@@ -516,7 +516,7 @@
 
 /* Desktop: show iPhone showcase */
 @media (min-width: 768px) {
-  body { background: #000000 !important; }
+  body { background: #0b0f17 !important; }
 
   .showcase-root {
     display: flex;
@@ -527,7 +527,7 @@
     min-height: 100dvh;
     padding: 20px;
     gap: 20px;
-    background: linear-gradient(160deg, #000000 0%, #0a0a0a 40%, #050505 70%, #000000 100%);
+    background: linear-gradient(160deg, #0b0f17 0%, #0d1320 40%, #090d15 70%, #0b0f17 100%);
     position: relative;
     overflow: hidden;
   }
@@ -536,7 +536,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(52, 199, 89, 0.03) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px);
     background-size: 28px 28px;
     pointer-events: none;
   }
@@ -549,7 +549,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -45%);
-    background: radial-gradient(circle, rgba(52, 199, 89, 0.05) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 65%);
     pointer-events: none;
   }
 

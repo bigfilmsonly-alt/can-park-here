@@ -225,7 +225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         street: "Valencia & 20th",
         city: "San Francisco",
         timestamp: new Date(),
-      }
+      } as LocationData
     }
 
     const userAccessibility = getUserAccessibility()

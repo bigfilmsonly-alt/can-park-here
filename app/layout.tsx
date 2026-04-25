@@ -18,31 +18,40 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://can-park-here.vercel.app'),
   title: {
-    default: 'Park — Can I park here?',
+    default: 'Park — Can I Park Here? We pay your ticket if we\'re wrong.',
     template: '%s | Park',
   },
-  description: 'Clear answers. No tickets. No confusion.',
+  description: 'The only parking app that pays your ticket if we\'re wrong. Up to $100 guarantee. 95% accuracy. Instant answers. SF coverage live.',
   generator: 'Next.js',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Park',
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
-    title: 'Park — Can I park here?',
-    description: 'Clear answers. No tickets. No confusion.',
+    title: 'Can I Park Here? — We pay your ticket if we\'re wrong.',
+    description: 'The only parking app with a $100 ticket guarantee. Scan any sign, get instant answers, and we\'ll cover the ticket if we\'re wrong. 95% accuracy. SF coverage live.',
     siteName: 'Park',
     type: 'website',
     locale: 'en_US',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Park — Yes, park here. 95% confidence. Protected by Ticket Guarantee.',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Park — Can I park here?',
-    description: 'Clear answers. No tickets. No confusion.',
+    title: 'Can I Park Here? — We pay your ticket if we\'re wrong.',
+    description: 'The only parking app with a $100 ticket guarantee. 95% accuracy. SF coverage live.',
+    images: ['/og-image.png'],
   },
   icons: {
     icon: [

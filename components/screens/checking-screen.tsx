@@ -38,7 +38,7 @@ export function CheckingScreen({ onComplete }: CheckingScreenProps) {
       <div
         className="absolute inset-0 radial-pulse pointer-events-none"
         style={{
-          background: "radial-gradient(circle at 50% 45%, rgba(52,199,89,0.08) 0%, transparent 60%)",
+          background: "radial-gradient(circle at 50% 45%, rgba(59,130,246,0.08) 0%, transparent 60%)",
         }}
       />
 
