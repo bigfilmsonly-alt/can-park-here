@@ -12,6 +12,7 @@ import { PermissionRequest } from "@/components/onboarding/permission-request"
 import { AuthScreen } from "@/components/auth/auth-screen"
 import { BiometricLock } from "@/components/biometric-lock"
 import { CheckingScreen } from "@/components/screens/checking-screen"
+import { SwUpdatePrompt } from "@/components/sw-update-prompt"
 import { CityProvider } from "@/lib/city-context"
 import { I18nProvider } from "@/lib/i18n"
 
@@ -99,11 +100,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <main className="app-shell bg-background">
       {!ctx.isOnline && <OfflineBanner cachedCount={ctx.cachedCount} />}
-      <div className={`app-scroll max-w-md mx-auto ${!ctx.isOnline ? "pt-12" : ""}`}>
+      <div className={`app-scroll max-w-md mx-auto page-transition ${!ctx.isOnline ? "pt-12" : ""}`}>
         {children}
       </div>
       <BottomNav />
       <InstallPrompt />
+      <SwUpdatePrompt />
       <UpgradeModal
         isOpen={ctx.showUpgrade}
         onClose={() => ctx.setShowUpgrade(false)}
