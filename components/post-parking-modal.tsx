@@ -385,7 +385,18 @@ export function PostParkingModal({
 
             {/* Share win */}
             <button
-              onClick={onShare}
+              onClick={async () => {
+                const shareData = {
+                  title: "Park - Never get a parking ticket again",
+                  text: "Just parked in SF without getting a ticket. Park tells you in 2 seconds if you can park - and pays your ticket if wrong. Try it free:",
+                  url: "https://can-park-here.vercel.app",
+                }
+                if (navigator.share) {
+                  try { await navigator.share(shareData) } catch {}
+                } else {
+                  onShare()
+                }
+              }}
               className="press"
               style={{
                 width: "100%", marginTop: 20, padding: "14px 16px", borderRadius: 14, border: "none",
@@ -397,6 +408,16 @@ export function PostParkingModal({
             >
               <Share2 style={{ width: 16, height: 16 }} strokeWidth={2} />
               Share with friends
+            </button>
+            <button
+              onClick={onShare}
+              style={{
+                background: "none", border: "none", color: "var(--park-accent)",
+                fontSize: 13, fontWeight: 600, marginTop: 10, cursor: "pointer",
+                textDecoration: "underline", textUnderlineOffset: 2,
+              }}
+            >
+              Invite a friend
             </button>
             <button
               onClick={handleClose}

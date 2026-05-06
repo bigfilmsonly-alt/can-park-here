@@ -221,8 +221,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: data.icon || '/icons/icon-192x192.png',
-    badge: data.badge || '/icons/icon-72x72.png',
+    icon: data.icon || '/icons/icon-192x192.svg',
+    badge: data.badge || '/icons/icon-72x72.svg',
     tag: data.tag || 'park-notification',
     renotify: !!data.tag,
     data: { url: data.url || '/' },

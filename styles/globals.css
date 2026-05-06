@@ -166,12 +166,53 @@
   body { @apply bg-background text-foreground; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 }
 
-.press { transition: transform 0.12s cubic-bezier(0.2,0.7,0.3,1), opacity 0.12s; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+/* ── Overscroll: prevent Safari bounce-back ── */
+html, body { overscroll-behavior: none; }
+.app-shell { overscroll-behavior-y: contain; }
+
+/* ── Press state for all interactive elements ── */
+.press { transition: transform 0.12s cubic-bezier(0.2,0.7,0.3,1), opacity 0.12s; -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none; }
 .press:active { transform: scale(0.975); opacity: 0.88; }
+
+/* ── Page transition ── */
 .fade-in { animation: parkFadeIn 0.24s ease; }
 @keyframes parkFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── Page route transition (crossfade) ── */
+.page-transition { animation: pageIn 0.2s ease-out; }
+@keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Scrolling ── */
 .park-scroll { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .park-scroll::-webkit-scrollbar { width: 0; display: none; }
+
+/* ── Toast animations ── */
 .park-toast-enter { animation: parkToastIn 0.22s ease, parkToastOut 0.35s ease 1.6s forwards; }
 @keyframes parkToastIn { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes parkToastOut { to { opacity: 0; transform: translate(-50%, -12px); } }
+
+/* ── SW update banner slide-in ── */
+.sw-update-enter { animation: swSlideUp 0.3s cubic-bezier(0.2,0.7,0.3,1); }
+@keyframes swSlideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: none; } }
+
+/* ── Pull-to-refresh indicator ── */
+.pull-indicator { transition: transform 0.2s ease, opacity 0.2s ease; }
+
+/* ── Number tick animation ── */
+.num-tick { display: inline-block; animation: numTick 0.35s cubic-bezier(0.2,0.7,0.3,1); }
+@keyframes numTick { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ── Safe areas ── */
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+
+/* ── Prefers-reduced-motion: disable all custom animations ── */
+@media (prefers-reduced-motion: reduce) {
+  .press:active { transform: none; }
+  .fade-in, .page-transition, .park-toast-enter, .sw-update-enter, .num-tick { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

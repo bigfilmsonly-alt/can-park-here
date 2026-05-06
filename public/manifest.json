@@ -1,15 +1,21 @@
 {
   "name": "Park - Can I park here?",
   "short_name": "Park",
-  "description": "Clear answers. No tickets. No confusion.",
+  "description": "Clear answers. No tickets. No confusion. $100 ticket guarantee.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
   "orientation": "portrait",
   "scope": "/",
   "id": "/",
   "icons": [
+    {
+      "src": "/icons/icon-72x72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml"
+    },
     {
       "src": "/icon-light-32x32.png",
       "sizes": "32x32",
@@ -27,10 +33,21 @@
       "purpose": "any"
     },
     {
-      "src": "/icon.svg",
-      "sizes": "any",
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ],
   "categories": ["navigation", "utilities"],
@@ -42,12 +59,25 @@
       "url": "/?action=check"
     },
     {
+      "name": "Scan Sign",
+      "short_name": "Scan",
+      "description": "Scan a parking sign with AI",
+      "url": "/scan"
+    },
+    {
       "name": "Set Timer",
       "short_name": "Timer",
       "description": "Set a parking reminder timer",
       "url": "/?action=timer"
     }
   ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "text": "address"
+    }
+  },
   "related_applications": [],
   "prefer_related_applications": false
 }

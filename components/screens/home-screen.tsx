@@ -220,8 +220,8 @@ export function HomeScreen({
               <Gift style={{ width: 18, height: 18 }} strokeWidth={1.75} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>Invite friends, earn karma</div>
-              <div style={{ fontSize: 11, opacity: 0.8, marginTop: 1 }}>Both get 100 karma per invite</div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>Give friends free parking protection</div>
+              <div style={{ fontSize: 11, opacity: 0.8, marginTop: 1 }}>They get the app free + 50 karma bonus</div>
             </div>
             <Share2 style={{ width: 16, height: 16, opacity: 0.7 }} strokeWidth={2} />
           </button>

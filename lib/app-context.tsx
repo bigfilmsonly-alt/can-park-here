@@ -31,7 +31,7 @@ import {
 } from "@/lib/protection"
 import { getCurrentUserSync, getCurrentUser, isOnboardingComplete, completeOnboarding, incrementStats, signOut as authSignOut, type User } from "@/lib/auth"
 import { isSupabaseConfigured, createClient as createSupabaseClient } from "@/lib/supabase/client"
-import { updateStreak, incrementGamificationStat } from "@/lib/gamification"
+import { updateStreak, incrementGamificationStat, applyReferralCode } from "@/lib/gamification"
 import { getAccessibilitySettings, applyAccessibilityStyles } from "@/lib/accessibility"
 import { showToast } from "@/components/ui/toast-notification"
 import { VoiceButton } from "@/components/voice-button"
@@ -189,6 +189,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
         newBadges.forEach((b) => showToast("success", `Badge unlocked: ${b.name}`, b.description))
       })
       .finally(() => setAuthChecked(true))
+  }, [])
+
+  // Handle ?ref=CODE referral links
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref")
+    if (ref) {
+      const applied = applyReferralCode(ref)
+      if (applied) {
+        showToast("success", "Referral code applied!", "+50 karma bonus")
+      }
+      // Clean the URL parameter from the browser bar
+      const url = new URL(window.location.href)
+      url.searchParams.delete("ref")
+      window.history.replaceState({}, "", url.pathname + url.search)
+    }
   }, [])
 
   // Listen for Supabase auth state changes (session refresh, sign-out in
