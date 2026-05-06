@@ -17,6 +17,7 @@ import type { ProtectionSession } from "@/lib/protection"
 import { formatTimeRemaining } from "@/lib/parking-rules"
 import { CityToggle } from "@/components/city-toggle"
 import { useI18n } from "@/lib/i18n"
+import { useHaptics } from "@/hooks/use-haptics"
 
 interface HomeScreenProps {
   onCheckParking: () => void
@@ -60,7 +61,23 @@ export function HomeScreen({
   onShare,
 }: HomeScreenProps) {
   const { t } = useI18n()
+  const haptics = useHaptics()
   const hasActiveSession = activeSession?.status === "active"
+
+  const handleCheckWithHaptic = () => {
+    haptics.medium()
+    onCheckParking()
+  }
+
+  const handleScanWithHaptic = () => {
+    haptics.light()
+    onScanSign()
+  }
+
+  const handleTimerWithHaptic = () => {
+    haptics.light()
+    onSetTimer()
+  }
 
   return (
     <div className="flex flex-col pb-28 park-scroll fade-in" style={{ background: "#fff", color: "#0f172a", minHeight: "100vh" }}>
@@ -91,7 +108,7 @@ export function HomeScreen({
           HERO — #1 conversion element
          ══════════════════════════════════════ */}
       <div style={{ padding: "16px 20px 0" }}>
-        <button onClick={onCheckParking} disabled={loading} className="press" style={{ width: "100%", padding: "32px 24px 28px", borderRadius: 22, background: "linear-gradient(155deg, #3b82f6 0%, #2563eb 45%, #1d4ed8 100%)", color: "#fff", border: "none", textAlign: "left", boxShadow: "0 16px 48px rgba(37,99,235,0.3), inset 0 1px 0 rgba(255,255,255,0.15)", opacity: loading ? 0.8 : 1, position: "relative", overflow: "hidden" }}>
+        <button onClick={handleCheckWithHaptic} disabled={loading} className="press" style={{ width: "100%", padding: "32px 24px 28px", borderRadius: 22, background: "linear-gradient(155deg, #3b82f6 0%, #2563eb 45%, #1d4ed8 100%)", color: "#fff", border: "none", textAlign: "left", boxShadow: "0 16px 48px rgba(37,99,235,0.3), inset 0 1px 0 rgba(255,255,255,0.15)", opacity: loading ? 0.8 : 1, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "relative" }}>
             <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1.5, lineHeight: 1 }}>{t("home.hero")}</div>
             <p style={{ fontSize: 15, opacity: 0.85, marginTop: 8, fontWeight: 400, lineHeight: 1.5 }}>
@@ -138,7 +155,7 @@ export function HomeScreen({
 
       {/* ── Quick actions ── */}
       <div style={{ padding: "10px 20px 0", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <button onClick={onScanSign} className="press" style={{ padding: "14px 12px", borderRadius: 14, background: "#fff", border: "1px solid #e2e8f0", textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
+        <button onClick={handleScanWithHaptic} className="press" style={{ padding: "14px 12px", borderRadius: 14, background: "#fff", border: "1px solid #e2e8f0", textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "#eff6ff", color: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Scan style={{ width: 18, height: 18 }} strokeWidth={1.75} />
           </div>
@@ -147,7 +164,7 @@ export function HomeScreen({
             <div style={{ fontSize: 10, color: "#94a3b8" }}>{t("home.scan.sub")}</div>
           </div>
         </button>
-        <button onClick={onSetTimer} className="press" style={{ padding: "14px 12px", borderRadius: 14, background: "#fff", border: "1px solid #e2e8f0", textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
+        <button onClick={handleTimerWithHaptic} className="press" style={{ padding: "14px 12px", borderRadius: 14, background: "#fff", border: "1px solid #e2e8f0", textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "#eff6ff", color: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Clock style={{ width: 18, height: 18 }} strokeWidth={1.75} />
           </div>
