@@ -14,7 +14,14 @@ export default function MapPage() {
     <Suspense fallback={<PageSkeleton />}>
       <MapScreen
         onBack={() => router.back()}
-        currentLocation={ctx.currentLocation ? { lat: ctx.currentLocation.latitude, lng: ctx.currentLocation.longitude } : undefined}
+        currentLocation={
+          ctx.currentLocation
+            ? {
+                lat: ctx.currentLocation.latitude,
+                lng: ctx.currentLocation.longitude,
+              }
+            : undefined
+        }
       />
     </Suspense>
   )

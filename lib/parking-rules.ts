@@ -1,10 +1,10 @@
 export type ParkingStatus = "allowed" | "restricted" | "prohibited"
 
-export type RuleType = 
-  | "street-cleaning" 
-  | "permit-only" 
-  | "time-limit" 
-  | "no-parking" 
+export type RuleType =
+  | "street-cleaning"
+  | "permit-only"
+  | "time-limit"
+  | "no-parking"
   | "metered"
   | "handicap-only"
   | "tow-zone"
@@ -25,12 +25,30 @@ export interface ParkingRule {
 
 export interface ParkingResult {
   status: ParkingStatus
+  /** Plain-English headline — e.g. "Yes — park here." */
+  headline: string
+  /** Explanation sentence */
+  reason: string
+  /** Confidence 0-100 based on data quality */
+  confidence: number
+  /** Seconds until current rule expires, or null */
+  timeRemaining: number | null
+  /** Active restriction labels */
+  restrictions: string[]
+  /** Human-readable warning strings */
+  warnings: ParkingWarning[]
+  /** Geocoded street name */
+  streetName: string
+  /** Geocoded city */
+  city: string
+
+  // --- backward-compat aliases (consumed by app-context & status-screen) ---
+  /** @deprecated Use headline */
   title: string
+  /** @deprecated Use reason */
   description: string
   activeRule: ParkingRule | null
-  timeRemaining: number | null // minutes until rule ends/starts
   nextRestriction: { rule: ParkingRule; startsIn: number } | null
-  warnings: ParkingWarning[]
   handicapInfo?: HandicapInfo
 }
 
@@ -52,6 +70,35 @@ export interface UserAccessibility {
   hasHandicapPlacard: boolean
   placardType?: "permanent" | "temporary" | "disabled-veteran"
   placardExpiry?: string // ISO date
+}
+
+// ---------------------------------------------------------------------------
+// Major SF streets for rush-hour tow-away detection
+// ---------------------------------------------------------------------------
+const MAJOR_STREETS = ["market", "van ness", "mission", "geary", "19th avenue", "park presidio"]
+
+function isMajorStreet(street: string): boolean {
+  const normalized = street.toLowerCase()
+  return MAJOR_STREETS.some((s) => normalized.includes(s))
+}
+
+// ---------------------------------------------------------------------------
+// Address number parity — used to determine street-cleaning day
+// ---------------------------------------------------------------------------
+function getAddressNumber(street: string): number | null {
+  const match = street.match(/^(\d+)/)
+  return match ? parseInt(match[1], 10) : null
+}
+
+function isEvenSide(street: string): boolean {
+  const num = getAddressNumber(street)
+  if (num !== null) return num % 2 === 0
+  // Fallback: hash the street name to get a deterministic even/odd
+  let hash = 0
+  for (let i = 0; i < street.length; i++) {
+    hash = ((hash << 5) - hash + street.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash) % 2 === 0
 }
 
 // Sample rules database - in production this would come from a real data source
@@ -605,6 +652,53 @@ function generateWarnings(rules: ParkingRule[], date: Date): ParkingWarning[] {
   return warnings
 }
 
+// ---------------------------------------------------------------------------
+// Helper: build a full ParkingResult with backward-compat aliases
+// ---------------------------------------------------------------------------
+function buildResult(fields: {
+  status: ParkingStatus
+  headline: string
+  reason: string
+  confidence: number
+  timeRemaining: number | null
+  restrictions: string[]
+  warnings: ParkingWarning[]
+  streetName: string
+  city: string
+  activeRule?: ParkingRule | null
+  nextRestriction?: { rule: ParkingRule; startsIn: number } | null
+  handicapInfo?: HandicapInfo
+}): ParkingResult {
+  return {
+    status: fields.status,
+    headline: fields.headline,
+    reason: fields.reason,
+    confidence: fields.confidence,
+    timeRemaining: fields.timeRemaining,
+    restrictions: fields.restrictions,
+    warnings: fields.warnings,
+    streetName: fields.streetName,
+    city: fields.city,
+    // backward-compat
+    title: fields.headline,
+    description: fields.reason,
+    activeRule: fields.activeRule ?? null,
+    nextRestriction: fields.nextRestriction ?? null,
+    handicapInfo: fields.handicapInfo,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Seconds remaining until a clock time today (or tomorrow if already passed)
+// ---------------------------------------------------------------------------
+function secondsUntilTime(targetHour: number, targetMin: number, now: Date): number {
+  const target = new Date(now)
+  target.setHours(targetHour, targetMin, 0, 0)
+  let diff = (target.getTime() - now.getTime()) / 1000
+  if (diff <= 0) diff += 24 * 3600 // wraps to tomorrow
+  return Math.round(diff)
+}
+
 export function checkParking(
   lat: number,
   lng: number,
@@ -613,261 +707,457 @@ export function checkParking(
   city?: string,
 ): ParkingResult {
   const now = new Date()
+  const day = now.getDay()        // 0 = Sunday
+  const hour = now.getHours()
+  const minute = now.getMinutes()
+  const isWeekday = day >= 1 && day <= 5
+  const isSaturday = day === 6
+  const isSunday = day === 0
+
+  const resolvedStreet = street || "Unknown street"
+  const resolvedCity = city || "San Francisco"
+  const confidence = street ? 93 : 78
+
+  // --- legacy zone/rules lookup for handicap + safety checks ---
   const addressZone = getZoneFromAddress(street, city)
   const zone = addressZone !== "default" ? addressZone : getZoneForLocation(lat, lng)
   const rules = rulesDatabase[zone] || rulesDatabase.default
-  const warnings = generateWarnings(rules, now)
+  const legacyWarnings = generateWarnings(rules, now)
 
-  // Check for handicap zones first
+  // ---------------------------------------------------------------
+  // 1) Handicap zone check (uses legacy rules DB)
+  // ---------------------------------------------------------------
   const handicapRule = rules.find(
     (rule) => rule.type === "handicap-only" && isRuleActive(rule, now)
   )
-  
   let handicapInfo: HandicapInfo | undefined
-  
   if (handicapRule) {
     const hasValidPlacard = userAccessibility?.hasHandicapPlacard === true
-    
     handicapInfo = {
       isHandicapZone: true,
       requiresPlacard: true,
-      timeLimit: hasValidPlacard ? undefined : undefined,
-      message: hasValidPlacard 
+      message: hasValidPlacard
         ? "You have a valid placard - parking allowed"
         : "Handicap placard required to park here",
     }
-    
     if (!hasValidPlacard) {
-      return {
+      return buildResult({
         status: "prohibited",
-        title: "Accessible parking only",
-        description: `This spot requires a handicap placard. Fine: $${handicapRule.fine}.`,
-        activeRule: handicapRule,
+        headline: "Don't park here.",
+        reason: `This spot requires a handicap placard. Fine: $${handicapRule.fine}.`,
+        confidence,
         timeRemaining: null,
-        nextRestriction: null,
-        warnings: [{
-          type: "tow",
-          severity: "critical",
-          message: `$${handicapRule.fine} fine - placard required`,
-        }],
+        restrictions: ["Handicap placard required"],
+        warnings: [{ type: "tow", severity: "critical", message: `$${handicapRule.fine} fine - placard required` }],
+        streetName: resolvedStreet,
+        city: resolvedCity,
+        activeRule: handicapRule,
         handicapInfo,
-      }
+      })
     }
   }
 
-  // Check for tow zones
+  // ---------------------------------------------------------------
+  // 2) Fire hydrant / bus stop — always prohibited (uses legacy DB)
+  // ---------------------------------------------------------------
+  const safetyZone = rules.find(
+    (rule) =>
+      (rule.type === "fire-hydrant" || rule.type === "bus-stop") &&
+      isRuleActive(rule, now)
+  )
+  if (safetyZone) {
+    const label = safetyZone.type === "fire-hydrant" ? "Fire hydrant zone" : "Bus stop"
+    return buildResult({
+      status: "prohibited",
+      headline: "Don't park here.",
+      reason: `${safetyZone.description}. Fine: $${safetyZone.fine}.`,
+      confidence: 99,
+      timeRemaining: null,
+      restrictions: [label],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: safetyZone,
+      handicapInfo,
+    })
+  }
+
+  // ---------------------------------------------------------------
+  // 3) Rush hour tow-away — Mon-Fri 3-7 PM on major streets
+  // ---------------------------------------------------------------
+  const onMajorStreet = street ? isMajorStreet(street) : false
+  if (isWeekday && hour >= 15 && hour < 19 && onMajorStreet) {
+    const secsLeft = secondsUntilTime(19, 0, now)
+    // Also look up the legacy tow-zone rule if it exists
+    const towRule = rules.find((r) => r.type === "tow-zone" && isRuleActive(r, now))
+    return buildResult({
+      status: "prohibited",
+      headline: "Don't park here.",
+      reason: `Rush hour tow-away zone active until 7 PM on ${resolvedStreet}. Your car will be towed.`,
+      confidence: 95,
+      timeRemaining: secsLeft,
+      restrictions: ["Rush hour tow-away zone", "Active until 7 PM"],
+      warnings: [
+        { type: "tow", severity: "critical", message: "Tow-away zone active — $500+ fine plus towing fees" },
+        ...legacyWarnings.filter((w) => w.type !== "tow"),
+      ],
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: towRule ?? null,
+      handicapInfo,
+    })
+  }
+
+  // ---------------------------------------------------------------
+  // 4) Legacy tow-zone check (for zones like SOMA evening rush)
+  // ---------------------------------------------------------------
   const towZone = rules.find(
     (rule) => rule.type === "tow-zone" && isRuleActive(rule, now)
   )
   if (towZone) {
-    return {
+    const timeRemainingMins = getTimeRemainingForRule(towZone, now)
+    return buildResult({
       status: "prohibited",
-      title: "Tow-away zone",
-      description: `Your car will be towed. Fine: $${towZone.fine} plus towing fees.`,
+      headline: "Don't park here.",
+      reason: `Your car will be towed. Fine: $${towZone.fine} plus towing fees.`,
+      confidence,
+      timeRemaining: timeRemainingMins * 60,
+      restrictions: ["Tow-away zone"],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
       activeRule: towZone,
-      timeRemaining: getTimeRemainingForRule(towZone, now),
-      nextRestriction: null,
-      warnings,
       handicapInfo,
-    }
+    })
   }
 
-  // Check for fire hydrant / bus stop
-  const safetyZone = rules.find(
-    (rule) => 
-      (rule.type === "fire-hydrant" || rule.type === "bus-stop") && 
-      isRuleActive(rule, now)
-  )
-  if (safetyZone) {
-    return {
+  // ---------------------------------------------------------------
+  // 5) Street cleaning — varies by block
+  //    Even addresses → Tuesday 8-10 AM
+  //    Odd addresses  → Thursday 8-10 AM
+  // ---------------------------------------------------------------
+  const evenSide = isEvenSide(resolvedStreet)
+  const cleaningDay = evenSide ? 2 : 4  // Tuesday or Thursday
+  const isCleaningTime = day === cleaningDay && hour >= 8 && hour < 10
+
+  if (isCleaningTime) {
+    const secsLeft = secondsUntilTime(10, 0, now)
+    const cleaningRule = rules.find((r) => r.type === "street-cleaning" && isRuleActive(r, now))
+    return buildResult({
       status: "prohibited",
-      title: safetyZone.type === "fire-hydrant" ? "Fire hydrant zone" : "Bus stop",
-      description: `${safetyZone.description}. Fine: $${safetyZone.fine}.`,
-      activeRule: safetyZone,
-      timeRemaining: null,
-      nextRestriction: null,
-      warnings,
+      headline: "Don't park here.",
+      reason: "Street cleaning in progress. You will be ticketed and possibly towed.",
+      confidence: 95,
+      timeRemaining: secsLeft,
+      restrictions: ["Street cleaning in progress"],
+      warnings: [
+        { type: "street-cleaning", severity: "critical", message: "Street cleaning now — move immediately" },
+        ...legacyWarnings.filter((w) => w.type !== "street-cleaning"),
+      ],
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: cleaningRule ?? null,
       handicapInfo,
-    }
+    })
   }
 
-  // Find active restricting rules
-  const activeRestrictingRules = rules.filter(
-    (rule) =>
-      isRuleActive(rule, now) &&
-      (rule.type === "no-parking" || rule.type === "permit-only")
+  // Also check legacy street-cleaning rules (some zones have different schedules)
+  const legacyStreetCleaning = rules.find(
+    (rule) => rule.type === "street-cleaning" && isRuleActive(rule, now)
   )
+  if (legacyStreetCleaning) {
+    const timeRemainingMins = getTimeRemainingForRule(legacyStreetCleaning, now)
+    return buildResult({
+      status: "prohibited",
+      headline: "Don't park here.",
+      reason: `${legacyStreetCleaning.description}. Move your vehicle. Fine: $${legacyStreetCleaning.fine}.`,
+      confidence,
+      timeRemaining: timeRemainingMins * 60,
+      restrictions: ["Street cleaning in progress"],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: legacyStreetCleaning,
+      handicapInfo,
+    })
+  }
 
-  // Check for hard no-parking
-  const noParking = activeRestrictingRules.find(
-    (rule) => rule.type === "no-parking"
+  // ---------------------------------------------------------------
+  // 6) Legacy no-parking & permit-only checks
+  // ---------------------------------------------------------------
+  const noParking = rules.find(
+    (rule) => rule.type === "no-parking" && isRuleActive(rule, now)
   )
   if (noParking) {
-    return {
+    const timeRemainingMins = getTimeRemainingForRule(noParking, now)
+    return buildResult({
       status: "prohibited",
-      title: "No parking",
-      description: `${noParking.description}. This area is enforced. Fine: $${noParking.fine}.`,
+      headline: "Don't park here.",
+      reason: `${noParking.description}. This area is enforced. Fine: $${noParking.fine}.`,
+      confidence,
+      timeRemaining: timeRemainingMins * 60,
+      restrictions: ["No parking zone"],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
       activeRule: noParking,
-      timeRemaining: getTimeRemainingForRule(noParking, now),
-      nextRestriction: null,
-      warnings,
       handicapInfo,
-    }
+    })
   }
 
-  // Check for permit-only
-  const permitOnly = activeRestrictingRules.find(
-    (rule) => rule.type === "permit-only"
+  const permitOnly = rules.find(
+    (rule) => rule.type === "permit-only" && isRuleActive(rule, now)
   )
   if (permitOnly) {
-    return {
+    return buildResult({
       status: "prohibited",
-      title: "Permit required",
-      description: `${permitOnly.description}. Visitors may be ticketed. Fine: $${permitOnly.fine}.`,
-      activeRule: permitOnly,
+      headline: "Don't park here.",
+      reason: `${permitOnly.description}. Visitors may be ticketed. Fine: $${permitOnly.fine}.`,
+      confidence,
       timeRemaining: null,
-      nextRestriction: null,
-      warnings: [...warnings, {
-        type: "permit",
+      restrictions: ["Residential permit required"],
+      warnings: [
+        ...legacyWarnings,
+        { type: "permit", severity: "warning", message: "Residential permit required" },
+      ],
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: permitOnly,
+      handicapInfo,
+    })
+  }
+
+  // ---------------------------------------------------------------
+  // 7) Sunday or after 6 PM → free parking, no meter
+  // ---------------------------------------------------------------
+  if (isSunday || hour >= 18) {
+    // Time until next restriction: Mon 8 AM (for Sunday), or next morning 8 AM
+    let secsUntilNext: number | null = null
+    if (isSunday) {
+      // seconds until Monday 8 AM
+      const monday8am = new Date(now)
+      monday8am.setDate(monday8am.getDate() + 1)
+      monday8am.setHours(8, 0, 0, 0)
+      secsUntilNext = Math.round((monday8am.getTime() - now.getTime()) / 1000)
+    } else {
+      // After 6 PM on a weekday/Saturday — until 8 AM tomorrow
+      secsUntilNext = secondsUntilTime(8, 0, now)
+    }
+
+    // Check for upcoming street cleaning warning
+    const cleaningWarnings: ParkingWarning[] = []
+    const cleaningDayName = evenSide ? "Tuesday" : "Thursday"
+    const tomorrowDay = (day + 1) % 7
+    if (tomorrowDay === cleaningDay) {
+      cleaningWarnings.push({
+        type: "street-cleaning",
         severity: "warning",
-        message: "Residential permit required",
-      }],
-      handicapInfo,
+        message: `Street cleaning tomorrow ${cleaningDayName} 8-10 AM`,
+      })
     }
+
+    // Accessible parking with placard
+    if (handicapInfo?.isHandicapZone && userAccessibility?.hasHandicapPlacard) {
+      return buildResult({
+        status: "allowed",
+        headline: "Yes — park here.",
+        reason: "You can use this accessible parking spot with your placard. No time limit.",
+        confidence,
+        timeRemaining: null,
+        restrictions: [],
+        warnings: [],
+        streetName: resolvedStreet,
+        city: resolvedCity,
+        handicapInfo,
+      })
+    }
+
+    return buildResult({
+      status: "allowed",
+      headline: "Yes — park here.",
+      reason: "Free parking. No meter required.",
+      confidence,
+      timeRemaining: secsUntilNext,
+      restrictions: [],
+      warnings: [...cleaningWarnings, ...legacyWarnings.filter((w) => w.severity !== "critical")],
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      handicapInfo,
+    })
   }
 
-  // Find active soft restrictions (time limits, street cleaning, metered)
-  const activeSoftRules = rules.filter(
-    (rule) =>
-      isRuleActive(rule, now) &&
-      (rule.type === "time-limit" ||
-        rule.type === "street-cleaning" ||
-        rule.type === "metered" ||
-        rule.type === "loading-zone")
-  )
+  // ---------------------------------------------------------------
+  // 8) Mon-Sat 9 AM - 6 PM → metered, 2-hour limit
+  // ---------------------------------------------------------------
+  if ((isWeekday || isSaturday) && hour >= 9 && hour < 18) {
+    const secsUntil6pm = secondsUntilTime(18, 0, now)
+    const twoHoursInSecs = 2 * 3600
+    // Effective time remaining is the lesser of 2h or time until 6 PM
+    const effectiveRemaining = Math.min(twoHoursInSecs, secsUntil6pm)
 
-  // Street cleaning takes precedence
-  const streetCleaning = activeSoftRules.find(
-    (rule) => rule.type === "street-cleaning"
-  )
-  if (streetCleaning) {
-    const timeRemaining = getTimeRemainingForRule(streetCleaning, now)
-    return {
-      status: "prohibited",
-      title: "No parking - Street cleaning",
-      description: `${streetCleaning.description}. Move your vehicle. Fine: $${streetCleaning.fine}.`,
-      activeRule: streetCleaning,
-      timeRemaining,
-      nextRestriction: null,
-      warnings,
-      handicapInfo,
+    // Build a human headline based on remaining time
+    const endHour = Math.min(hour + 2, 18)
+    const headline = endHour >= 18
+      ? "Yes — until 6 PM."
+      : `Yes — until ${formatClockHour(endHour, minute)}.`
+
+    const restrictions: string[] = ["2-hour limit", "Meter active"]
+    const meterRule = rules.find((r) => r.type === "metered" && isRuleActive(r, now))
+    const timeLimitRule = rules.find((r) => r.type === "time-limit" && isRuleActive(r, now))
+
+    // Upcoming street cleaning warning
+    const upcomingWarnings: ParkingWarning[] = []
+    const cleaningDayName = evenSide ? "Tuesday" : "Thursday"
+    if (day === cleaningDay && hour < 8) {
+      upcomingWarnings.push({
+        type: "street-cleaning",
+        severity: "warning",
+        message: `Street cleaning today ${cleaningDayName} 8-10 AM`,
+      })
     }
-  }
 
-  // Loading zone
-  const loadingZone = activeSoftRules.find(
-    (rule) => rule.type === "loading-zone"
-  )
-  if (loadingZone) {
-    return {
-      status: "restricted",
-      title: "Loading zone",
-      description: `${loadingZone.description}. Commercial vehicles only.`,
-      activeRule: loadingZone,
-      timeRemaining: 30,
-      nextRestriction: null,
-      warnings,
-      handicapInfo,
+    // Check for upcoming tow-away on major streets
+    if (onMajorStreet && isWeekday && hour < 15) {
+      const secsUntilRush = secondsUntilTime(15, 0, now)
+      if (secsUntilRush < 4 * 3600) {
+        upcomingWarnings.push({
+          type: "tow",
+          severity: "warning",
+          message: `Rush hour tow-away begins at 3 PM`,
+          timeUntil: Math.round(secsUntilRush / 60),
+        })
+      }
     }
-  }
 
-  // Time limit or metered
-  const timedRule = activeSoftRules.find(
-    (rule) => rule.type === "time-limit" || rule.type === "metered"
-  )
-  if (timedRule) {
     const nextRestriction = getNextRestrictionStart(
-      rules.filter(
-        (r) => r.type === "street-cleaning" || r.type === "no-parking" || r.type === "tow-zone"
-      ),
+      rules.filter((r) => r.type === "street-cleaning" || r.type === "no-parking" || r.type === "tow-zone"),
       now
     )
 
-    // Calculate max parking time (2 hours for time limit, or until next restriction)
-    const maxParkingMinutes = timedRule.type === "time-limit" ? 120 : null
-    const restrictionStartsIn = nextRestriction?.startsIn || null
-
-    let timeRemaining = maxParkingMinutes
-    if (restrictionStartsIn && (!timeRemaining || restrictionStartsIn < timeRemaining)) {
-      timeRemaining = restrictionStartsIn
-    }
-
-    const description =
-      timedRule.type === "metered"
-        ? `${timedRule.description}.${
-            nextRestriction
-              ? ` Street cleaning begins in ${formatMinutes(nextRestriction.startsIn)}.`
-              : ""
-          }`
-        : `${timedRule.description}.${
-            nextRestriction
-              ? ` Move before street cleaning at ${formatTimeFromMinutes(nextRestriction.startsIn, now)}.`
-              : ""
-          }`
-
-    return {
+    return buildResult({
       status: "restricted",
-      title: "Parking allowed with restrictions",
-      description,
-      activeRule: timedRule,
-      timeRemaining,
+      headline,
+      reason: "2-hour limit. Meter active.",
+      confidence,
+      timeRemaining: effectiveRemaining,
+      restrictions,
+      warnings: [...upcomingWarnings, ...legacyWarnings],
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: meterRule ?? timeLimitRule ?? null,
       nextRestriction,
-      warnings,
       handicapInfo,
-    }
+    })
   }
 
-  // No active restrictions - check for upcoming ones
+  // ---------------------------------------------------------------
+  // 9) Mon-Fri 8-9 AM — 2-hour residential limit (no meter yet)
+  // ---------------------------------------------------------------
+  if (isWeekday && hour >= 8 && hour < 9) {
+    const secsUntil9am = secondsUntilTime(9, 0, now)
+    const timeLimitRule = rules.find((r) => r.type === "time-limit" && isRuleActive(r, now))
+
+    return buildResult({
+      status: "restricted",
+      headline: "Yes — until 6 PM.",
+      reason: "2-hour residential limit. Meters start at 9 AM.",
+      confidence,
+      timeRemaining: 2 * 3600,
+      restrictions: ["2-hour limit", "Meter starts at 9 AM"],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: timeLimitRule ?? null,
+      nextRestriction: getNextRestrictionStart(rules, now),
+      handicapInfo,
+    })
+  }
+
+  // ---------------------------------------------------------------
+  // 10) Loading zone check (legacy)
+  // ---------------------------------------------------------------
+  const loadingZone = rules.find(
+    (rule) => rule.type === "loading-zone" && isRuleActive(rule, now)
+  )
+  if (loadingZone) {
+    return buildResult({
+      status: "restricted",
+      headline: "Only 30 minutes.",
+      reason: `${loadingZone.description}. Commercial vehicles only.`,
+      confidence,
+      timeRemaining: 30 * 60,
+      restrictions: ["Loading zone", "30-minute limit"],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
+      activeRule: loadingZone,
+      handicapInfo,
+    })
+  }
+
+  // ---------------------------------------------------------------
+  // 11) Default — no active restrictions
+  // ---------------------------------------------------------------
   const nextRestriction = getNextRestrictionStart(rules, now)
 
   if (nextRestriction && nextRestriction.startsIn <= 240) {
-    // Within 4 hours
-    return {
+    const secsUntil = nextRestriction.startsIn * 60
+    return buildResult({
       status: "restricted",
-      title: "Parking allowed",
-      description: `Parking is free now. ${nextRestriction.rule.description} begins in ${formatMinutes(nextRestriction.startsIn)}.`,
-      activeRule: null,
-      timeRemaining: nextRestriction.startsIn,
+      headline: `Yes — for ${formatTimeRemaining(nextRestriction.startsIn)}.`,
+      reason: `Parking is free now. ${nextRestriction.rule.description} begins in ${formatMinutes(nextRestriction.startsIn)}.`,
+      confidence,
+      timeRemaining: secsUntil,
+      restrictions: ["Upcoming restriction"],
+      warnings: legacyWarnings,
+      streetName: resolvedStreet,
+      city: resolvedCity,
       nextRestriction,
-      warnings,
       handicapInfo,
-    }
+    })
   }
 
-  // If user has handicap placard and this is a handicap zone, provide that info
+  // Accessible parking with placard
   if (handicapInfo?.isHandicapZone && userAccessibility?.hasHandicapPlacard) {
-    return {
+    return buildResult({
       status: "allowed",
-      title: "Accessible parking available",
-      description: "You can use this accessible parking spot with your placard. No time limit.",
-      activeRule: null,
+      headline: "Yes — park here.",
+      reason: "You can use this accessible parking spot with your placard. No time limit.",
+      confidence,
       timeRemaining: null,
-      nextRestriction,
+      restrictions: [],
       warnings: [],
+      streetName: resolvedStreet,
+      city: resolvedCity,
       handicapInfo,
-    }
+    })
   }
 
-  return {
+  return buildResult({
     status: "allowed",
-    title: "Yes, you can park here",
-    description: "No current or upcoming restrictions in this area.",
-    activeRule: null,
+    headline: "Yes — park here.",
+    reason: "No current or upcoming restrictions in this area.",
+    confidence,
     timeRemaining: null,
+    restrictions: [],
+    warnings: legacyWarnings,
+    streetName: resolvedStreet,
+    city: resolvedCity,
     nextRestriction,
-    warnings,
     handicapInfo,
-  }
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Format a clock hour for headlines — "2 PM", "4:30 PM"
+// ---------------------------------------------------------------------------
+function formatClockHour(hour24: number, minuteOffset: number = 0): string {
+  const totalMinutes = hour24 * 60 + minuteOffset
+  // Round to nearest 2-hour block end for clean display
+  const targetHour = Math.min(Math.ceil(totalMinutes / 60), 18)
+  const suffix = targetHour >= 12 ? "PM" : "AM"
+  const display = targetHour > 12 ? targetHour - 12 : targetHour === 0 ? 12 : targetHour
+  return `${display} ${suffix}`
 }
 
 function formatMinutes(minutes: number): string {
@@ -895,13 +1185,17 @@ function formatTimeFromMinutes(minutesFromNow: number, fromDate: Date): string {
 }
 
 export function formatTimeRemaining(minutes: number): string {
-  if (minutes <= 0) return "0m"
+  if (minutes <= 0) return "0 min"
   const rounded = Math.round(minutes)
   const hours = Math.floor(rounded / 60)
   const mins = rounded % 60
 
   if (hours === 0) {
-    return `${mins}m`
+    return `${mins} min`
+  }
+
+  if (mins === 0) {
+    return `${hours}h`
   }
 
   return `${hours}h ${mins.toString().padStart(2, "0")}m`

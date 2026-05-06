@@ -1,368 +1,572 @@
 "use client"
 
-import React from "react"
-import { useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight, ShieldCheck, Car, CreditCard, Camera } from "lucide-react"
-import { getProtectionStatus, type UserProtection } from "@/lib/protection"
-import { getUserAccessibility, setUserAccessibility, type UserAccessibility } from "@/lib/parking-rules"
-import { showToast } from "@/components/ui/toast-notification"
-import { type User } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
+import React, { useEffect, useState, useCallback } from "react"
+import { useTheme } from "next-themes"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShieldCheck,
+  Sun,
+  Moon,
+  Monitor,
+  Eye,
+  Type,
+  Zap,
+  Globe,
+  Car,
+  Accessibility,
+  Fuel,
+  Lock,
+  Bell,
+  Check,
+} from "lucide-react"
+import { useI18n, LANGUAGES, type Lang } from "@/lib/i18n"
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface SettingsScreenProps {
-  onUpgrade: () => void
-  user?: User | null
-  onOpenAccount?: () => void
-  onSignIn?: () => void
-  onOpenAccessibilitySettings?: () => void
+  onBack: () => void
 }
 
-const SUPPORTED_CITIES = [
-  { id: "sf", name: "San Francisco, CA", available: true },
-  { id: "la", name: "Los Angeles, CA", available: true },
-  { id: "nyc", name: "New York, NY", available: true },
-  { id: "chi", name: "Chicago, IL", available: true },
-  { id: "sea", name: "Seattle, WA", available: true },
-  { id: "aus", name: "Austin, TX", available: true },
-  { id: "bos", name: "Boston, MA", available: true },
-  { id: "den", name: "Denver, CO", available: true },
-  { id: "por", name: "Portland, OR", available: true },
-  { id: "mia", name: "Miami, FL", available: true },
-  { id: "atl", name: "Atlanta, GA", available: true },
-  { id: "dc", name: "Washington, DC", available: true },
+type AccentId = "blue" | "teal" | "indigo" | "slate"
+
+const ACCENT_SWATCHES: { id: AccentId; hex: string }[] = [
+  { id: "blue", hex: "#3b82f6" },
+  { id: "teal", hex: "#14b8a6" },
+  { id: "indigo", hex: "#6366f1" },
+  { id: "slate", hex: "#475569" },
 ]
 
-const PLACARD_TYPES = [
-  { id: "permanent", name: "Permanent Placard", description: "No expiration" },
-  { id: "temporary", name: "Temporary Placard", description: "Valid for limited time" },
-  { id: "disabled-veteran", name: "Disabled Veteran", description: "DV plates or placard" },
-]
+/* ------------------------------------------------------------------ */
+/*  Inline styles (design-token aware)                                 */
+/* ------------------------------------------------------------------ */
 
-function ToggleSwitch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+const S = {
+  /* Page */
+  page: {
+    display: "flex",
+    flexDirection: "column" as const,
+    minHeight: "100%",
+    background: "var(--park-bg)",
+    padding: "0 20px 48px",
+    overflowY: "auto" as const,
+  },
+
+  /* Header */
+  header: {
+    paddingTop: 56,
+    paddingBottom: 20,
+    display: "flex",
+    alignItems: "center" as const,
+    gap: 12,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    background: "var(--park-muted)",
+    border: "none",
+    color: "var(--park-fg)",
+    display: "flex",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    cursor: "pointer",
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 800,
+    letterSpacing: -0.8,
+    color: "var(--park-fg)",
+  },
+
+  /* Section header */
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: 700,
+    textTransform: "uppercase" as const,
+    letterSpacing: 0.6,
+    color: "var(--park-muted-fg)",
+    padding: "0 8px 6px",
+  },
+
+  /* Card */
+  card: {
+    background: "var(--park-surface)",
+    border: "1px solid var(--park-border)",
+    borderRadius: 18,
+  },
+
+  /* Row */
+  row: {
+    display: "flex",
+    alignItems: "center" as const,
+    gap: 12,
+    padding: "14px 16px",
+  },
+  hairline: {
+    height: 1,
+    background: "var(--park-hairline)",
+    margin: "0 16px",
+  },
+
+  /* Icon box */
+  iconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    background: "var(--park-muted)",
+    display: "flex",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    flexShrink: 0,
+  },
+
+  /* Row label */
+  rowLabel: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: 500,
+    color: "var(--park-fg)",
+  },
+
+  /* Row value */
+  rowValue: {
+    fontSize: 14,
+    fontWeight: 500,
+    color: "var(--park-muted-fg)",
+  },
+} as const
+
+/* ------------------------------------------------------------------ */
+/*  Toggle switch                                                      */
+/* ------------------------------------------------------------------ */
+
+function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <button
       role="switch"
       aria-checked={on}
       onClick={onToggle}
-      className={`w-10 h-6 rounded-full relative transition-colors ${
-        on ? "bg-[var(--accent)]" : "border border-border bg-muted"
-      }`}
+      className="press"
+      style={{
+        width: 34,
+        height: 20,
+        borderRadius: 999,
+        background: on ? "var(--park-accent)" : "var(--park-border)",
+        border: "none",
+        position: "relative",
+        cursor: "pointer",
+        transition: "background 0.2s",
+        flexShrink: 0,
+        padding: 0,
+      }}
     >
       <div
-        className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${
-          on ? "left-[18px]" : "left-0.5"
-        }`}
+        style={{
+          width: 18,
+          height: 18,
+          borderRadius: 999,
+          background: "#fff",
+          position: "absolute",
+          top: 1,
+          left: on ? 15 : 1,
+          transition: "left 0.2s",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+        }}
       />
     </button>
   )
 }
 
-export function SettingsScreen({ onUpgrade, user, onOpenAccount, onSignIn, onOpenAccessibilitySettings }: SettingsScreenProps) {
-  const [protection, setProtection] = useState<UserProtection | null>(null)
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
-  const [cleaningAlerts, setCleaningAlerts] = useState(true)
-  const [communityNearby, setCommunityNearby] = useState(false)
-  const [selectedCity, setSelectedCity] = useState<string>("sf")
-  const [showCityDropdown, setShowCityDropdown] = useState(false)
-  const [showHowItWorks, setShowHowItWorks] = useState(false)
-  const [showTerms, setShowTerms] = useState(false)
-  const [accessibility, setAccessibility] = useState<UserAccessibility>({ hasHandicapPlacard: false })
-  const [theme, setTheme] = useState<"light" | "dark" | "aaa">("light")
-  const [accentColor, setAccentColor] = useState<"blue" | "teal" | "indigo" | "slate">("blue")
+/* ------------------------------------------------------------------ */
+/*  Settings screen                                                    */
+/* ------------------------------------------------------------------ */
 
+export function SettingsScreen({ onBack }: SettingsScreenProps) {
+  const { theme, setTheme } = useTheme()
+  const { lang, setLang, t } = useI18n()
+  const [mounted, setMounted] = useState(false)
+  const [accent, setAccent] = useState<AccentId>("blue")
+  const [showLangPicker, setShowLangPicker] = useState(false)
+
+  /* Accessibility toggles — persist to localStorage */
+  const [highContrast, setHighContrast] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  /* Privacy toggles */
+  const [biometricLock, setBiometricLock] = useState(true)
+
+  /* Hydration guard for useTheme */
   useEffect(() => {
-    setProtection(getProtectionStatus())
-    setAccessibility(getUserAccessibility())
+    setMounted(true)
+    try {
+      setHighContrast(localStorage.getItem("park.highContrast") === "true")
+      setReducedMotion(localStorage.getItem("park.reducedMotion") === "true")
+      setBiometricLock(localStorage.getItem("park.biometricLock") !== "false")
+    } catch { /* SSR */ }
+  }, [])
 
-    const savedNotifications = localStorage.getItem("park_notifications")
-    if ("Notification" in window) {
-      if (savedNotifications === "off") {
-        setNotificationsEnabled(false)
-      } else if (Notification.permission === "granted") {
-        setNotificationsEnabled(true)
+  /* Load accent from localStorage on mount */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("park.accent") as AccentId | null
+      if (saved && ACCENT_SWATCHES.some((s) => s.id === saved)) {
+        setAccent(saved)
       }
-    }
-    const savedCity = localStorage.getItem("park_selected_city")
-    if (savedCity) {
-      setSelectedCity(savedCity)
+    } catch {
+      /* SSR / privacy mode */
     }
   }, [])
 
-  const isPro = protection?.tier === "pro"
-
-  const handleNotificationsToggle = async () => {
-    if ("Notification" in window) {
-      if (notificationsEnabled) {
-        setNotificationsEnabled(false)
-        localStorage.setItem("park_notifications", "off")
-        showToast("info", "Notifications off", "You won't receive reminders until you turn them back on")
-      } else {
-        if (Notification.permission === "denied") {
-          showToast("error", "Notifications blocked", "Please enable in your browser settings")
-        } else if (Notification.permission === "granted") {
-          setNotificationsEnabled(true)
-          localStorage.setItem("park_notifications", "on")
-          showToast("success", "Notifications on", "You'll receive parking reminders")
-        } else {
-          const permission = await Notification.requestPermission()
-          if (permission === "granted") {
-            setNotificationsEnabled(true)
-            localStorage.setItem("park_notifications", "on")
-            showToast("success", "Notifications on", "You'll receive parking reminders")
-          }
-        }
-      }
+  const handleAccentChange = useCallback((id: AccentId) => {
+    setAccent(id)
+    try {
+      localStorage.setItem("park.accent", id)
+      window.dispatchEvent(new CustomEvent("park-accent-change", { detail: id }))
+    } catch {
+      /* ignore */
     }
-  }
+  }, [])
 
-  const handleCitySelect = (cityId: string) => {
-    setSelectedCity(cityId)
-    localStorage.setItem("park_selected_city", cityId)
-    setShowCityDropdown(false)
-    const city = SUPPORTED_CITIES.find(c => c.id === cityId)
-    showToast("success", "City updated", `Parking rules now set for ${city?.name}`)
-  }
+  /* Resolve displayed theme label */
+  const resolvedTheme = mounted ? theme ?? "system" : "system"
 
-  const handleAccessibilityToggle = () => {
-    const newValue = !accessibility.hasHandicapPlacard
-    const updated: UserAccessibility = {
-      ...accessibility,
-      hasHandicapPlacard: newValue,
-      placardType: newValue ? accessibility.placardType || "permanent" : undefined,
-    }
-    setAccessibility(updated)
-    setUserAccessibility(updated)
-
-    if (newValue) {
-      showToast("success", "Accessibility enabled", "Handicap parking spots will now show as available for you")
-    } else {
-      showToast("info", "Accessibility disabled", "Standard parking rules will apply")
-    }
-  }
-
-  const handlePlacardTypeSelect = (type: "permanent" | "temporary" | "disabled-veteran") => {
-    const updated: UserAccessibility = {
-      ...accessibility,
-      placardType: type,
-    }
-    setAccessibility(updated)
-    setUserAccessibility(updated)
-    showToast("success", "Placard type updated", PLACARD_TYPES.find(p => p.id === type)?.name || "")
-  }
-
-  const handleFileClaim = () => {
-    showToast("info", "File a claim", "Email support@park.app with your ticket photo and session details")
-  }
-
-  const handleContactSupport = () => {
-    showToast("info", "Contact support", "Email us at support@park.app")
-  }
-
-  const handleReset = () => {
-    localStorage.clear()
-    showToast("info", "Settings reset", "All local data has been cleared")
-    window.location.reload()
-  }
-
-  const userInitials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "AM"
-
-  const accentSwatches: { id: "blue" | "teal" | "indigo" | "slate"; color: string }[] = [
-    { id: "blue", color: "#3b82f6" },
-    { id: "teal", color: "#14b8a6" },
-    { id: "indigo", color: "#6366f1" },
-    { id: "slate", color: "#64748b" },
+  const themeOptions: { id: string; label: string; icon: typeof Sun }[] = [
+    { id: "light", label: "Light", icon: Sun },
+    { id: "dark", label: "Dark", icon: Moon },
+    { id: "system", label: "System", icon: Monitor },
   ]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5.5 pb-10 overflow-y-auto">
-      {/* Header */}
-      <div className="pt-16 pb-6 flex items-center gap-3">
-        <button
-          onClick={onOpenAccount}
-          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="w-5 h-5 text-foreground" />
+    <div style={S.page} className="park-scroll">
+      {/* ── Header ── */}
+      <div style={S.header}>
+        <button onClick={onBack} className="press" style={S.backBtn} aria-label="Go back">
+          <ChevronLeft size={20} />
         </button>
-        <h1 className="text-[32px] font-bold tracking-tight">Settings</h1>
+        <h1 style={S.title}>Settings</h1>
       </div>
 
-      {/* Profile card */}
-      <div className="bg-card card-elevated rounded-[18px] p-4 flex items-center gap-3.5">
-        <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-deep)] flex items-center justify-center text-white text-lg font-extrabold">
-          {userInitials}
+      {/* ── Profile card ── */}
+      <button
+        className="press"
+        style={{
+          ...S.card,
+          padding: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          width: "100%",
+          textAlign: "left" as const,
+          cursor: "pointer",
+        }}
+      >
+        {/* Avatar */}
+        <div
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: 999,
+            background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+            fontSize: 18,
+            fontWeight: 800,
+            flexShrink: 0,
+          }}
+        >
+          AM
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-base font-bold text-foreground truncate">
-            {user?.name ?? "Alex Morton"}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "var(--park-fg)", margin: 0 }}>
+            Alex Morton
           </p>
-          <p className="text-xs text-muted-foreground truncate">
-            {isPro ? "Pro plan" : "Free plan"}
+          <p style={{ fontSize: 13, color: "var(--park-muted-fg)", margin: "2px 0 0" }}>
+            alex@morton.co &middot; Free plan
           </p>
         </div>
+        <ChevronRight size={18} color="var(--park-muted-fg)" />
+      </button>
+
+      {/* ── Pro upsell card ── */}
+      <div
+        style={{
+          background: "var(--park-fg)",
+          borderRadius: 18,
+          padding: "14px 16px",
+          marginTop: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: "rgba(59,130,246,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <ShieldCheck size={20} color="#3b82f6" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--park-bg)", margin: 0 }}>
+            Ticket Protection Pro
+          </p>
+          <p style={{ fontSize: 13, color: "var(--park-muted-fg)", margin: "2px 0 0" }}>
+            3 claims/yr &middot; $4.99/mo
+          </p>
+        </div>
+        <button
+          className="press"
+          style={{
+            background: "var(--park-accent)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 999,
+            padding: "8px 18px",
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Upgrade
+        </button>
       </div>
 
-      {/* Pro upgrade banner */}
-      {!isPro && (
-        <div className="bg-foreground text-background rounded-2xl p-3.5 mt-3 flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 shrink-0 text-[var(--accent)]" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Ticket Protection Pro</p>
-            <p className="text-xs opacity-70">3 claims/yr &middot; $4.99/mo</p>
+      {/* ── Appearance ── */}
+      <div style={{ marginTop: 32 }}>
+        <p style={S.sectionLabel}>Appearance</p>
+        <div style={S.card}>
+          {/* Theme toggle */}
+          <div style={S.row}>
+            <span style={S.rowLabel}>Theme</span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {themeOptions.map((opt) => {
+                const active = resolvedTheme === opt.id
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setTheme(opt.id)}
+                    className="press"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      border: "none",
+                      background: active ? "var(--park-fg)" : "var(--park-muted)",
+                      color: active ? "var(--park-bg)" : "var(--park-fg2)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "background 0.15s, color 0.15s",
+                    }}
+                  >
+                    <opt.icon size={14} />
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <Button
-            onClick={onUpgrade}
-            className="rounded-full px-4 py-1.5 text-xs font-semibold h-auto bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90"
+
+          <div style={S.hairline} />
+
+          {/* Accent color */}
+          <div style={S.row}>
+            <span style={S.rowLabel}>Accent color</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              {ACCENT_SWATCHES.map((swatch) => {
+                const active = accent === swatch.id
+                return (
+                  <button
+                    key={swatch.id}
+                    onClick={() => handleAccentChange(swatch.id)}
+                    className="press"
+                    aria-label={`${swatch.id} accent color`}
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: 999,
+                      background: swatch.hex,
+                      border: "none",
+                      cursor: "pointer",
+                      outline: active
+                        ? `2px solid ${swatch.hex}`
+                        : "2px solid transparent",
+                      outlineOffset: 2,
+                      transition: "outline 0.15s",
+                      padding: 0,
+                    }}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Accessibility ── */}
+      <div style={{ marginTop: 32 }}>
+        <p style={S.sectionLabel}>Accessibility</p>
+        <div style={S.card}>
+          {/* High contrast */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Eye size={15} color="var(--park-muted-fg)" />
+            </div>
+            <span style={S.rowLabel}>High contrast</span>
+            <Toggle on={highContrast} onToggle={() => { const v = !highContrast; setHighContrast(v); try { localStorage.setItem("park.highContrast", String(v)) } catch {} }} />
+          </div>
+
+          <div style={S.hairline} />
+
+          {/* Large text */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Type size={15} color="var(--park-muted-fg)" />
+            </div>
+            <span style={S.rowLabel}>Large text</span>
+            <span style={S.rowValue}>118%</span>
+          </div>
+
+          <div style={S.hairline} />
+
+          {/* Reduced motion */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Zap size={15} color="var(--park-muted-fg)" />
+            </div>
+            <span style={S.rowLabel}>Reduced motion</span>
+            <Toggle on={reducedMotion} onToggle={() => { const v = !reducedMotion; setReducedMotion(v); try { localStorage.setItem("park.reducedMotion", String(v)) } catch {} }} />
+          </div>
+
+          <div style={S.hairline} />
+
+          {/* Language */}
+          <button
+            className="press"
+            onClick={() => setShowLangPicker(!showLangPicker)}
+            style={{ ...S.row, width: "100%", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const }}
           >
-            Upgrade
-          </Button>
-        </div>
-      )}
-
-      {/* Appearance section */}
-      <div className="mt-8">
-        <p className="text-xs font-bold tracking-wider uppercase text-muted-foreground px-2 pb-1.5">
-          Appearance
-        </p>
-
-        {/* Theme row */}
-        <div className="bg-card card-elevated rounded-[18px]">
-          <div className="px-4 py-3.5 flex items-center gap-3">
-            <span className="text-sm text-foreground flex-1">Theme</span>
-            <div className="flex gap-1.5">
-              {(["light", "dark", "aaa"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTheme(t)}
-                  className={`px-3 py-1.5 rounded-[9px] text-xs font-semibold transition-colors ${
-                    theme === t
-                      ? "bg-foreground text-background"
-                      : "bg-muted text-[var(--fg2)]"
-                  }`}
-                >
-                  {t === "aaa" ? "hc" : t}
-                </button>
-              ))}
+            <div style={S.iconBox}>
+              <Globe size={15} color="var(--park-muted-fg)" />
             </div>
-          </div>
+            <span style={S.rowLabel}>{t("settings.language")}</span>
+            <span style={S.rowValue}>{LANGUAGES.find(l => l.id === lang)?.native || "English"}</span>
+          </button>
 
-          <div className="border-t border-[var(--hairline)]" />
-
-          {/* Accent color row */}
-          <div className="px-4 py-3.5 flex items-center gap-3">
-            <span className="text-sm text-foreground flex-1">Accent color</span>
-            <div className="flex gap-2">
-              {accentSwatches.map((swatch) => (
-                <button
-                  key={swatch.id}
-                  onClick={() => setAccentColor(swatch.id)}
-                  className={`w-[26px] h-[22px] rounded-[7px] transition-all ${
-                    accentColor === swatch.id
-                      ? "border-2 border-foreground"
-                      : ""
-                  }`}
-                  style={{ backgroundColor: swatch.color }}
-                  aria-label={`${swatch.id} accent color`}
-                />
-              ))}
+          {/* Language picker dropdown */}
+          {showLangPicker && (
+            <div style={{ padding: "4px 8px 8px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.id}
+                    className="press"
+                    onClick={() => { setLang(l.id); setShowLangPicker(false) }}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 10,
+                      border: lang === l.id ? "2px solid #2563eb" : "1px solid var(--park-border)",
+                      background: lang === l.id ? "#eff6ff" : "var(--park-surface)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      textAlign: "left" as const,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--park-fg)" }}>{l.native}</div>
+                      <div style={{ fontSize: 10, color: "var(--park-muted-fg)", marginTop: 1 }}>{l.label}</div>
+                    </div>
+                    {lang === l.id && <Check size={14} color="#2563eb" strokeWidth={2.5} />}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Notifications section */}
-      <div className="mt-8">
-        <p className="text-xs font-bold tracking-wider uppercase text-muted-foreground px-2 pb-1.5">
-          Notifications
-        </p>
-        <div className="bg-card card-elevated rounded-[18px]">
-          {/* Timer reminders */}
-          <div className="px-4 py-3.5 flex items-center gap-3">
-            <span className="text-sm text-foreground flex-1">Timer reminders</span>
-            <ToggleSwitch on={notificationsEnabled} onToggle={handleNotificationsToggle} />
-          </div>
-
-          <div className="border-t border-[var(--hairline)]" />
-
-          {/* Street cleaning alerts */}
-          <div className="px-4 py-3.5 flex items-center gap-3">
-            <span className="text-sm text-foreground flex-1">Street cleaning alerts</span>
-            <ToggleSwitch on={cleaningAlerts} onToggle={() => setCleaningAlerts(!cleaningAlerts)} />
-          </div>
-
-          <div className="border-t border-[var(--hairline)]" />
-
-          {/* Community nearby */}
-          <div className="px-4 py-3.5 flex items-center gap-3">
-            <span className="text-sm text-foreground flex-1">Community nearby</span>
-            <ToggleSwitch on={communityNearby} onToggle={() => setCommunityNearby(!communityNearby)} />
-          </div>
-        </div>
-      </div>
-
-      {/* Info rows card */}
-      <div className="mt-8">
-        <div className="bg-card card-elevated rounded-[18px]">
+      {/* ── Vehicle ── */}
+      <div style={{ marginTop: 32 }}>
+        <p style={S.sectionLabel}>Vehicle</p>
+        <div style={S.card}>
           {/* Vehicle */}
-          <button
-            onClick={() => onOpenAccessibilitySettings?.()}
-            className="w-full px-4 py-3.5 flex items-center gap-3 text-left"
-          >
-            <Car className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">Vehicle</p>
-              <p className="text-xs text-muted-foreground">Placard, plate, type</p>
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Car size={15} color="var(--park-muted-fg)" />
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
-
-          <div className="border-t border-[var(--hairline)]" />
-
-          {/* Payment methods */}
-          <button
-            onClick={() => showToast("info", "Coming soon", "Payment methods will be available in the next update")}
-            className="w-full px-4 py-3.5 flex items-center gap-3 text-left"
-          >
-            <CreditCard className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">Payment methods</p>
-              <p className="text-xs text-muted-foreground">Cards, meters, wallets</p>
+            <span style={S.rowLabel}>Vehicle</span>
+            <div style={{ textAlign: "right" as const }}>
+              <p style={{ ...S.rowValue, margin: 0 }}>2022 Honda Fit</p>
+              <p style={{ fontSize: 12, color: "var(--park-muted-fg)", margin: "1px 0 0", fontWeight: 500 }}>
+                7AKJ203
+              </p>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
+          </div>
 
-          <div className="border-t border-[var(--hairline)]" />
+          <div style={S.hairline} />
 
-          {/* Photo vault */}
-          <button
-            onClick={() => showToast("info", "Photo vault", "Photo vault viewer coming soon")}
-            className="w-full px-4 py-3.5 flex items-center gap-3 text-left"
-          >
-            <Camera className="w-5 h-5 text-muted-foreground" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">Photo vault</p>
-              <p className="text-xs text-muted-foreground">Saved sign scans, receipts</p>
+          {/* Handicap placard */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Accessibility size={15} color="var(--park-muted-fg)" />
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
+            <span style={S.rowLabel}>Handicap placard</span>
+            <span style={S.rowValue}>None</span>
+          </div>
+
+          <div style={S.hairline} />
+
+          {/* EV/Hybrid */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Fuel size={15} color="var(--park-muted-fg)" />
+            </div>
+            <span style={S.rowLabel}>EV/Hybrid</span>
+            <span style={S.rowValue}>No</span>
+          </div>
         </div>
       </div>
 
-      {/* Reset button */}
-      <div className="mt-8">
-        <button
-          onClick={handleReset}
-          className="w-full p-3.5 rounded-[14px] bg-muted text-[var(--status-error)] font-semibold text-sm"
-        >
-          Reset all settings
-        </button>
+      {/* ── Privacy & Security ── */}
+      <div style={{ marginTop: 32 }}>
+        <p style={S.sectionLabel}>Privacy & Security</p>
+        <div style={S.card}>
+          {/* Biometric lock */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Lock size={15} color="var(--park-muted-fg)" />
+            </div>
+            <span style={S.rowLabel}>Biometric lock</span>
+            <Toggle on={biometricLock} onToggle={() => { const v = !biometricLock; setBiometricLock(v); try { localStorage.setItem("park.biometricLock", String(v)) } catch {} }} />
+          </div>
+
+          <div style={S.hairline} />
+
+          {/* Notifications */}
+          <div style={S.row}>
+            <div style={S.iconBox}>
+              <Bell size={15} color="var(--park-muted-fg)" />
+            </div>
+            <span style={S.rowLabel}>Notifications</span>
+            <span style={S.rowValue}>Smart</span>
+          </div>
+        </div>
       </div>
     </div>
   )

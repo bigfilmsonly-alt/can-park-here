@@ -1,0 +1,673 @@
+{
+  "metadata": {
+    "city": "Miami / Miami Beach",
+    "state": "Florida",
+    "last_researched": "2026-05-04",
+    "data_sources": [
+      "City of Miami Beach Official Website (miamibeachfl.gov)",
+      "Miami Parking Authority (miamiparking.com)",
+      "City of Coral Gables (coralgables.com)",
+      "Miami Design District (miamidesigndistrict.com)",
+      "Florida Statutes (leg.state.fl.us)",
+      "Miami-Dade County Code of Ordinances (municode)",
+      "Miami New Times",
+      "NBC 6 South Florida",
+      "CBS Miami",
+      "WLRN",
+      "EnjoyMiamiBeach.com",
+      "MiamiBeachAdvisor.com",
+      "TimeOut Miami",
+      "SIXT Magazine",
+      "SpotAngels",
+      "Parkopedia",
+      "VidaAmericana"
+    ],
+    "notes": "IMPORTANT: City of Miami (managed by Miami Parking Authority) and City of Miami Beach are SEPARATE municipalities with DIFFERENT rules. Coral Gables is also a separate city. All three enforce independently."
+  },
+
+  "street_sweeping": {
+    "city_of_miami": {
+      "overview": "The City of Miami does NOT operate an aggressive alternate-side street sweeping program like NYC or SF. Street sweeping is handled by the Public Works / Solid Waste Department but does not involve routine ticketing/towing of parked cars on a published schedule. The city contracts private sweeping companies for arterial and commercial streets. Residential areas do not have posted no-parking-for-sweeping signs as a standard practice.",
+      "contact": {
+        "department": "City of Miami Solid Waste Department",
+        "phone": "305-960-2801",
+        "alt_phone": "311"
+      },
+      "enforcement_model": "Miami does NOT ticket or tow for street sweeping on residential streets. Sweeping happens around parked cars. This is fundamentally different from cities like SF, LA, or NYC.",
+      "commercial_arterials": "Major commercial corridors (Biscayne Blvd, Flagler St, Calle Ocho) are swept by contract crews, typically overnight or early morning when traffic is minimal. No posted no-parking restrictions for sweeping on these roads."
+    },
+
+    "city_of_miami_beach": {
+      "overview": "Miami Beach has a more active street cleaning program, particularly in residential neighborhoods like Flamingo Park and North Beach. However, the program has faced delays and community pushback.",
+      "programs": {
+        "flamingo_park": {
+          "status": "DELAYED - Implementation postponed while city works through resident concerns",
+          "proposed_plan": "Alternate side parking restrictions between 9:00 AM and 12:00 PM on specific weekdays",
+          "notes": "When implemented, parking would be restricted on one side of the street at a time to allow sweeping equipment access"
+        },
+        "north_beach": {
+          "status": "Active program",
+          "restriction_hours": "9:00 AM to 12:00 PM on designated weekdays",
+          "model": "Alternate side parking - one side of street restricted per designated day",
+          "notes": "Check posted signage on each block for specific day restrictions"
+        }
+      },
+      "commercial_areas": {
+        "south_beach_entertainment_district": "Commercial corridors (Ocean Drive, Collins Ave, Washington Ave) are swept overnight/early morning by city sanitation crews. No specific no-parking restrictions posted for sweeping.",
+        "general": "The Sanitation Division handles commercial street cleaning outside of peak hours"
+      },
+      "penalties": "Vehicles parked in violation of posted street cleaning signs face parking citations. Towing may occur in persistent or egregious cases.",
+      "contact": {
+        "department": "City of Miami Beach Public Works - Sanitation Division",
+        "website": "miamibeachfl.gov/city-hall/public-works/sanitation-division/street-cleaning/",
+        "phone": "305-604-CITY (2489)"
+      }
+    },
+
+    "city_of_west_miami": {
+      "note": "Separate municipality - has its own published street sweeping calendar at cityofwestmiami.gov"
+    }
+  },
+
+  "metered_parking": {
+    "city_of_miami": {
+      "managed_by": "Miami Parking Authority (MPA)",
+      "website": "miamiparking.com",
+      "phone": "305-373-6789",
+      "general_enforcement_hours": "Most meters: 8:00 AM to midnight, 7 days/week. Some areas vary (Wynwood: 7 AM - 2 AM).",
+      "payment_methods": {
+        "at_meter": ["Coins", "Credit cards", "Debit cards", "Some accept dollar bills"],
+        "mobile_apps": [
+          {
+            "name": "PayByPhone",
+            "phone_alt": "1-866-234-7275 (PARK)",
+            "features": "Pay, extend time, expiration alerts"
+          },
+          {
+            "name": "ParkMobile",
+            "features": "Pay by zone number, extend time"
+          },
+          {
+            "name": "Passport",
+            "features": "Pay by zone"
+          }
+        ],
+        "notes": "Zone numbers posted on signage at each meter location. Must enter correct zone number for enforcement validation."
+      },
+      "resident_discount": {
+        "amount": "Up to 50% discount on on-street parking",
+        "how": "Register as City of Miami resident with Miami Parking Authority; discount applied through ParkMobile/PayByPhone",
+        "eligibility": "Must be City of Miami resident with proof of residency"
+      },
+      "zones_by_neighborhood": {
+        "downtown_miami": {
+          "rate_per_hour": "$1.50 - $2.00",
+          "enforcement_hours": "8:00 AM - midnight",
+          "time_limit": "2-4 hours depending on block",
+          "notes": "Metered spots along Biscayne Blvd and side streets. Very limited on-street supply. MPA garages offer first 30 min free."
+        },
+        "brickell": {
+          "rate_per_hour": "$1.50 - $2.00",
+          "enforcement_hours": "8:00 AM - midnight",
+          "time_limit": "2-4 hours",
+          "notes": "Very limited metered street parking, mostly along SE 15th St. Most parking is in private garages. Brickell City Centre: first 2 hours free. Mary Brickell Village: 2 hours free with Publix validation."
+        },
+        "wynwood": {
+          "rate_per_hour": "$1.50 (MPA managed areas)",
+          "enforcement_hours": "7:00 AM - 2:00 AM daily",
+          "time_limit": "3 hours max (evenings may differ)",
+          "boundaries": "NW 20th St to NW 29th St, railroad tracks west to NW 6th Ave",
+          "notes": "Pay By Phone program. Employee parking decals available ($30/month, ~260 spaces). Monthly parking: $55/month (~85 spaces). Private lots in area often charge $4+/hour on weekends/events. Limited metered spots along NW 36th and NE 29th.",
+          "special_note": "Rates on private lots vary dramatically during Art Basel, Wynwood Walls events, and weekend nights. $20-40 flat fees common on private lots during peak times."
+        },
+        "coconut_grove": {
+          "rate_per_hour": "$1.00 - $1.50",
+          "enforcement_hours": "10:00 AM - midnight (free before 10 AM)",
+          "time_limit": "2-4 hours",
+          "notes": "Meters free until 10 AM. MPA-managed public facilities available. Some free customer parking at retail locations (Sushi Maki: 2 hours free)."
+        },
+        "little_havana": {
+          "rate_per_hour": "$1.25 - $1.50",
+          "enforcement_hours": "8:00 AM - midnight",
+          "time_limit": "2-4 hours",
+          "key_street": "SW 8th Street (Calle Ocho) between 13th and 18th Avenues",
+          "free_parking": "Lot 82 in Cultural District (free). Adjacent streets SW 5th and SW 7th often have free unrestricted parking.",
+          "resident_discount": "20% discount for City of Miami residents via Pay By Phone"
+        },
+        "design_district": {
+          "garage_rates": {
+            "0_to_4_hours": "$3.00",
+            "4_to_6_hours": "$6.00",
+            "6_plus_hours": "$25.00/day"
+          },
+          "valet_rates": {
+            "0_to_4_hours": "$5.00",
+            "4_to_6_hours": "$10.00",
+            "6_plus_hours": "$40.00"
+          },
+          "garages": [
+            {"name": "City View Garage", "address": "3800 NE 1st Ave", "hours": "5 AM - 2 AM"},
+            {"name": "Museum Garage", "address": "90 NE 41st St", "hours": "5 AM - 10 PM"},
+            {"name": "Palm Court Garage", "address": "140 NE 39th St", "hours": "7 AM - 3 AM"},
+            {"name": "Paradise Plaza Garage", "address": "151 NE 41st St", "hours": "7:30 AM - 12 AM"}
+          ],
+          "payment": "Contactless via ParkWhiz app or parkwhiz.com (enter license plate)",
+          "street_meters": "Limited MPA metered spots in surrounding streets. MPA manages some on-street meters in the broader Fashion/Design District area."
+        },
+        "midtown": {
+          "rate_per_hour": "$1.00 - $2.00",
+          "enforcement_hours": "8:00 AM - midnight",
+          "notes": "Midtown Miami CDD operates its own parking garages (Northblock Garage, Southblock Garage). Street meters managed by MPA."
+        }
+      }
+    },
+
+    "city_of_miami_beach": {
+      "managed_by": "City of Miami Beach Parking Department",
+      "website": "miamibeachfl.gov/city-hall/parking/",
+      "phone": "305-604-4785",
+      "email": "mbhelp@miamibeachfl.gov",
+      "infrastructure": "66 surface lots, 12 garages, 19 residential permit zones",
+      "technology": "Pay-by-plate, multi-space pay stations, pay-on-foot garage systems",
+      "free_parking_window": "3:00 AM to 9:00 AM daily (all on-street meters)",
+      "rate_increase_status": "Planned October 2024 rate increase was REVERSED on September 25, 2024 by unanimous commission vote. Rates remain at pre-increase levels.",
+      "payment_methods": {
+        "at_meter": ["Coins", "Credit cards"],
+        "mobile_app": {
+          "name": "ParkMobile",
+          "zone_numbers": "88414 - 88906",
+          "features": "Pay, extend time, expiration alerts"
+        }
+      },
+      "zones": {
+        "south_beach": {
+          "boundary": "South of 23rd Street (Dade Boulevard)",
+          "on_street_rate": "$4.00/hour",
+          "off_street_lot_rate": "$2.00/hour",
+          "enforcement_hours": "9:00 AM - 3:00 AM, 7 days/week",
+          "free_hours": "3:00 AM - 9:00 AM",
+          "key_streets": ["Ocean Drive", "Collins Avenue", "Washington Avenue", "Alton Road"],
+          "time_limit": "Varies by block, check signage",
+          "notes": "Most expensive zone. Extremely high enforcement. Meters enforced on weekends and holidays."
+        },
+        "east_middle_beach": {
+          "boundary": "23rd Street to 44th Street, Collins Avenue to Indian Creek",
+          "on_street_rate": "$3.00/hour",
+          "off_street_lot_rate": "$2.00/hour",
+          "enforcement_hours": "9:00 AM - 3:00 AM, 7 days/week",
+          "free_hours": "3:00 AM - 9:00 AM"
+        },
+        "west_middle_beach": {
+          "boundary": "23rd Street to 63rd Street (excluding East Middle zone)",
+          "on_street_rate": "$1.00/hour",
+          "off_street_lot_rate": "$1.00/hour",
+          "enforcement_hours": "8:00 AM - 6:00 PM, 7 days/week",
+          "free_hours": "6:00 PM - 8:00 AM"
+        },
+        "upper_middle_beach": {
+          "boundary": "44th Street to 63rd Street",
+          "on_street_rate": "$2.00/hour",
+          "off_street_lot_rate": "$1.00/hour",
+          "enforcement_hours": "8:00 AM - 6:00 PM, 7 days/week",
+          "free_hours": "6:00 PM - 8:00 AM"
+        },
+        "north_beach": {
+          "boundary": "North of 63rd Street",
+          "on_street_rate": "$1.00/hour",
+          "off_street_lot_rate": "$1.00/hour",
+          "enforcement_hours": "8:00 AM - 6:00 PM, 7 days/week (some sources: 8 AM - 11 PM)",
+          "free_hours": "6:00 PM - 8:00 AM (or 11 PM - 8 AM)",
+          "notes": "Cheapest zone. Free parking at 500 14th St (up to 12 hours). New residential parking permit pilot program (Zone 26) launched Nov 2024."
+        }
+      },
+      "resident_parking_discount": {
+        "rate": "$1.00/hour at on-street, garages, and surface lots",
+        "daily_flat_rate_46th_collins": "$6.00/day",
+        "visitor_pass": "$3.00 per 24-hour period",
+        "registration": "Must register with Resident Parking Discount Program"
+      },
+      "residential_permit_zones": {
+        "total_zones": 19,
+        "enforcement": "Varies by zone - check posted signage. Some zones say 'INCLUDING HOLIDAYS' meaning enforcement never stops.",
+        "south_beach_zones": "Multiple RPZ zones throughout South Beach, particularly in residential blocks west of Collins Ave and near West Avenue, Flamingo Park area",
+        "north_beach_pilot": {
+          "name": "North Beach Registered Resident Parking Pilot Program (Zone 26)",
+          "launched": "November 1, 2024",
+          "cost": "Free for 12-month pilot period",
+          "permits_per_household": "Up to 2 (additional case-by-case)",
+          "eligibility": "Must live within designated North Beach Zone with proof of residence"
+        }
+      }
+    },
+
+    "coral_gables": {
+      "managed_by": "City of Coral Gables Parking and Mobility Services",
+      "website": "coralgables.com/department/parking-and-mobility-services",
+      "phone": "305-460-5540",
+      "email": "parking@coralgables.com",
+      "address": "254 Minorca Ave, Suite 204, Coral Gables, FL 33134",
+      "on_street_meter_rate": "$3.50/hour max",
+      "municipal_lot_rate": "$4.00/hour max",
+      "garage_hourly_rate": "$1.00 per 24 minutes ($2.50/hour effective)",
+      "garage_daily_max": "$18.00",
+      "enforcement_hours": "9:00 AM - midnight, 7 days/week",
+      "payment": "Pay-by-phone system, coins, credit cards",
+      "monthly_permits": {
+        "premium_garages": "$123.05/month (Garages 1, 2)",
+        "standard_garages": "$112.35/month (Garages 4, 6, Minorca)",
+        "purchase_rule": "Must buy quarterly. Cannot purchase in last 5 business days of month."
+      },
+      "residential_permit": {
+        "annual_cost": "$20.00/vehicle",
+        "visitor_passes": "4 per household included. Additional: $5.00/day each."
+      },
+      "validation_tickets": "$4.00 off parking rate. Sold in sheets of 8. Request 3 business days in advance.",
+      "shops_at_merrick_park": "Validated parking via Equinox or Nordstrom"
+    }
+  },
+
+  "tow_away_zones": {
+    "city_of_miami": {
+      "rush_hour_restrictions": {
+        "rule": "No closures, lane reductions, or traffic holds during rush hour: Monday-Friday 7:00 AM - 10:00 AM and 3:30 PM - 7:00 PM",
+        "applies_to": "Special events, construction, road work on major arterials",
+        "major_roads": ["I-95 service roads", "Biscayne Blvd", "Flagler Street", "Brickell Avenue"]
+      },
+      "special_event_zones": {
+        "kaseya_center_area": "Temporary tow-away zones activated on event nights around NE 8th St / Biscayne Blvd. Signs posted in advance. Enforcement is aggressive on event nights.",
+        "general": "Tow-Away Zone and No Parking signs include hours and days. Event nights frequently overlap with restricted windows.",
+        "biscayne_blvd": "Major north-south arterial near arena district. Temporary restrictions common during major events."
+      },
+      "permanent_tow_zones": "Fire lanes, fire hydrants (must be 10+ feet away), crosswalks, sidewalks, bicycle lanes, double-parking, blocking driveways, handicap spaces (without valid placard)",
+      "towing_enforcement": "24 hours/day, 7 days/week for illegal parking violations"
+    },
+
+    "city_of_miami_beach": {
+      "general_tow_zones": "Fire lanes, fire hydrant zones, crosswalks, sidewalks, bicycle lanes, restricted residential areas, disabled parking spaces, double-parking, blocking driveways/vehicles",
+      "towing_rates": {
+        "resident": {
+          "tow_fee": "$150.00",
+          "storage": "Applies after first 24 hours only",
+          "admin_fee": "Waived for residents"
+        },
+        "non_resident": {
+          "tow_fee": "$258.00 (standard)",
+          "south_beach_tow_fee": "$516.00 (double rate for South Beach)",
+          "admin_fee": "$30.00"
+        }
+      },
+      "towing_companies": [
+        {
+          "name": "Tremont Towing",
+          "address": "1747 Bay Rd, Miami Beach, FL 33139",
+          "phone": "305-672-2395",
+          "hours": "24/7"
+        },
+        {
+          "name": "Beach Towing Services",
+          "address": "1349 Dade Blvd, Miami Beach, FL 33139",
+          "phone": "305-534-2128",
+          "hours": "24/7"
+        }
+      ],
+      "payment_at_tow_lot": "CASH ONLY. ATMs available on-site. Credit cards NOT accepted.",
+      "storage_fees": "Accumulate daily. The longer the car remains, the more you pay.",
+      "drop_fee": "FL law allows up to 50% of posted rate, but Miami Beach towing companies waive drop fees for public policy tows only.",
+      "spring_break_special_rules": {
+        "period": "Typically March (3 weekends)",
+        "parking_changes": [
+          "Collins Avenue (5th St to Espanola Way): No parking starting 5 AM during spring break weekends",
+          "Washington Avenue (5th-16th St): No parking starting 5 AM during spring break weekends",
+          "100 blocks of 6th-15th Streets: No parking 24 hours/day during spring break weekends"
+        ],
+        "garage_flat_rates": {
+          "sunset_harbour_garage_g10": "$100.00 flat fee (visitors)",
+          "42nd_street_garage_g6": "$100.00 flat fee (visitors)",
+          "south_beach_garages_general": "$30.00 flat fee"
+        },
+        "towing_fee_spring_break": "$516.00 for non-residents (double normal rate)",
+        "enhanced_enforcement": "License plate readers, drones, video technology. Priority enforcement in residential areas.",
+        "notes": "Miami Beach actively discourages spring break. Curfew may be imposed. DUI checkpoints set up."
+      }
+    }
+  },
+
+  "holiday_parking_rules": {
+    "city_of_miami": {
+      "holiday_courtesy_program": {
+        "name": "Holiday Parking Courtesy Citation Program",
+        "operator": "Miami Parking Authority",
+        "typical_dates": "Mid-December through January 1 (e.g., Dec 17 12:01 AM - Jan 1 11:59 PM)",
+        "how_it_works": "Customers pay for parking normally via PayByPhone or ParkMobile. When session expires, instead of a real citation, they receive a holiday courtesy citation flyer granting up to 1 additional hour beyond the paid session.",
+        "applies_to": "All on-street parking spaces managed by Miami Parking Authority",
+        "schedule": "Every day, 24 hours/day during the program period",
+        "important": "This is NOT free parking. You still must pay initially. You get 1 free overtime hour only."
+      },
+      "regular_holidays": {
+        "note": "The City of Miami / MPA does NOT publish a list of holidays where meters are fully suspended. Enforcement is generally active 7 days/week including most holidays. The holiday courtesy program is the primary holiday benefit."
+      }
+    },
+
+    "city_of_miami_beach": {
+      "holiday_enforcement": "Miami Beach enforces parking meters on ALL days including Sundays and holidays. There is NO blanket holiday suspension of meters.",
+      "important_signage_rule": "Some residential permit zones are posted 'INCLUDING HOLIDAYS' - these zones are enforced year-round with no exceptions.",
+      "city_observed_holidays": [
+        "New Year's Day (January 1)",
+        "Martin Luther King Jr. Day",
+        "Presidents' Day",
+        "Memorial Day",
+        "Independence Day (July 4)",
+        "Labor Day",
+        "Veterans Day",
+        "Thanksgiving Day",
+        "Christmas Day (December 25)"
+      ],
+      "holiday_impact": "City Hall closes on observed holidays. Parking ENFORCEMENT continues. Meters remain active. The only change is City Hall administrative offices are closed for citation disputes/payments.",
+      "holiday_courtesy": "Similar to City of Miami, Miami Beach has occasionally offered holiday courtesy citation programs during late December, but this is not guaranteed annually."
+    },
+
+    "coral_gables": {
+      "note": "Coral Gables office hours are Mon-Fri 8 AM - 4:30 PM. Holiday enforcement details not published; likely follows standard 9 AM - midnight enforcement including most holidays."
+    }
+  },
+
+  "handicap_accessible_parking": {
+    "florida_state_law": {
+      "statute": "Florida Statute 316.1964",
+      "meter_exemption": {
+        "free_hours": 4,
+        "description": "Vehicles displaying a valid disabled parking permit or disabled specialty license plate may park for FREE at any on-street metered space for up to 4 hours.",
+        "activation_required": false,
+        "notes": "The disabled patron does NOT need to activate a parking session at a pay station or through a mobile app."
+      },
+      "accepted_credentials": [
+        "Disabled parking placard (hanging)",
+        "Disabled specialty license plate"
+      ],
+      "requirements": [
+        "Placard/plate must be clearly visible",
+        "Must be issued to the person being transported",
+        "The vehicle must be transporting the person with the disability"
+      ],
+      "does_NOT_override": [
+        "Posted time limits beyond 4 hours",
+        "Loading zones",
+        "No-parking zones",
+        "Fire lanes",
+        "Local time restrictions shorter than 4 hours"
+      ],
+      "misuse_penalties": "Fines and possible permit revocation for using another person's placard"
+    },
+    "miami_specific": {
+      "city_of_miami": "Free accessible parking at all MPA meters, lots, and garages for vehicles with valid disabled permits",
+      "miami_beach": "Same Florida state law applies. Free parking at on-street meters for up to 4 hours with valid placard."
+    },
+    "violation_fines": {
+      "first_offense": "$153.00",
+      "second_offense": "$253.00",
+      "miami_dade_county": "$250.00 (county code)"
+    }
+  },
+
+  "parking_violations_and_fines": {
+    "miami_dade_county": {
+      "note": "Miami-Dade County sets the base fine schedule. Cities within the county (Miami, Miami Beach, etc.) follow this schedule with local additions.",
+      "fine_schedule": {
+        "overtime_parking_expired_meter": {
+          "within_30_days": "$18.00",
+          "after_30_days": "$45.00"
+        },
+        "improper_parking_not_within_lines": {
+          "within_30_days": "$18.00",
+          "after_30_days": "$45.00"
+        },
+        "moving_vehicle_without_authority": {
+          "within_30_days": "$23.00",
+          "after_30_days": "$42.00"
+        },
+        "prohibited_parking": {
+          "within_30_days": "$28.00",
+          "after_30_days": "$47.00"
+        },
+        "unattended_vehicle_violations": {
+          "within_30_days": "$28.00",
+          "after_30_days": "$47.00"
+        },
+        "restricted_parking": {
+          "within_30_days": "$28.00",
+          "after_30_days": "$47.00"
+        },
+        "traffic_obstruction": {
+          "within_30_days": "$28.00",
+          "after_30_days": "$47.00"
+        },
+        "florida_statute_violations": {
+          "flat_fine": "$32.00"
+        },
+        "no_valid_license_plate": {
+          "within_30_days": "$33.00",
+          "after_30_days": "$57.00"
+        },
+        "willful_traffic_obstruction": {
+          "within_30_days": "$33.00",
+          "after_30_days": "$57.00"
+        },
+        "illegal_disabled_space_first": {
+          "fine": "$153.00"
+        },
+        "illegal_disabled_space_second": {
+          "fine": "$253.00"
+        }
+      },
+      "surcharge": "$4.00 added to all citations",
+      "late_penalty": "$23.00 added after 30 days unpaid",
+      "court_hearing": "May impose additional fines up to $100 plus court costs",
+      "collections": "Citations unpaid for 90+ days reported to outside collection/credit reporting agency",
+      "payment_methods": "Visa, MasterCard, Discover, American Express",
+      "payment_phone": "305-275-1133",
+      "payment_online": "www2.miamidadeclerk.gov/parking"
+    },
+
+    "miami_beach_specific": {
+      "standard_ticket_range": "$18.00 - $28.00",
+      "handicap_violation": "$153.00",
+      "general_rules": [
+        "Park no more than 18 inches from curb/sidewalk",
+        "Stay between marked lines",
+        "Maintain 10+ feet from fire hydrants",
+        "No parking on sidewalks, crosswalks, or alleys",
+        "Park head-on only (no backing in unless marked)",
+        "Only park where curbs are unpainted"
+      ]
+    }
+  },
+
+  "neighborhood_guides": {
+    "downtown_miami": {
+      "municipality": "City of Miami",
+      "parking_authority": "Miami Parking Authority",
+      "meter_rate": "$1.50 - $2.00/hour",
+      "enforcement": "8 AM - midnight, 7 days/week",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "MPA garages offer first 30 minutes free",
+        "Whole Foods (299 SE 3rd Ave) offers free customer parking",
+        "Miami-Dade Cultural Center Garage: $3/half hour",
+        "Bayfront Park area: $20 flat rate common",
+        "Limited metered street parking supply",
+        "Aggressive towing on event nights near Kaseya Center"
+      ],
+      "tow_away": "Temporary tow zones near Kaseya Center on event nights. Rush hour restrictions Mon-Fri 7-10 AM, 3:30-7 PM."
+    },
+    "brickell": {
+      "municipality": "City of Miami",
+      "parking_authority": "Miami Parking Authority",
+      "meter_rate": "$1.50 - $2.00/hour",
+      "enforcement": "8 AM - midnight, 7 days/week",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "Very limited on-street metered parking",
+        "Brickell City Centre: first 2 hours free (no validation needed)",
+        "Mary Brickell Village: 2 hours free with Publix validation",
+        "620 Brickell: premium public parking garage",
+        "Most parking is in private building garages",
+        "Monthly garage parking: ~$250/month"
+      ]
+    },
+    "wynwood": {
+      "municipality": "City of Miami",
+      "parking_authority": "Miami Parking Authority",
+      "meter_rate": "$1.50/hour (MPA meters)",
+      "enforcement": "7 AM - 2 AM daily",
+      "max_time": "3 hours at meters",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "Private lot rates spike dramatically on weekends and during events ($4-40+)",
+        "Employee parking: $30/month with decal (~260 spaces)",
+        "Monthly resident parking: $55/month (~85 spaces)",
+        "Wynwood Garage available for overflow",
+        "Art Basel and Wynwood Walls events cause extreme parking demand",
+        "Multiple private lots at NW 23rd/NW 5th and NW 2nd behind convention center"
+      ]
+    },
+    "south_beach": {
+      "municipality": "City of Miami Beach",
+      "meter_rate": "$4.00/hour (on-street)",
+      "lot_rate": "$2.00/hour",
+      "enforcement": "9 AM - 3 AM, 7 days/week including holidays",
+      "free_window": "3 AM - 9 AM",
+      "street_sweeping": "Commercial corridors swept overnight; no posted parking restrictions for sweeping in entertainment district",
+      "key_notes": [
+        "Most expensive parking in metro Miami",
+        "19 residential permit zones throughout",
+        "Garages: 7th St, 12th St, 13th St garages at $1-2/hour",
+        "17th Street Garage: $2/hour, max $20/day",
+        "Fifth & Alton Garage: $2/hour, max $20/day",
+        "1111 Lincoln Road: $30/hour (architectural landmark garage)",
+        "Non-resident towing: $516 in South Beach (double rate)",
+        "Municipal lots do NOT allow overnight parking",
+        "Spring break: extreme enforcement, flat-rate garages, additional restrictions"
+      ]
+    },
+    "coconut_grove": {
+      "municipality": "City of Miami",
+      "parking_authority": "Miami Parking Authority",
+      "meter_rate": "$1.00 - $1.50/hour",
+      "enforcement": "10 AM - midnight (FREE before 10 AM)",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "Meters free until 10 AM - one of few Miami neighborhoods with this benefit",
+        "Sushi Maki: free parking for up to 2 hours",
+        "Time limits: 2-4 hours on most metered spaces",
+        "Public facilities managed by MPA",
+        "Meter space rental requires permit from Coconut Grove NET office"
+      ]
+    },
+    "coral_gables": {
+      "municipality": "City of Coral Gables (separate city)",
+      "parking_authority": "Coral Gables Parking and Mobility Services",
+      "meter_rate": "$3.50/hour max (on-street)",
+      "lot_rate": "$4.00/hour max",
+      "garage_rate": "$2.50/hour effective ($18/day max)",
+      "enforcement": "9 AM - midnight, 7 days/week",
+      "street_sweeping": "No posted no-parking restrictions for sweeping on main roads",
+      "key_notes": [
+        "Miracle Mile and downtown area: $3.50/hour meters",
+        "Shops at Merrick Park: validated parking via Equinox/Nordstrom",
+        "Residential permit: $20/year per vehicle",
+        "Visitor passes: 4 included per household, $5/day each additional",
+        "Monthly garage permits: $112-123/month",
+        "Validation tickets: $4 off rate, must request 3 business days ahead",
+        "Lost garage ticket: $18 charge",
+        "Trolley service available (free) to reduce parking demand"
+      ]
+    },
+    "little_havana": {
+      "municipality": "City of Miami",
+      "parking_authority": "Miami Parking Authority",
+      "meter_rate": "$1.25 - $1.50/hour",
+      "enforcement": "8 AM - midnight",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "Calle Ocho (SW 8th St) between 13th-18th Ave: metered parking",
+        "Free parking: Lot 82 in Cultural District",
+        "Adjacent streets (SW 5th, SW 7th): free unrestricted parking",
+        "20% discount for City of Miami residents via Pay By Phone",
+        "Cross streets like 14th Avenue often easier to find spots",
+        "Zip codes: 33130, 33125, 33145, 33135"
+      ]
+    },
+    "design_district": {
+      "municipality": "City of Miami",
+      "parking": "Primarily garage-based (see garage rates above)",
+      "street_meters": "Limited MPA-managed meters on surrounding streets",
+      "enforcement": "8 AM - midnight (street meters)",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "4 garages operated by Miami Design District",
+        "Payment via ParkWhiz app (contactless, license plate based)",
+        "10 valet stations with interchangeable drop-off/pick-up",
+        "Palm Court Garage: $3 for first 4 hours (best value)",
+        "Museum Garage: architectural landmark, closes at 10 PM"
+      ]
+    },
+    "midtown": {
+      "municipality": "City of Miami",
+      "parking_authority": "Miami Parking Authority (street) + Midtown Miami CDD (garages)",
+      "meter_rate": "$1.00 - $2.00/hour",
+      "enforcement": "8 AM - midnight",
+      "street_sweeping": "No posted no-parking restrictions for sweeping",
+      "key_notes": [
+        "Midtown Miami CDD operates Northblock and Southblock garages",
+        "Street meters managed by MPA",
+        "Monthly garage parking: ~$150/month"
+      ]
+    },
+    "north_beach_miami_beach": {
+      "municipality": "City of Miami Beach",
+      "meter_rate": "$1.00/hour (on-street and off-street)",
+      "enforcement": "8 AM - 6 PM, 7 days/week",
+      "free_window": "6 PM - 8 AM",
+      "street_sweeping": "Active alternate-side program in designated areas, 9 AM - 12 PM on designated weekdays",
+      "key_notes": [
+        "Cheapest parking zone in Miami Beach",
+        "Free parking at 500 14th St (up to 12 hours)",
+        "New Residential Parking Permit Pilot (Zone 26) launched Nov 2024",
+        "After 6 PM: no meter fees",
+        "Active street cleaning program with posted parking restrictions"
+      ]
+    }
+  },
+
+  "general_parking_rules": {
+    "city_of_miami": {
+      "curb_distance": "Park no more than 18 inches from sidewalk/curb",
+      "fire_hydrant": "10+ feet distance required",
+      "crosswalks": "No parking within 20 feet of crosswalk",
+      "direction": "Must park in direction of traffic flow",
+      "sidewalks": "Never park on sidewalks",
+      "driveways": "Never block driveways",
+      "time_limits": "Observe posted time limits even at free spots",
+      "residential_zones": "Look for residential permit signs before parking"
+    },
+    "city_of_miami_beach": {
+      "head_in_only": "Must park head-on (no backing in unless specifically marked)",
+      "unpainted_curbs": "Only park where curbs are unpainted",
+      "residential_signs": "Check for meters/machines before parking in residential areas",
+      "no_overnight_municipal_lots": "Municipal lots do NOT allow overnight parking",
+      "holidays": "Enforcement active on ALL days including holidays",
+      "towing_for_meters": "Generally NOT towed for unpaid meters if parked legally - tickets only. Towing is for illegal parking (fire lanes, handicap, residential zones, etc.)"
+    }
+  },
+
+  "key_differences_miami_vs_miami_beach": {
+    "enforcement_aggressiveness": "Miami Beach is significantly more aggressive than City of Miami in parking enforcement, especially in South Beach",
+    "rates": "Miami Beach South Beach ($4/hr) is 2-3x more expensive than most City of Miami meters ($1-2/hr)",
+    "hours": "Miami Beach South Beach enforces until 3 AM; City of Miami typically enforces until midnight",
+    "sundays_holidays": "Both enforce 7 days/week including holidays. Neither offers blanket Sunday free parking.",
+    "towing_cost": "Miami Beach non-resident towing ($258-516) is far more expensive than typical Miami towing",
+    "street_sweeping": "Neither city has an aggressive NYC/SF-style ticketing program for street sweeping. Miami Beach has limited programs in Flamingo Park (delayed) and North Beach.",
+    "resident_discounts": "City of Miami: 50% off via MPA apps. Miami Beach: flat $1/hr for registered residents.",
+    "payment_apps": "City of Miami: PayByPhone, ParkMobile, Passport. Miami Beach: ParkMobile."
+  }
+}

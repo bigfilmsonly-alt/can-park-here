@@ -2,56 +2,53 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Map, Users, Star } from "lucide-react"
+import { Home, Clock, History, Settings } from "lucide-react"
 
 const tabs = [
   { id: "home", label: "Home", href: "/", icon: Home },
-  { id: "map", label: "Map", href: "/map", icon: Map },
-  { id: "community", label: "Community", href: "/community", icon: Users },
-  { id: "rewards", label: "Rewards", href: "/rewards", icon: Star },
+  { id: "history", label: "History", href: "/history", icon: History },
+  { id: "timer", label: "Timer", href: "/timer", icon: Clock },
+  { id: "settings", label: "Settings", href: "/settings", icon: Settings },
 ] as const
-
-const ACCENT = "#3b82f6"
-const INACTIVE = "#94a3b8"
 
 export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed md:absolute bottom-3.5 left-3.5 right-3.5 z-50 max-w-md mx-auto sheet-enter">
+    <nav className="fixed md:absolute bottom-4 left-4 right-4 z-50 max-w-md mx-auto">
       <div
-        className="grid grid-cols-4 items-center h-[62px] rounded-full"
+        className="grid grid-cols-4 items-center"
         style={{
-          background: "rgba(11,15,23,0.82)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          height: 62,
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "saturate(180%) blur(24px)",
+          WebkitBackdropFilter: "saturate(180%) blur(24px)",
+          border: "1px solid rgba(0,0,0,0.06)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
         }}
       >
         {tabs.map((tab) => {
           const isActive =
             pathname === tab.href ||
-            (tab.id === "home" && pathname === "/status")
+            (tab.id === "home" && ["/status", "/scan"].includes(pathname))
           const Icon = tab.icon
 
           return (
             <Link
               key={tab.id}
               href={tab.href}
-              className="flex flex-col items-center justify-center gap-0.5 transition-colors"
-              style={{ color: isActive ? ACCENT : INACTIVE }}
+              className="press flex flex-col items-center justify-center gap-[2px]"
+              style={{
+                color: isActive ? "#2563eb" : "#94a3b8",
+                background: "transparent",
+                textDecoration: "none",
+              }}
             >
-              <Icon
-                className="w-[22px] h-[22px]"
-                strokeWidth={1.75}
-                style={{
-                  transition: "transform 0.25s cubic-bezier(.2,.7,.3,1)",
-                  transform: isActive ? "scale(1.1)" : "scale(1)",
-                }}
-              />
-              <span className="text-[10px] font-semibold">{tab.label}</span>
-              {isActive && (
-                <div className="rounded-full w-1 h-1 mt-0.5" style={{ background: ACCENT }} />
-              )}
+              <Icon style={{ width: 22, height: 22 }} strokeWidth={isActive ? 2.25 : 1.5} />
+              <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500 }}>
+                {tab.label}
+              </span>
             </Link>
           )
         })}

@@ -127,7 +127,7 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="px-6 py-3 rounded-2xl text-white font-semibold press-effect"
-              style={{ background: "var(--accent)" }}
+              style={{ background: "var(--park-accent)" }}
             >
               Upload Photo
             </button>
@@ -149,8 +149,8 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
                 <div
                   className="absolute top-0 left-0 w-8 h-8"
                   style={{
-                    borderLeft: "3px solid var(--accent)",
-                    borderTop: "3px solid var(--accent)",
+                    borderLeft: "3px solid var(--park-accent)",
+                    borderTop: "3px solid var(--park-accent)",
                     borderRadius: "4px 0 0 0",
                   }}
                 />
@@ -158,8 +158,8 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
                 <div
                   className="absolute top-0 right-0 w-8 h-8"
                   style={{
-                    borderRight: "3px solid var(--accent)",
-                    borderTop: "3px solid var(--accent)",
+                    borderRight: "3px solid var(--park-accent)",
+                    borderTop: "3px solid var(--park-accent)",
                     borderRadius: "0 4px 0 0",
                   }}
                 />
@@ -167,8 +167,8 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
                 <div
                   className="absolute bottom-0 left-0 w-8 h-8"
                   style={{
-                    borderLeft: "3px solid var(--accent)",
-                    borderBottom: "3px solid var(--accent)",
+                    borderLeft: "3px solid var(--park-accent)",
+                    borderBottom: "3px solid var(--park-accent)",
                     borderRadius: "0 0 0 4px",
                   }}
                 />
@@ -176,8 +176,8 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
                 <div
                   className="absolute bottom-0 right-0 w-8 h-8"
                   style={{
-                    borderRight: "3px solid var(--accent)",
-                    borderBottom: "3px solid var(--accent)",
+                    borderRight: "3px solid var(--park-accent)",
+                    borderBottom: "3px solid var(--park-accent)",
                     borderRadius: "0 0 4px 0",
                   }}
                 />
@@ -187,7 +187,7 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
                   className="absolute left-0 right-0 h-[2px] animate-scan-line"
                   style={{
                     background:
-                      "linear-gradient(90deg, transparent 0%, var(--accent) 20%, var(--accent) 80%, transparent 100%)",
+                      "linear-gradient(90deg, transparent 0%, var(--park-accent) 20%, var(--park-accent) 80%, transparent 100%)",
                     boxShadow: "0 0 12px rgba(52,199,89,0.5)",
                   }}
                 />
@@ -223,7 +223,7 @@ export function ScanScreen({ onCapture, onClose }: ScanScreenProps) {
           aria-label={flashOn ? "Turn flash off" : "Turn flash on"}
         >
           {flashOn ? (
-            <Zap className="w-5 h-5 text-[var(--accent)]" />
+            <Zap className="w-5 h-5 text-[var(--park-accent)]" />
           ) : (
             <ZapOff className="w-5 h-5 text-white" />
           )}

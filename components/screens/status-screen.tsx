@@ -1,20 +1,18 @@
 "use client"
 
 import type { ParkingResult } from "@/lib/parking-rules"
-import { formatTimeRemaining } from "@/lib/parking-rules"
-import { useEffect, useState } from "react"
 import {
-  Bookmark,
   Check,
   ShieldCheck,
-  AlertTriangle,
-  Accessibility,
-  Truck,
   Clock,
   ChevronLeft,
-  Share,
+  Share2,
+  Timer,
+  Navigation,
+  X,
+  AlertTriangle,
+  MapPin,
 } from "lucide-react"
-import { WalletPassModal } from "@/components/wallet-pass"
 
 interface StatusScreenProps {
   result: ParkingResult
@@ -31,294 +29,118 @@ interface StatusScreenProps {
   reminderSet: boolean
 }
 
-const statusConfig = {
+const variants = {
   allowed: {
-    bg: "var(--status-success-bg)",
-    ink: "var(--status-success-foreground)",
-    accent: "var(--status-success)",
-    label: "ALLOWED",
-    icon: Check,
+    bg: "#f0fdf4", ink: "#166534", accent: "#22c55e", border: "#bbf7d0",
+    head: "Yes \u2014 park here.",
+    icon: Check, iconBg: "#dcfce7",
   },
   restricted: {
-    bg: "var(--status-warning-bg)",
-    ink: "var(--status-warning-foreground)",
-    accent: "var(--status-warning)",
-    label: "RESTRICTED",
-    icon: Clock,
+    bg: "#fffbeb", ink: "#92400e", accent: "#f59e0b", border: "#fde68a",
+    head: "Limited time.",
+    icon: Clock, iconBg: "#fef3c7",
   },
   prohibited: {
-    bg: "var(--status-error-bg)",
-    ink: "var(--status-error-foreground)",
-    accent: "var(--status-error)",
-    label: "PROHIBITED",
-    icon: AlertTriangle,
+    bg: "#fef2f2", ink: "#991b1b", accent: "#ef4444", border: "#fecaca",
+    head: "Don\u2019t park here.",
+    icon: X, iconBg: "#fee2e2",
   },
 }
 
 export function StatusScreen({
   result,
   location,
-  fullAddress,
-  coordinates,
-  isSaved,
   onBack,
   onSetReminder,
-  onEndSession,
-  onSaveLocation,
-  onRemoveLocation,
   isProtected,
-  reminderSet,
 }: StatusScreenProps) {
-  const config = statusConfig[result.status]
-  const hasTimer = result.timeRemaining !== null && result.timeRemaining > 0
-  const canPark = result.status !== "prohibited"
-
-  const [timeRemaining, setTimeRemaining] = useState(result.timeRemaining || 0)
-  const [justSaved, setJustSaved] = useState(false)
-  const [showWalletPass, setShowWalletPass] = useState(false)
-
-  useEffect(() => {
-    if (!hasTimer) return
-    setTimeRemaining(result.timeRemaining || 0)
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 60000)
-    return () => clearInterval(interval)
-  }, [result.timeRemaining, hasTimer])
-
-  const handleSaveToggle = () => {
-    if (isSaved) {
-      onRemoveLocation()
-    } else {
-      onSaveLocation()
-      setJustSaved(true)
-      setTimeout(() => setJustSaved(false), 2000)
-    }
-  }
+  const v = variants[result.status]
+  const conf = (result as { confidence?: number }).confidence ?? 95
+  const headline = (result as { headline?: string }).headline || v.head
+  const reason = (result as { reason?: string }).reason || result.description || ""
+  const restrictions = (result as { restrictions?: string[] }).restrictions || []
+  const Icon = v.icon
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-[22px] pt-4 pb-28">
-      {/* Header: back + share */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          aria-label="Go back"
-          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleSaveToggle}
-            aria-label={isSaved ? "Remove saved" : "Save location"}
-            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
-          >
-            {isSaved || justSaved ? (
-              <Check className="w-[18px] h-[18px]" />
+    <div className="fade-in" style={{ minHeight: "100vh", background: "#fff", color: "#0f172a" }}>
+      <div className="park-scroll" style={{ paddingTop: 16, paddingBottom: 120 }}>
+        {/* Top bar */}
+        <div style={{ padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <button onClick={onBack} className="press" style={{ width: 40, height: 40, borderRadius: 12, background: "#f1f5f9", border: "none", color: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ChevronLeft style={{ width: 20, height: 20 }} strokeWidth={1.75} />
+          </button>
+          <button className="press" style={{ width: 40, height: 40, borderRadius: 12, background: "#f1f5f9", border: "none", color: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Share2 style={{ width: 18, height: 18 }} strokeWidth={1.75} />
+          </button>
+        </div>
+
+        {/* Status hero */}
+        <div style={{ padding: "24px 24px 0" }}>
+          {/* Status badge */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: v.bg, border: `1px solid ${v.border}`, color: v.ink, fontSize: 12, fontWeight: 700, letterSpacing: "0.02em" }}>
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: v.accent }} />
+            {result.status === "allowed" ? "ALLOWED" : result.status === "restricted" ? "LIMITED" : "PROHIBITED"}
+            <span style={{ opacity: 0.6 }}>&middot;</span>
+            {conf}% confident
+          </div>
+
+          {/* Big headline */}
+          <div style={{ fontSize: 48, fontWeight: 800, letterSpacing: -2, lineHeight: 1, marginTop: 16, color: "#0f172a" }}>
+            {headline}
+          </div>
+
+          {/* Location */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
+            <MapPin style={{ width: 14, height: 14, color: "#94a3b8" }} strokeWidth={1.75} />
+            <span style={{ fontSize: 14, color: "#64748b" }}>{location || "Current location"}</span>
+          </div>
+
+          {/* Reason */}
+          <div style={{ fontSize: 16, color: "#334155", marginTop: 12, lineHeight: 1.55 }}>
+            {reason}
+          </div>
+        </div>
+
+        {/* Restrictions bullets */}
+        {restrictions.length > 0 && (
+          <div style={{ padding: "20px 20px 0" }}>
+            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden" }}>
+              {restrictions.map((r, i) => (
+                <div key={i} style={{ padding: "14px 18px", display: "flex", gap: 12, alignItems: "center", borderTop: i ? "1px solid #f1f5f9" : "none" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: v.accent, flexShrink: 0 }} />
+                  <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{r}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Guarantee card */}
+        <div style={{ padding: "14px 20px 0" }}>
+          <div style={{ background: "#eff6ff", border: "1px solid #dbeafe", borderRadius: 14, padding: "14px 16px", display: "flex", gap: 12, alignItems: "center" }}>
+            <ShieldCheck style={{ width: 22, height: 22, color: "#2563eb", flexShrink: 0 }} strokeWidth={1.75} />
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#1e40af", lineHeight: 1.4 }}>
+              This answer is protected. Get a ticket? We pay up to $100.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom CTAs — always visible */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "12px 20px 28px", background: "linear-gradient(0deg, #fff 70%, transparent 100%)", zIndex: 55 }}>
+        <div style={{ maxWidth: 448, margin: "0 auto", display: "flex", gap: 10 }}>
+          <button onClick={onBack} className="press" style={{ flex: 1, padding: "16px", borderRadius: 999, background: "#f1f5f9", color: "#0f172a", border: "none", fontSize: 15, fontWeight: 600 }}>
+            Done
+          </button>
+          <button onClick={onSetReminder} className="press" style={{ flex: 2, padding: "16px", borderRadius: 999, background: "#2563eb", color: "#fff", border: "none", fontSize: 15, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 24px rgba(37,99,235,0.3)" }}>
+            {result.status === "prohibited" ? (
+              <><Navigation style={{ width: 18, height: 18 }} strokeWidth={1.75} /> Find legal spot</>
             ) : (
-              <Bookmark className="w-[18px] h-[18px]" />
+              <><Timer style={{ width: 18, height: 18 }} strokeWidth={1.75} /> Set timer</>
             )}
           </button>
-          <button
-            aria-label="Share"
-            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
-            onClick={async () => {
-              const text = `${result.title} — ${location}\n${result.description}`
-              if (navigator.share) {
-                try { await navigator.share({ title: "Park — Can I park here?", text }) } catch {}
-              } else {
-                await navigator.clipboard.writeText(text)
-              }
-            }}
-          >
-            <Share className="w-[18px] h-[18px]" />
-          </button>
         </div>
       </div>
-
-      {/* Status pill + giant typographic answer */}
-      <div className="mt-8">
-        <div
-          className="inline-flex items-center gap-2 px-3 py-[7px] rounded-full text-[11px] font-bold tracking-wider"
-          style={{ background: config.bg, color: config.ink }}
-        >
-          <div className="relative w-[7px] h-[7px]">
-            <div
-              className="w-[7px] h-[7px] rounded-full relative z-10"
-              style={{ background: config.accent }}
-            />
-            <div
-              className="sonar-ring absolute inset-0 rounded-full"
-              style={{ borderColor: config.accent }}
-            />
-          </div>
-          {config.label} · {(result as ParkingResult & { confidence?: number }).confidence ?? 97}% CONFIDENT
-        </div>
-
-        <h1
-          className="mt-[18px] font-bold leading-[0.98] count-reveal"
-          style={{
-            fontSize: 56,
-            letterSpacing: -2.2,
-            textWrap: "balance",
-          }}
-        >
-          {result.title}
-        </h1>
-
-        <p
-          className="mt-[14px]"
-          style={{ fontSize: 15, color: "var(--fg2)", lineHeight: 1.5 }}
-        >
-          {result.description}
-        </p>
-      </div>
-
-      {/* Warnings card */}
-      {result.warnings.length > 0 && (
-        <div className="mt-8 bg-card card-elevated rounded-[18px] overflow-hidden">
-          {result.warnings.map((warning, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2.5 px-3.5 py-3 text-sm"
-              style={{
-                color: "var(--fg2)",
-                borderTop: i > 0 ? "1px solid var(--hairline)" : undefined,
-              }}
-            >
-              <div
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: config.accent }}
-              />
-              {warning.message}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Why this answer card */}
-      <div className="mt-4 bg-card card-elevated rounded-[18px] p-3.5 spring-in">
-        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-          WHY THIS ANSWER
-        </p>
-        <p className="text-[13px] mt-2 leading-relaxed" style={{ color: "var(--fg2)" }}>
-          {result.description}
-        </p>
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {result.timeRemaining && result.timeRemaining > 0 && (
-            <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
-              {formatTimeRemaining(result.timeRemaining)} limit
-            </span>
-          )}
-          {result.activeRule && (
-            <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
-              Meter active
-            </span>
-          )}
-          {result.warnings.map((w, i) => (
-            <span key={i} className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
-              {w.type.replace("-", " ")}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Protection card */}
-      {isProtected && canPark && (
-        <div className="mt-4 bg-[var(--accent-pale)] border border-[var(--accent)] rounded-[18px] p-3.5 flex items-center gap-2.5"
-          style={{ color: "var(--accent-ink, var(--accent))" }}
-        >
-          <ShieldCheck className="w-5 h-5 shrink-0" />
-          <p className="text-sm font-medium">This answer is protected. Get a ticket? We pay.</p>
-        </div>
-      )}
-
-      {/* Handicap info */}
-      {result.handicapInfo && (
-        <div className="mt-4 flex items-start gap-3 p-4 rounded-[18px] bg-card card-elevated">
-          <Accessibility className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium">Accessible Parking</p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {result.handicapInfo.message}
-            </p>
-            {result.handicapInfo.timeLimit && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Time limit: {formatTimeRemaining(result.handicapInfo.timeLimit)}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Tow warning */}
-      {result.status === "prohibited" &&
-        result.activeRule?.towRisk === "high" && (
-          <div
-            className="mt-4 p-4 rounded-2xl border"
-            style={{
-              background: "var(--status-error-bg)",
-              borderColor: "rgba(239,68,68,0.2)",
-            }}
-          >
-            <div className="flex items-start gap-3">
-              <Truck className="h-5 w-5 text-status-error-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-status-error-foreground">
-                  High tow risk
-                </p>
-                <p className="text-sm text-foreground/80 mt-1">
-                  Vehicles are actively towed here. Find another spot to avoid
-                  $300-500+ fees.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-      {/* Action buttons */}
-      <div className="mt-8 flex gap-2.5">
-        <button
-          onClick={onEndSession}
-          className="flex-1 py-3.5 rounded-full border border-border font-semibold hover-lift-interactive"
-        >
-          Done
-        </button>
-        {canPark ? (
-          <button
-            onClick={onSetReminder}
-            disabled={reminderSet}
-            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold hover-lift-interactive"
-          >
-            {reminderSet
-              ? "Reminder set"
-              : `Start ${result.timeRemaining ? formatTimeRemaining(result.timeRemaining) : "2-hour"} timer`}
-          </button>
-        ) : (
-          <button
-            onClick={onBack}
-            className="flex-[2] py-3.5 rounded-full bg-[var(--accent)] text-white font-semibold hover-lift-interactive"
-          >
-            Find legal spot nearby
-          </button>
-        )}
-      </div>
-
-      {/* Wallet Pass Modal */}
-      <WalletPassModal
-        isOpen={showWalletPass}
-        onClose={() => setShowWalletPass(false)}
-        location={location}
-        address={fullAddress}
-        timeLimit={result.timeRemaining || undefined}
-        isProtected={isProtected}
-      />
     </div>
   )
 }

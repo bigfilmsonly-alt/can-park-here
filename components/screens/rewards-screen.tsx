@@ -1,288 +1,348 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Star, Lock } from "lucide-react"
 import {
   getGamificationState,
-  getUserBadges,
-  getLeaderboard,
-  getReferralStats,
   getMoneySavedStats,
-  getBadgeProgress,
-  getKarmaForNextLevel,
   type GamificationState,
-  type Badge,
-  type LeaderboardEntry,
 } from "@/lib/gamification"
-import {
-  Trophy,
-  Medal,
-  Star,
-  Flame,
-  Users,
-  Share2,
-  DollarSign,
-  Crown,
-  Shield,
-  Zap,
-  Heart,
-  Award,
-  Flag,
-  Eye,
-  TrendingUp,
-  Gem,
-  UserPlus,
-  Megaphone,
-  ShieldCheck,
-  Sparkles,
-  Copy,
-  Check,
-  Lock,
-} from "lucide-react"
+import { dbGetUserSync } from "@/lib/db"
 import { showToast } from "@/components/ui/toast-notification"
 
 interface RewardsScreenProps {
   onBack: () => void
 }
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  flag: Flag,
-  award: Award,
-  medal: Medal,
-  trophy: Trophy,
-  crown: Crown,
-  flame: Flame,
-  zap: Zap,
-  star: Star,
-  users: Users,
-  eye: Eye,
-  shield: Shield,
-  "trending-up": TrendingUp,
-  heart: Heart,
-  gem: Gem,
-  "user-plus": UserPlus,
-  "share-2": Share2,
-  megaphone: Megaphone,
-  "shield-check": ShieldCheck,
-  swords: Shield,
-  sparkles: Sparkles,
+/* ------------------------------------------------------------------ */
+/*  Badge catalogue – 12 badges with earned/locked status             */
+/* ------------------------------------------------------------------ */
+
+interface BadgeDef {
+  name: string
+  earned: boolean
 }
 
+const DEFAULT_BADGES: BadgeDef[] = [
+  { name: "First Check", earned: true },
+  { name: "10-Day",      earned: true },
+  { name: "Scanner",     earned: true },
+  { name: "Saver",       earned: true },
+  { name: "Night Owl",   earned: true },
+  { name: "Early Bird",  earned: false },
+  { name: "Commuter",    earned: false },
+  { name: "Pro Tipper",  earned: true },
+  { name: "100 Checks",  earned: false },
+  { name: "Block Hero",  earned: true },
+  { name: "Streak 30",   earned: false },
+  { name: "Dispute",     earned: false },
+]
+
+/* ------------------------------------------------------------------ */
+/*  Defaults (overridden by localStorage when available)              */
+/* ------------------------------------------------------------------ */
+
+const DEFAULTS = {
+  name: "Alex",
+  karma: 1284,
+  streak: 14,
+  saved: 312,
+  checks: 48,
+  badgeCount: 11,
+  badgeTotal: 21,
+} as const
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
+
 export function RewardsScreen({ onBack }: RewardsScreenProps) {
-  const [state, setState] = useState<GamificationState | null>(null)
-  const [badges, setBadges] = useState<{ unlocked: Badge[]; locked: Badge[] }>({
-    unlocked: [],
-    locked: [],
-  })
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
-  const [referralStats, setReferralStats] = useState({
-    code: "",
-    referrals: 0,
-    earnings: 0,
-  })
-  const [savingsStats, setSavingsStats] = useState({
-    total: 0,
-    thisMonth: 0,
-    ticketsAvoided: 0,
-  })
-  const [copied, setCopied] = useState(false)
+  const [userName, setUserName] = useState<string>(DEFAULTS.name)
+  const [karma, setKarma] = useState<number>(DEFAULTS.karma)
+  const [streak, setStreak] = useState<number>(DEFAULTS.streak)
+  const [saved, setSaved] = useState<number>(DEFAULTS.saved)
+  const [checks, setChecks] = useState<number>(DEFAULTS.checks)
+  const [badges] = useState<BadgeDef[]>(DEFAULT_BADGES)
+
+  const earnedCount = badges.filter((b) => b.earned).length
+  const totalCount = DEFAULTS.badgeTotal
 
   useEffect(() => {
-    const loadData = async () => {
-      setState(getGamificationState())
-      setBadges(getUserBadges())
-      setLeaderboard(await getLeaderboard())
-      setReferralStats(getReferralStats())
-      setSavingsStats(getMoneySavedStats())
-    }
-    loadData()
+    const state: GamificationState = getGamificationState()
+    const user = dbGetUserSync()
+    const savings = getMoneySavedStats()
+
+    if (user?.name) setUserName(user.name)
+    if (state.karma > 0) setKarma(state.karma)
+    if (state.currentStreak > 0) setStreak(state.currentStreak)
+    if (state.totalChecks > 0) setChecks(state.totalChecks)
+    if (savings.total > 0) setSaved(savings.total)
   }, [])
 
-  const copyReferralCode = () => {
-    navigator.clipboard.writeText(referralStats.code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  if (!state) return null
-
-  const allBadges = [...badges.unlocked, ...badges.locked].slice(0, 12)
-  const streakDays = state.currentStreak
-  const dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
-
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-5.5 pt-16 pb-28">
-      {/* Header */}
-      <div className="spring-in">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          REWARDS
-        </p>
-        <h1 className="text-[32px] font-bold tracking-tight mt-1">
-          Hey, <span className="count-reveal">{state.karma.toLocaleString()}</span> karma.
-        </h1>
-        <p className="text-sm text-[var(--fg2)] mt-0.5">
-          {streakDays}-day streak &middot; top 8% in San Francisco
-        </p>
-      </div>
-
-      {/* Streak card */}
-      <div
-        className="mt-6 rounded-[22px] p-5 text-white"
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100dvh",
+        padding: "64px 22px 120px",
+        background: "var(--park-bg)",
+        color: "var(--park-fg)",
+      }}
+    >
+      {/* ---- Header ---- */}
+      <p
         style={{
-          background: "linear-gradient(150deg, var(--accent), var(--accent-deep))",
+          fontSize: 13,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          color: "var(--park-muted-fg)",
+          margin: 0,
         }}
       >
-        <p className="text-xs font-extrabold tracking-wider opacity-85 uppercase">
-          STREAK &middot; {streakDays} DAYS
-        </p>
-        <h2 className="text-[32px] font-bold tracking-tight mt-1">
-          Keep it going.
-        </h2>
-        <div className="flex gap-1.5 mt-4">
-          {dayLabels.map((day, i) => (
-            <div
-              key={i}
-              className={`flex-1 h-10 rounded-lg ${
-                i < streakDays ? "bg-white/40" : "bg-white/10"
-              }`}
-            />
-          ))}
+        REWARDS
+      </p>
+      <h1
+        style={{
+          fontSize: 32,
+          fontWeight: 700,
+          letterSpacing: -1.2,
+          margin: "4px 0 0",
+        }}
+      >
+        {userName}
+      </h1>
+
+      {/* ---- Karma / Streak gradient card ---- */}
+      <div
+        style={{
+          marginTop: 24,
+          borderRadius: 22,
+          overflow: "hidden",
+          border: "none",
+        }}
+      >
+        {/* Top gradient section */}
+        <div
+          style={{
+            background:
+              "linear-gradient(135deg, var(--park-accent), var(--park-accent-deep))",
+            color: "#fff",
+            padding: "24px 24px 20px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+          }}
+        >
+          {/* Left – Karma */}
+          <div>
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                opacity: 0.75,
+                margin: 0,
+              }}
+            >
+              KARMA
+            </p>
+            <p
+              style={{
+                fontSize: 44,
+                fontWeight: 700,
+                letterSpacing: -1.5,
+                margin: "2px 0 0",
+                lineHeight: 1,
+              }}
+            >
+              {karma.toLocaleString()}
+            </p>
+          </div>
+
+          {/* Right – Streak */}
+          <div style={{ textAlign: "right" }}>
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                opacity: 0.75,
+                margin: 0,
+              }}
+            >
+              STREAK
+            </p>
+            <p
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                margin: "2px 0 0",
+                lineHeight: 1,
+              }}
+            >
+              {streak}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom stats section */}
+        <div
+          style={{
+            background: "var(--park-surface)",
+            padding: "16px 24px",
+            display: "flex",
+            gap: 20,
+          }}
+        >
+          <StatCell value={`$${saved}`} label="saved" />
+          <StatCell value={String(checks)} label="checks" />
+          <StatCell value={String(earnedCount)} label="badges" />
         </div>
       </div>
 
-      {/* Badges grid */}
-      <div className="mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Badges &middot; {badges.unlocked.length} of{" "}
-            {badges.unlocked.length + badges.locked.length}
+      {/* ---- Badges section ---- */}
+      <div style={{ marginTop: 24 }}>
+        {/* Header row */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+              color: "var(--park-muted-fg)",
+              margin: 0,
+            }}
+          >
+            Badges &middot; {earnedCount} of {totalCount}
           </p>
           <button
-            className="text-xs font-bold text-[var(--accent)]"
-            onClick={() => showToast("info", "All badges", "Full badge collection coming soon")}
+            onClick={() =>
+              showToast("info", "All badges", "Full badge collection coming soon")
+            }
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--park-accent)",
+            }}
           >
             See all
           </button>
         </div>
-        <div className="stagger-spring grid grid-cols-4 gap-2.5">
-          {allBadges.map((badge) => {
-            const isUnlocked = badges.unlocked.some((b) => b.id === badge.id)
-            const Icon = ICON_MAP[badge.icon] || Star
-            return (
-              <div
-                key={badge.id}
-                className={`aspect-square rounded-2xl border p-1.5 flex flex-col items-center justify-center gap-1.5 ${
-                  isUnlocked
-                    ? "bg-[var(--accent-pale)] border-[var(--accent)]"
-                    : "bg-muted border-border opacity-60"
-                }`}
-              >
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-white ${
-                    isUnlocked ? "bg-[var(--accent)]" : "bg-border"
-                  }`}
-                >
-                  {isUnlocked ? (
-                    <Star className="w-3.5 h-3.5" />
-                  ) : (
-                    <Lock className="w-3 h-3" />
-                  )}
-                </div>
-                <p className="text-[10px] font-bold text-center leading-tight">
-                  {badge.name}
-                </p>
-              </div>
-            )
-          })}
-        </div>
-      </div>
 
-      {/* Leaderboard preview */}
-      <div className="mt-6">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-          Leaderboard
-        </p>
-        <div className="space-y-2">
-          {leaderboard.slice(0, 3).map((entry) => (
-            <div
-              key={entry.id}
-              className={`flex items-center gap-3 p-3.5 rounded-[18px] border ${
-                entry.isCurrentUser
-                  ? "border-accent"
-                  : "border-border bg-card"
-              }`}
-              style={
-                entry.isCurrentUser
-                  ? { background: "var(--accent-pale)" }
-                  : undefined
-              }
-            >
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${entry.rank <= 3 ? "shimmer" : ""}`}
-                style={{
-                  background:
-                    entry.rank === 1
-                      ? "#eab308"
-                      : entry.rank === 2
-                        ? "#9ca3af"
-                        : entry.rank === 3
-                          ? "#d97706"
-                          : "var(--muted)",
-                  color:
-                    entry.rank <= 3 ? "#fff" : "var(--muted-foreground)",
-                }}
-              >
-                {entry.rank}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">
-                  {entry.name}
-                  {entry.isCurrentUser && (
-                    <span className="text-accent ml-1.5">(You)</span>
-                  )}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Level {entry.level}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-bold">
-                  {entry.karma.toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground">karma</p>
-              </div>
-            </div>
+        {/* 4-column grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 10,
+          }}
+        >
+          {badges.map((badge) => (
+            <BadgeTile key={badge.name} badge={badge} />
           ))}
         </div>
       </div>
+    </div>
+  )
+}
 
-      {/* Referral card */}
-      <div
-        className="hover-lift-interactive mt-6 rounded-[22px] bg-card border border-border p-5"
+/* ------------------------------------------------------------------ */
+/*  Sub-components                                                    */
+/* ------------------------------------------------------------------ */
+
+function StatCell({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <p
         style={{
-          boxShadow: "0 1px 2px rgba(0,0,0,.03), 0 1px 8px rgba(0,0,0,.02)",
+          fontSize: 20,
+          fontWeight: 700,
+          margin: 0,
+          lineHeight: 1.2,
+          color: "var(--park-fg)",
         }}
       >
-        <Share2 className="w-8 h-8 text-accent mb-3" />
-        <p className="text-lg font-semibold">Share Park</p>
-        <p className="text-sm text-muted-foreground mt-1">
-          Earn 150 karma for each friend who joins
-        </p>
-        <div className="flex items-center gap-2 mt-4 bg-muted rounded-xl p-3">
-          <span className="flex-1 font-mono text-lg font-semibold tracking-wider">
-            {referralStats.code}
-          </span>
-          <button
-            onClick={copyReferralCode}
-            className="shrink-0 px-3 py-1.5 rounded-lg border border-border bg-card text-sm"
-          >
-            {copied ? (
-              <Check className="w-4 h-4" />
-            ) : (
-              <Copy className="w-4 h-4" />
-            )}
-          </button>
-        </div>
+        {value}
+      </p>
+      <p
+        style={{
+          fontSize: 12,
+          color: "var(--park-muted-fg)",
+          margin: "2px 0 0",
+        }}
+      >
+        {label}
+      </p>
+    </div>
+  )
+}
+
+function BadgeTile({ badge }: { badge: BadgeDef }) {
+  const earned = badge.earned
+
+  return (
+    <div
+      style={{
+        aspectRatio: "1",
+        borderRadius: 16,
+        border: `1px solid ${earned ? "var(--park-accent)" : "var(--park-border)"}`,
+        background: earned ? "var(--park-accent-pale)" : "var(--park-muted)",
+        opacity: earned ? 1 : 0.5,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: 6,
+      }}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: earned ? "var(--park-accent)" : "transparent",
+          border: earned ? "none" : `1px solid var(--park-border)`,
+          color: earned ? "#fff" : "var(--park-muted-fg)",
+        }}
+      >
+        {earned ? (
+          <Star style={{ width: 14, height: 14 }} />
+        ) : (
+          <Lock style={{ width: 12, height: 12 }} />
+        )}
       </div>
+      <p
+        style={{
+          fontSize: 10.5,
+          fontWeight: 600,
+          textAlign: "center",
+          lineHeight: 1.2,
+          margin: 0,
+          color: earned ? "var(--park-fg)" : "var(--park-muted-fg)",
+        }}
+      >
+        {badge.name}
+      </p>
     </div>
   )
 }

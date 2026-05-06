@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, ShieldCheck } from "lucide-react"
+import { ChevronLeft, ShieldCheck, Bell } from "lucide-react"
 import { useAppContext } from "@/lib/app-context"
 import { TimerDisplay } from "@/components/timer-display"
 
@@ -31,161 +31,89 @@ export default function TimerPage() {
     return end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
   }, [minutes])
 
-  // SVG dial constants
   const SIZE = 240
   const CENTER = SIZE / 2
   const R = 100
   const CIRCUMFERENCE = 2 * Math.PI * R
-  const arcFraction = minutes / 240
-  const arcLength = CIRCUMFERENCE * arcFraction
+  const arcLength = CIRCUMFERENCE * (minutes / 240)
 
-  // If a timer is already running, show the existing TimerDisplay component
   if (timerActive && timerRemainingSeconds !== null) {
     return (
-      <div className="flex flex-col min-h-screen px-[22px] pt-16 pb-28">
-        <TimerDisplay
-          remainingSeconds={timerRemainingSeconds}
-          formatTime={formatTimeDisplay}
-          onCancel={handleCancelTimer}
-        />
+      <div className="flex flex-col min-h-screen pb-28 fade-in" style={{ background: "#fff", color: "#0f172a" }}>
+        <div style={{ padding: "16px 20px 0" }}>
+          <button onClick={() => router.push("/")} className="press" style={{ width: 40, height: 40, borderRadius: 12, background: "#f1f5f9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", color: "#0f172a" }}>
+            <ChevronLeft style={{ width: 20, height: 20 }} strokeWidth={1.75} />
+          </button>
+        </div>
+        <div style={{ padding: "0 22px" }}>
+          <TimerDisplay
+            remainingSeconds={timerRemainingSeconds}
+            formatTime={formatTimeDisplay}
+            onCancel={handleCancelTimer}
+          />
+        </div>
       </div>
     )
   }
 
-  // Timer SET screen
   return (
-    <div className="flex flex-col min-h-screen px-[22px] pt-16 pb-28">
+    <div className="flex flex-col min-h-screen pb-28 fade-in" style={{ background: "#fff", color: "#0f172a" }}>
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-muted flex items-center justify-center press-effect"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="w-5 h-5" />
+      <div style={{ padding: "16px 20px 0" }}>
+        <button onClick={() => router.back()} className="press" style={{ width: 40, height: 40, borderRadius: 12, background: "#f1f5f9", border: "none", display: "flex", alignItems: "center", justifyContent: "center", color: "#0f172a" }}>
+          <ChevronLeft style={{ width: 20, height: 20 }} strokeWidth={1.75} />
         </button>
       </div>
 
       {/* Title */}
-      <div className="mt-6">
-        <p
-          className="text-xs font-bold uppercase tracking-wider"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          NEW TIMER
-        </p>
-        <h1
-          className="font-bold mt-1"
-          style={{ fontSize: 36, letterSpacing: -1.4 }}
-        >
-          How long?
-        </h1>
-        <p className="text-sm mt-1.5" style={{ color: "var(--fg2)" }}>
-          We&apos;ll nudge you 15, 5, and 1 minute before it&apos;s up.
-        </p>
+      <div style={{ padding: "20px 24px 0" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8" }}>New timer</div>
+        <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1.2, marginTop: 4 }}>How long?</div>
+        <div style={{ fontSize: 14, color: "#64748b", marginTop: 6 }}>We'll alert you 15, 5, and 1 minute before.</div>
       </div>
 
       {/* Circular dial */}
-      <div className="flex justify-center mt-8">
-        <div className="relative" style={{ width: SIZE, height: SIZE }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: "32px 0 16px" }}>
+        <div style={{ position: "relative", width: SIZE, height: SIZE }}>
           <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-            {/* Outer track */}
-            <circle
-              cx={CENTER}
-              cy={CENTER}
-              r={R}
-              stroke="var(--muted)"
-              strokeWidth="20"
-              fill="none"
-            />
-            {/* Filled arc */}
-            <circle
-              cx={CENTER}
-              cy={CENTER}
-              r={R}
-              stroke="var(--accent)"
-              strokeWidth="20"
-              fill="none"
-              strokeDasharray={`${arcLength} ${CIRCUMFERENCE}`}
-              strokeLinecap="round"
-              transform={`rotate(-90 ${CENTER} ${CENTER})`}
-              className="transition-all duration-300"
-            />
+            <circle cx={CENTER} cy={CENTER} r={R} stroke="#f1f5f9" strokeWidth="20" fill="none" />
+            <circle cx={CENTER} cy={CENTER} r={R} stroke="#2563eb" strokeWidth="20" fill="none" strokeDasharray={`${arcLength} ${CIRCUMFERENCE}`} strokeLinecap="round" transform={`rotate(-90 ${CENTER} ${CENTER})`} style={{ transition: "stroke-dasharray 0.25s" }} />
           </svg>
-          {/* Center text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p
-              className="font-bold uppercase tracking-wider"
-              style={{ fontSize: 12, color: "var(--muted-foreground)" }}
-            >
-              MINUTES
-            </p>
-            <p
-              className="font-bold tabular-nums"
-              style={{ fontSize: 64, lineHeight: 1, letterSpacing: -2.5, color: "var(--foreground)" }}
-            >
-              {minutes}
-            </p>
-            <p style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
-              ends at {endsAt}
-            </p>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8" }}>Minutes</div>
+            <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: -2.5, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{minutes}</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>ends at {endsAt}</div>
           </div>
         </div>
       </div>
 
-      {/* Range slider */}
-      <div className="mt-6 px-2">
-        <input
-          type="range"
-          min={5}
-          max={240}
-          step={5}
-          value={minutes}
-          onChange={(e) => setMinutes(Number(e.target.value))}
-          className="w-full"
-          style={{ accentColor: "var(--accent)" }}
-          aria-label="Set timer minutes"
-        />
+      {/* Slider */}
+      <div style={{ padding: "0 28px" }}>
+        <input type="range" min={5} max={240} step={5} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))} style={{ width: "100%", accentColor: "#2563eb" }} />
       </div>
 
-      {/* Preset buttons */}
-      <div className="flex justify-center gap-2 mt-5">
+      {/* Presets */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 8, padding: "12px 20px 0" }}>
         {PRESETS.map((p) => (
-          <button
-            key={p.value}
-            onClick={() => setMinutes(p.value)}
-            className={`px-3.5 py-2 rounded-full text-[13px] font-semibold transition-colors press-effect ${
-              minutes === p.value
-                ? "bg-foreground text-background"
-                : "bg-muted text-foreground"
-            }`}
-          >
+          <button key={p.value} onClick={() => setMinutes(p.value)} className="press" style={{ padding: "8px 16px", borderRadius: 999, background: minutes === p.value ? "#0f172a" : "#f1f5f9", color: minutes === p.value ? "#fff" : "#0f172a", border: "none", fontSize: 13, fontWeight: 600 }}>
             {p.label}
           </button>
         ))}
       </div>
 
-      {/* Info card */}
-      <div className="mt-6 bg-card border border-border rounded-[18px] p-3.5 flex items-center gap-2.5">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: "var(--accent-pale)" }}
-        >
-          <ShieldCheck className="w-[18px] h-[18px]" style={{ color: "var(--accent)" }} />
-        </div>
-        <div>
-          <p className="text-sm font-medium">Within the 2h limit</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Your meter time is covered</p>
+      {/* Notification info */}
+      <div style={{ padding: "20px 20px 0" }}>
+        <div style={{ padding: "14px 16px", borderRadius: 14, background: "#eff6ff", border: "1px solid #dbeafe", display: "flex", alignItems: "center", gap: 12 }}>
+          <Bell style={{ width: 18, height: 18, color: "#2563eb", flexShrink: 0 }} strokeWidth={1.75} />
+          <div style={{ fontSize: 13, color: "#1e40af", lineHeight: 1.4 }}>
+            You'll get alerts at <b>15 min</b>, <b>5 min</b>, and <b>1 min</b> before your time is up.
+          </div>
         </div>
       </div>
 
-      {/* Start timer CTA */}
-      <div className="mt-auto pt-6">
-        <button
-          onClick={() => handleSetTimer(minutes)}
-          className="w-full py-4 rounded-full font-bold text-white press-effect"
-          style={{ background: "var(--accent)" }}
-        >
+      {/* Start CTA */}
+      <div style={{ padding: "24px 20px 0", marginTop: "auto" }}>
+        <button onClick={() => handleSetTimer(minutes)} className="press" style={{ width: "100%", padding: "18px", borderRadius: 999, background: "#2563eb", color: "#fff", border: "none", fontSize: 16, fontWeight: 700, boxShadow: "0 8px 24px rgba(37,99,235,0.3)" }}>
           Start timer
         </button>
       </div>

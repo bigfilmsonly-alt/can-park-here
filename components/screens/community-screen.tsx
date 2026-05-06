@@ -1,19 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { Plus, Check, Flag, ArrowUp, Trash2 } from "lucide-react"
-import {
-  type EnforcementSighting,
-  type MeterStatus,
-  getEnforcementSightings,
-  getNearbyMeters,
-  reportEnforcement,
-  reportMeterStatus,
-  voteEnforcement,
-  getEnforcementTypeLabel,
-  getMeterStatusLabel,
-  getTimeAgo,
-} from "@/lib/community"
+import { useState, useEffect, useCallback } from "react"
+import { AlertTriangle, Truck, Wrench, Flag, ArrowUp, ArrowDown, ShieldAlert } from "lucide-react"
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface CommunityScreenProps {
   currentLocation?: { lat: number; lng: number }
@@ -23,239 +15,431 @@ interface CommunityScreenProps {
   showToast: (type: "success" | "error" | "info", title: string, message: string) => void
 }
 
-type FilterType = "all" | "open" | "cleaning" | "tow"
+type FilterChip = "all" | "enforcement" | "meters"
 
-function getSightingCategory(type: EnforcementSighting["type"]): FilterType {
-  switch (type) {
-    case "parking_enforcement":
-    case "police":
-      return "open"
-    case "meter_maid":
-      return "cleaning"
-    case "tow_truck":
-      return "tow"
-    default:
-      return "open"
+type SightingTone = "err" | "warn" | "muted"
+
+interface Sighting {
+  id: string
+  icon: typeof AlertTriangle
+  tone: SightingTone
+  title: string
+  timeAgo: string
+  distance: string
+  upvotes: number
+}
+
+/* ------------------------------------------------------------------ */
+/*  Static seed data (real SF streets)                                 */
+/* ------------------------------------------------------------------ */
+
+const SEED_SIGHTINGS: Sighting[] = [
+  {
+    id: "s1",
+    icon: AlertTriangle,
+    tone: "err",
+    title: "Meter maid \u00b7 Valencia & 16th",
+    timeAgo: "2 min ago",
+    distance: "0.3 mi",
+    upvotes: 12,
+  },
+  {
+    id: "s2",
+    icon: Truck,
+    tone: "warn",
+    title: "Tow truck \u00b7 Mission & 18th",
+    timeAgo: "14 min ago",
+    distance: "0.4 mi",
+    upvotes: 8,
+  },
+  {
+    id: "s3",
+    icon: Wrench,
+    tone: "muted",
+    title: "Broken meter \u00b7 spot 8",
+    timeAgo: "22 min ago",
+    distance: "0.1 mi",
+    upvotes: 3,
+  },
+  {
+    id: "s4",
+    icon: ShieldAlert,
+    tone: "err",
+    title: "Police \u00b7 24th & Guerrero",
+    timeAgo: "31 min ago",
+    distance: "0.6 mi",
+    upvotes: 4,
+  },
+]
+
+/* ------------------------------------------------------------------ */
+/*  Tone colour map                                                    */
+/* ------------------------------------------------------------------ */
+
+const TONE_STYLES: Record<SightingTone, { bg: string; ink: string }> = {
+  err: { bg: "var(--park-err-bg)", ink: "var(--park-err-ink)" },
+  warn: { bg: "var(--park-warn-bg)", ink: "var(--park-warn-ink)" },
+  muted: { bg: "var(--park-muted)", ink: "var(--park-muted-fg)" },
+}
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+const STORAGE_KEY = "park_community_votes"
+
+function loadVotes(): Record<string, number> {
+  if (typeof window === "undefined") return {}
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as Record<string, number>) : {}
+  } catch {
+    return {}
   }
 }
 
-function getSightingIcon(type: EnforcementSighting["type"]) {
-  const category = getSightingCategory(type)
-  switch (category) {
-    case "open":
-      return Check
-    case "cleaning":
-      return Trash2
-    case "tow":
-      return Flag
-    default:
-      return Check
+function saveVotes(votes: Record<string, number>) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(votes))
+  } catch {
+    /* quota exceeded - silently ignore */
   }
 }
 
-function getSightingColors(type: EnforcementSighting["type"]) {
-  const category = getSightingCategory(type)
-  switch (category) {
-    case "open":
-      return {
-        bg: "bg-status-success",
-        text: "text-status-success-foreground",
-      }
-    case "cleaning":
-      return {
-        bg: "bg-status-warning",
-        text: "text-status-warning-foreground",
-      }
-    case "tow":
-      return {
-        bg: "bg-status-error",
-        text: "text-status-error-foreground",
-      }
-    default:
-      return {
-        bg: "bg-status-success",
-        text: "text-status-success-foreground",
-      }
-  }
-}
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
 
 export function CommunityScreen({
-  currentLocation,
-  currentAddress,
-  onOpenPhotoVault,
   onOpenReportIssue,
-  showToast,
 }: CommunityScreenProps) {
-  const [sightings, setSightings] = useState<EnforcementSighting[]>([])
-  const [meters, setMeters] = useState<MeterStatus[]>([])
-  const [showReportEnforcement, setShowReportEnforcement] = useState(false)
-  const [showReportMeter, setShowReportMeter] = useState(false)
-  const [votedIds, setVotedIds] = useState<Set<string>>(new Set())
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all")
+  const [activeChip, setActiveChip] = useState<FilterChip>("all")
+  /* votes stores id -> delta (+1 upvoted, -1 downvoted, 0 neutral) */
+  const [votes, setVotes] = useState<Record<string, number>>({})
 
-  const loadData = useCallback(async () => {
-    setSightings(await getEnforcementSightings())
-    if (currentLocation) {
-      setMeters(getNearbyMeters(currentLocation.lat, currentLocation.lng))
-    }
-  }, [currentLocation])
-
+  /* Hydrate votes from localStorage once */
   useEffect(() => {
-    loadData()
-    // Refresh every 30 seconds
-    const interval = setInterval(loadData, 30000)
-    return () => clearInterval(interval)
-  }, [loadData])
+    setVotes(loadVotes())
+  }, [])
 
-  const handleReportEnforcement = async (type: EnforcementSighting["type"]) => {
-    if (!currentLocation || !currentAddress) {
-      showToast("error", "Location needed", "Please enable location to report sightings")
-      return
-    }
+  /* Persist whenever votes change (skip initial empty render) */
+  const persistVotes = useCallback((next: Record<string, number>) => {
+    setVotes(next)
+    saveVotes(next)
+  }, [])
 
-    await reportEnforcement(type, currentLocation, currentAddress)
-    loadData()
-    setShowReportEnforcement(false)
-    showToast("success", "Reported", "Thanks for helping the community!")
+  /* ----- vote handlers ----- */
+  const handleUpvote = (id: string) => {
+    const current = votes[id] ?? 0
+    const next = current === 1 ? 0 : 1 /* toggle */
+    persistVotes({ ...votes, [id]: next })
   }
 
-  const handleReportMeter = (status: MeterStatus["status"]) => {
-    if (!currentLocation || !currentAddress) {
-      showToast("error", "Location needed", "Please enable location to report meter status")
-      return
-    }
-
-    const meterId = `meter_${currentLocation.lat.toFixed(4)}_${currentLocation.lng.toFixed(4)}`
-    reportMeterStatus(meterId, status, currentLocation, currentAddress)
-    loadData()
-    setShowReportMeter(false)
-    showToast("success", "Reported", "Meter status updated!")
+  const handleDownvote = (id: string) => {
+    const current = votes[id] ?? 0
+    const next = current === -1 ? 0 : -1 /* toggle */
+    persistVotes({ ...votes, [id]: next })
   }
 
-  const handleVote = async (id: string, isUpvote: boolean) => {
-    if (votedIds.has(id)) {
-      showToast("info", "Already voted", "You've already voted on this sighting")
-      return
-    }
+  /* ----- filtered list ----- */
+  const filtered = SEED_SIGHTINGS.filter((s) => {
+    if (activeChip === "all") return true
+    if (activeChip === "enforcement") return s.tone === "err"
+    if (activeChip === "meters") return s.tone === "warn" || s.tone === "muted"
+    return true
+  })
 
-    await voteEnforcement(id, isUpvote)
-    setVotedIds(new Set([...votedIds, id]))
-    loadData()
-  }
-
-  const filteredSightings = useMemo(() => {
-    if (activeFilter === "all") return sightings
-    return sightings.filter((s) => getSightingCategory(s.type) === activeFilter)
-  }, [sightings, activeFilter])
-
-  const recentSightings = filteredSightings.slice(0, 5)
-
-  const filters: { label: string; value: FilterType }[] = [
+  const chips: { label: string; value: FilterChip }[] = [
     { label: "All", value: "all" },
-    { label: "Open", value: "open" },
-    { label: "Cleaning", value: "cleaning" },
-    { label: "Tow", value: "tow" },
+    { label: "Enforcement", value: "enforcement" },
+    { label: "Meters", value: "meters" },
   ]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-5rem)] px-[22px] pt-16 pb-28 overflow-y-auto">
-      {/* Header */}
-      <div>
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              COMMUNITY
-            </p>
-            <h1 className="text-[32px] font-bold tracking-tight mt-1">Spots near you</h1>
-          </div>
-          <button
-            className="breathe-glow w-11 h-11 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shrink-0"
-            onClick={onOpenReportIssue}
-            aria-label="New report"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
-        </div>
-        <p className="text-sm mt-2" style={{ color: "var(--fg2)" }}>
-          {recentSightings.length} recent reports in 0.3 mi
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "calc(100vh - 5rem)",
+        background: "var(--park-bg)",
+        overflowY: "auto",
+      }}
+    >
+      {/* ---- Header ---- */}
+      <div style={{ padding: "16px 22px 0" }}>
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: 0.6,
+            color: "var(--park-muted-fg)",
+            margin: 0,
+          }}
+        >
+          COMMUNITY
         </p>
+        <h1
+          style={{
+            fontSize: 32,
+            fontWeight: 700,
+            letterSpacing: -1.2,
+            color: "var(--park-fg)",
+            margin: "4px 0 0",
+          }}
+        >
+          Sightings nearby
+        </h1>
       </div>
 
-      {/* Filter Pills */}
-      <div className="flex gap-2 mt-5">
-        {filters.map((filter) => (
-          <button
-            key={filter.value}
-            onClick={() => setActiveFilter(filter.value)}
-            className={`px-3.5 py-2 rounded-full text-[13px] font-semibold transition-all duration-300 ${
-              activeFilter === filter.value
-                ? "bg-foreground text-background"
-                : "bg-muted text-foreground"
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
+      {/* ---- Filter chips ---- */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          padding: "16px 22px 0",
+        }}
+      >
+        {chips.map((chip) => {
+          const isActive = activeChip === chip.value
+          return (
+            <button
+              key={chip.value}
+              onClick={() => setActiveChip(chip.value)}
+              className="press-effect"
+              style={{
+                padding: "8px 14px",
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 600,
+                border: "none",
+                cursor: "pointer",
+                transition: "background 0.2s, color 0.2s",
+                background: isActive ? "var(--park-fg)" : "var(--park-muted)",
+                color: isActive ? "var(--park-bg)" : "var(--park-fg)",
+              }}
+            >
+              {chip.label}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Sighting Cards */}
-      <div className="mt-5 flex flex-col gap-2.5">
-        {recentSightings.map((sighting) => {
-          const Icon = getSightingIcon(sighting.type)
-          const colors = getSightingColors(sighting.type)
-          const hasVoted = votedIds.has(sighting.id)
-          const voteCount = sighting.upvotes - sighting.downvotes
+      {/* ---- Feed cards ---- */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          padding: "16px 22px 180px",
+        }}
+      >
+        {filtered.map((sighting) => {
+          const Icon = sighting.icon
+          const tone = TONE_STYLES[sighting.tone]
+          const voteState = votes[sighting.id] ?? 0
+          const displayCount = sighting.upvotes + voteState
 
           return (
             <div
               key={sighting.id}
-              className="hover-lift-interactive bg-card card-elevated rounded-[18px] p-3.5"
+              className="hover-lift-interactive"
+              style={{
+                background: "var(--park-surface)",
+                border: "1px solid var(--park-border)",
+                borderRadius: 18,
+                padding: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
             >
-              <div className="flex items-center gap-3">
-                {/* Icon circle */}
-                <div
-                  className={`w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center shrink-0`}
+              {/* Icon box */}
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  background: tone.bg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon style={{ width: 20, height: 20, color: tone.ink }} />
+              </div>
+
+              {/* Text content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "var(--park-fg)",
+                    margin: 0,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
                 >
-                  <Icon className={`w-5 h-5 ${colors.text}`} />
-                </div>
+                  {sighting.title}
+                </p>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "var(--park-muted-fg)",
+                    margin: "2px 0 0",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {sighting.timeAgo} &middot; {sighting.distance}
+                  {displayCount > 0 && (
+                    <span> &middot; {displayCount} upvotes</span>
+                  )}
+                </p>
+              </div>
 
-                {/* Center content */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm">
-                    {getEnforcementTypeLabel(sighting.type)}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {sighting.reportedBy} &middot; {getTimeAgo(sighting.reportedAt)} &middot; {sighting.address}
-                  </p>
-                </div>
-
-                {/* Upvote button */}
+              {/* Vote arrows */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                  flexShrink: 0,
+                }}
+              >
                 <button
-                  onClick={() => handleVote(sighting.id, true)}
-                  disabled={hasVoted}
-                  className={`px-2.5 py-[7px] rounded-[10px] text-xs font-bold flex items-center gap-1 shrink-0 transition-colors ${
-                    hasVoted
-                      ? "bg-[var(--accent-pale)] text-[var(--accent)]"
-                      : "bg-muted text-foreground"
-                  }`}
-                  aria-label={`Upvote sighting, ${sighting.upvotes} upvotes`}
+                  onClick={() => handleUpvote(sighting.id)}
+                  className="press-effect"
+                  aria-label={`Upvote ${sighting.title}`}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0,
+                  }}
                 >
-                  <ArrowUp className="w-3.5 h-3.5" />
-                  <span>{voteCount}</span>
+                  <ArrowUp
+                    style={{
+                      width: 18,
+                      height: 18,
+                      color:
+                        voteState === 1
+                          ? "var(--park-ok)"
+                          : "var(--park-muted-fg)",
+                      transition: "color 0.15s",
+                    }}
+                  />
+                </button>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color:
+                      voteState === 1
+                        ? "var(--park-ok)"
+                        : voteState === -1
+                          ? "var(--park-err)"
+                          : "var(--park-fg2)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {displayCount}
+                </span>
+                <button
+                  onClick={() => handleDownvote(sighting.id)}
+                  className="press-effect"
+                  aria-label={`Downvote ${sighting.title}`}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0,
+                  }}
+                >
+                  <ArrowDown
+                    style={{
+                      width: 18,
+                      height: 18,
+                      color:
+                        voteState === -1
+                          ? "var(--park-err)"
+                          : "var(--park-muted-fg)",
+                      transition: "color 0.15s",
+                    }}
+                  />
                 </button>
               </div>
             </div>
           )
         })}
 
-        {recentSightings.length === 0 && (
-          <div className="bg-card card-elevated rounded-[18px] p-6 text-center">
-            <p className="text-sm font-medium text-muted-foreground">
-              No reports in this area yet
+        {filtered.length === 0 && (
+          <div
+            style={{
+              background: "var(--park-surface)",
+              border: "1px solid var(--park-border)",
+              borderRadius: 18,
+              padding: 32,
+              textAlign: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: "var(--park-muted-fg)",
+                margin: 0,
+              }}
+            >
+              No sightings in this category
             </p>
           </div>
         )}
       </div>
+
+      {/* ---- FAB ---- */}
+      <button
+        onClick={onOpenReportIssue}
+        className="press-effect"
+        style={{
+          position: "fixed",
+          bottom: 108,
+          right: 22,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "12px 20px",
+          borderRadius: 999,
+          border: "none",
+          background: "var(--park-fg)",
+          color: "var(--park-bg)",
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: "pointer",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.18)",
+          zIndex: 40,
+        }}
+      >
+        <Flag style={{ width: 16, height: 16 }} />
+        Report sighting
+      </button>
     </div>
   )
 }

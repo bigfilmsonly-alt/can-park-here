@@ -6,8 +6,8 @@ interface ParkLogoProps {
 }
 
 export function ParkLogo({ size = 40, className }: ParkLogoProps) {
-  const r = size * 0.225
-  const iconSize = size * 0.58
+  const r = size * 0.24
+  const iconSize = size * 0.56
 
   return (
     <div
@@ -24,18 +24,20 @@ export function ParkLogo({ size = 40, className }: ParkLogoProps) {
         flexShrink: 0,
       }}
     >
-      {/* Background */}
+      {/* Gradient background */}
       <div
-        className="absolute inset-0 bg-accent"
-        style={{ borderRadius: r }}
+        className="absolute inset-0"
+        style={{
+          borderRadius: r,
+          background: "linear-gradient(145deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)",
+        }}
       />
-      {/* Top sheen */}
+      {/* Top sheen — Ive-style glass reflection */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           borderRadius: r,
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 32%)",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 40%)",
         }}
       />
       {/* Shield + P glyph */}
@@ -49,15 +51,15 @@ export function ParkLogo({ size = 40, className }: ParkLogoProps) {
         <path
           d="M50 10 L84 22 V52 C84 74 68 88 50 94 C32 88 16 74 16 52 V22 Z"
           fill="white"
-          fillOpacity=".16"
+          fillOpacity=".14"
           stroke="white"
-          strokeWidth="5"
+          strokeWidth="4.5"
           strokeLinejoin="round"
         />
         <path
           d="M42 72 V36 h14 a11 11 0 010 22 H42"
           stroke="white"
-          strokeWidth="7"
+          strokeWidth="6.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
@@ -80,12 +82,12 @@ export function Wordmark({
       style={{
         fontSize: size,
         fontWeight: 600,
-        letterSpacing: -size * 0.06,
+        letterSpacing: -size * 0.04,
         lineHeight: 1,
       }}
     >
       park
-      <span className="text-accent">.</span>
+      <span style={{ color: "var(--park-accent)" }}>.</span>
     </span>
   )
 }

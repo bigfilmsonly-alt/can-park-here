@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og"
 
 export const runtime = "edge"
-export const alt = "Park — Can I Park Here? We pay your ticket if we're wrong."
+export const alt = "Park — Can I Park Here? We pay your ticket if we're wrong. Up to $100."
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
@@ -13,126 +13,136 @@ export default async function Image() {
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#0b0f17",
+          background: "linear-gradient(155deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)",
           fontFamily: "system-ui, -apple-system, sans-serif",
           padding: "60px 80px",
+          position: "relative",
         }}
       >
-        {/* Top: location chip */}
+        {/* Left side — result card */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 20px",
-            borderRadius: 999,
-            background: "rgba(16,185,129,0.1)",
-            border: "1px solid rgba(16,185,129,0.2)",
-            marginBottom: 36,
+            flexDirection: "column",
+            justifyContent: "center",
+            width: "460px",
+            flexShrink: 0,
           }}
         >
           <div
             style={{
-              width: 10,
-              height: 10,
-              borderRadius: 999,
-              background: "#10b981",
-            }}
-          />
-          <span style={{ fontSize: 18, fontWeight: 600, color: "#10b981" }}>
-            San Francisco · Live
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h1
-          style={{
-            fontSize: 72,
-            fontWeight: 900,
-            color: "#f8fafc",
-            letterSpacing: -3,
-            lineHeight: 1,
-            textAlign: "center",
-            margin: 0,
-          }}
-        >
-          Can I Park Here?
-        </h1>
-        <p
-          style={{
-            fontSize: 28,
-            color: "#cbd5e1",
-            marginTop: 16,
-            textAlign: "center",
-            fontWeight: 500,
-          }}
-        >
-          We'll pay your ticket if we're wrong.{" "}
-          <span style={{ color: "#3b82f6", fontWeight: 700 }}>Up to $100.</span>
-        </p>
-
-        {/* Result card */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 20,
-            marginTop: 44,
-            padding: "24px 36px",
-            borderRadius: 22,
-            background: "rgba(16,185,129,0.12)",
-            border: "1px solid rgba(16,185,129,0.25)",
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: "rgba(16,185,129,0.2)",
+              background: "rgba(255,255,255,0.95)",
+              borderRadius: "24px",
+              padding: "36px 32px",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#10b981",
-              fontSize: 28,
+              flexDirection: "column",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
             }}
           >
-            ✓
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span
+            {/* Status badge */}
+            <div
               style={{
-                fontSize: 20,
-                fontWeight: 800,
-                color: "#10b981",
-                letterSpacing: 1,
-                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: "999px",
+                padding: "6px 14px",
+                width: "fit-content",
               }}
             >
-              Yes, park here
-            </span>
-            <span style={{ fontSize: 16, color: "#94a3b8", marginTop: 4 }}>
-              95% confidence · Protected by Ticket Guarantee
-            </span>
+              <div style={{ width: 8, height: 8, borderRadius: 999, background: "#22c55e" }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#166534", letterSpacing: "0.02em" }}>
+                ALLOWED · 95% CONFIDENT
+              </span>
+            </div>
+
+            {/* Headline */}
+            <div style={{ fontSize: 42, fontWeight: 800, color: "#0f172a", letterSpacing: -1.5, marginTop: 16, lineHeight: 1 }}>
+              Yes — park here.
+            </div>
+
+            {/* Location */}
+            <div style={{ fontSize: 16, color: "#64748b", marginTop: 10 }}>
+              Valencia St & 20th · Mission, SF
+            </div>
+
+            {/* Guarantee */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#eff6ff",
+                border: "1px solid #dbeafe",
+                borderRadius: "12px",
+                padding: "10px 14px",
+                marginTop: 20,
+              }}
+            >
+              <span style={{ fontSize: 18 }}>🛡</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#1e40af" }}>
+                Protected by $100 Ticket Guarantee
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Footer trust line */}
-        <p
+        {/* Right side — headline */}
+        <div
           style={{
-            fontSize: 16,
-            color: "#64748b",
-            marginTop: 40,
-            letterSpacing: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            flex: 1,
+            paddingLeft: "60px",
           }}
         >
-          95% accuracy · 24h payouts · SF Coverage Live
-        </p>
+          <div style={{ fontSize: 72, fontWeight: 800, color: "#fff", letterSpacing: -3, lineHeight: 1.05 }}>
+            Can I park
+          </div>
+          <div style={{ fontSize: 72, fontWeight: 800, color: "#fff", letterSpacing: -3, lineHeight: 1.05 }}>
+            here?
+          </div>
+
+          <div style={{ fontSize: 22, color: "rgba(255,255,255,0.8)", marginTop: 16, lineHeight: 1.5 }}>
+            We pay your ticket if we're wrong.
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#4ade80", marginTop: 4 }}>
+            Up to $100.
+          </div>
+
+          <div style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", marginTop: 12 }}>
+            No other app does this.
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "48px",
+            background: "rgba(0,0,0,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "24px",
+          }}
+        >
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>95% accuracy</span>
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)" }}>·</span>
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>24hr payouts</span>
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)" }}>·</span>
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>SF + Miami Live</span>
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)" }}>·</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>can-park-here.vercel.app</span>
+        </div>
       </div>
     ),
-    { ...size },
+    { ...size }
   )
 }

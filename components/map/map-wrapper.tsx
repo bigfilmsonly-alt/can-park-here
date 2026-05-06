@@ -7,8 +7,8 @@ export const MapWrapper = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="animate-pulse bg-muted"
-        style={{ height: "100%", width: "100%" }}
+        className="animate-pulse"
+        style={{ height: "100%", width: "100%", background: "var(--park-surface)" }}
       />
     ),
   }
@@ -17,4 +17,5 @@ export const MapWrapper = dynamic(
   zoom?: number
   markers: MapMarker[]
   onMarkerClick?: (marker: MapMarker) => void
+  onMoveEnd?: (center: { lat: number; lng: number }, zoom: number) => void
 }>

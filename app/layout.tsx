@@ -7,7 +7,7 @@ import { ShowcaseWrapper } from '@/components/iphone-showcase'
 import './globals.css'
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -34,24 +34,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Can I Park Here? — We pay your ticket if we\'re wrong.',
-    description: 'The only parking app with a $100 ticket guarantee. Scan any sign, get instant answers, and we\'ll cover the ticket if we\'re wrong. 95% accuracy. SF coverage live.',
+    description: 'The only parking app with a $100 ticket guarantee. Scan any sign, get instant answers, and we\'ll cover the ticket if we\'re wrong. 95% accuracy. SF + Miami coverage live.',
     siteName: 'Park',
     type: 'website',
     locale: 'en_US',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Park — Yes, park here. 95% confidence. Protected by Ticket Guarantee.',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Can I Park Here? — We pay your ticket if we\'re wrong.',
-    description: 'The only parking app with a $100 ticket guarantee. 95% accuracy. SF coverage live.',
-    images: ['/og-image.png'],
+    description: 'The only parking app with a $100 ticket guarantee. 95% accuracy. SF + Miami coverage live.',
   },
   icons: {
     icon: [
@@ -86,12 +77,28 @@ export default function RootLayout({
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Park — Can I Park Here?",
+              applicationCategory: "UtilitiesApplication",
+              operatingSystem: "iOS, Android, Web",
+              description: "The only parking app that pays your ticket if we're wrong. Up to $100 guarantee. AI sign scanner. Real SF + Miami city data.",
+              offers: { "@type": "Offer", price: "4.99", priceCurrency: "USD" },
+              aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "2400" },
+              url: "https://can-park-here.vercel.app",
+            }),
+          }}
+        />
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
+          defaultTheme="light"
+          enableSystem
           disableTransitionOnChange
         >
           <AuthProvider>

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import type { HistoryItem } from "@/lib/types"
-import { Check, Clock, MapPin, History as HistoryIcon, ChevronRight, ShieldCheck, DollarSign, Ticket } from "lucide-react"
+import { Check, Clock, X, ChevronRight, History as HistoryIcon } from "lucide-react"
 
 interface HistoryScreenProps {
   history: HistoryItem[]
@@ -10,11 +10,7 @@ interface HistoryScreenProps {
   onCheckParking: () => void
 }
 
-const statusLabels: Record<string, string> = {
-  allowed: "Allowed",
-  restricted: "Limited",
-  prohibited: "No parking",
-}
+const AVERAGE_SF_FINE = 73
 
 function formatAgo(date: Date): string {
   const d = Date.now() - date.getTime()
@@ -24,136 +20,178 @@ function formatAgo(date: Date): string {
   return `${Math.floor(d / 86400000)}d ago`
 }
 
-function StatusIcon({ status }: { status: string }) {
-  if (status === "allowed") return <Check className="w-4 h-4" />
-  if (status === "restricted") return <Clock className="w-4 h-4" />
-  return <MapPin className="w-4 h-4" />
+function getStatusConfig(status: string) {
+  if (status === "allowed") return { bg: "#dcfce7", ink: "#16a34a", icon: Check, label: "Allowed" }
+  if (status === "restricted") return { bg: "#fef9c3", ink: "#d97706", icon: Clock, label: "Restricted" }
+  return { bg: "#fee2e2", ink: "#dc2626", icon: X, label: "Prohibited" }
 }
 
-function statusColor(status: string) {
-  if (status === "allowed") return "#10b981"
-  if (status === "restricted") return "#f59e0b"
-  return "#ef4444"
+function groupByDay(items: HistoryItem[]): { label: string; items: HistoryItem[] }[] {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const yesterday = today - 86400000
+
+  const groups: Map<string, HistoryItem[]> = new Map()
+  for (const item of items) {
+    const ts = new Date(item.date).getTime()
+    let label = "Earlier"
+    if (ts >= today) label = "Today"
+    else if (ts >= yesterday) label = "Yesterday"
+    if (!groups.has(label)) groups.set(label, [])
+    groups.get(label)!.push(item)
+  }
+  return Array.from(groups.entries()).map(([label, items]) => ({ label, items }))
 }
 
 export function HistoryScreen({ history, onItemClick, onCheckParking }: HistoryScreenProps) {
   const stats = useMemo(() => {
     const sessions = history.length
-    const ticketsAvoided = history.filter(h => h.status === "prohibited").length
-    const saved = history.filter(h => h.status !== "prohibited").length * 75
-    return { sessions, ticketsAvoided, saved }
+    const allowedCount = history.filter(h => h.status === "allowed").length
+    const saved = allowedCount * AVERAGE_SF_FINE
+    const tickets = 0
+    return { sessions, saved, tickets }
   }, [history])
 
+  const groups = useMemo(() => groupByDay(history), [history])
+
   return (
-    <div
-      className="flex flex-col min-h-[calc(100vh-5rem)] pb-28"
-      style={{ paddingLeft: 22, paddingRight: 22, background: "#0b0f17" }}
-    >
-      {/* Header */}
-      <div className="pt-14">
-        <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#94a3b8" }}>
-          Activity
-        </p>
-        <h1
-          style={{ fontSize: 32, fontWeight: 700, letterSpacing: -1.2, color: "#f8fafc", marginTop: 4 }}
-        >
-          History
-        </h1>
+    <div className="fade-in park-scroll" style={{ background: "#fff", color: "#0f172a", minHeight: "100vh", paddingBottom: 120 }}>
+      {/* Stats Bar */}
+      <div style={{ padding: "76px 22px 0" }}>
+        <div style={{
+          background: "#2563eb",
+          borderRadius: 16,
+          padding: "18px 0",
+          display: "flex",
+        }}>
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", letterSpacing: -0.5 }}>{stats.sessions}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>Sessions</div>
+          </div>
+          <div style={{ width: 1, background: "rgba(255,255,255,0.2)", margin: "4px 0" }} />
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", letterSpacing: -0.5 }}>${stats.saved}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>Saved</div>
+          </div>
+          <div style={{ width: 1, background: "rgba(255,255,255,0.2)", margin: "4px 0" }} />
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", letterSpacing: -0.5 }}>{stats.tickets}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>Tickets</div>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Bar */}
-      {history.length > 0 && (
-        <div
-          className="grid grid-cols-3 mt-5 rounded-2xl overflow-hidden"
-          style={{ background: "#1a1f2b", border: "1px solid #2d3447" }}
-        >
-          {[
-            { value: stats.sessions, label: "Sessions", icon: <HistoryIcon className="w-3.5 h-3.5" /> },
-            { value: `$${stats.saved}`, label: "Saved", icon: <DollarSign className="w-3.5 h-3.5" /> },
-            { value: stats.ticketsAvoided, label: "Tickets", icon: <ShieldCheck className="w-3.5 h-3.5" /> },
-          ].map((stat, i) => (
-            <div
-              key={stat.label}
-              className="flex flex-col items-center py-4"
-              style={{ borderLeft: i > 0 ? "1px solid #2d3447" : "none" }}
-            >
-              <div className="flex items-center gap-1.5 mb-1" style={{ color: "#94a3b8" }}>
-                {stat.icon}
-              </div>
-              <p className="text-lg font-bold" style={{ color: "#f8fafc" }}>{stat.value}</p>
-              <p className="text-[11px] mt-0.5" style={{ color: "#94a3b8" }}>{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Content */}
-      <div className="mt-5">
+      <div style={{ padding: "20px 22px 0" }}>
         {history.length === 0 ? (
-          /* Empty State */
-          <div
-            className="flex flex-col items-center text-center py-16 px-6 rounded-[22px]"
-            style={{ background: "#1a1f2b", border: "1px solid #2d3447" }}
-          >
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
-              style={{ background: "#262c3b" }}
-            >
-              <HistoryIcon className="w-8 h-8" style={{ color: "#64748b" }} />
+          /* Empty state */
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <div style={{
+              width: 64,
+              height: 64,
+              borderRadius: 999,
+              background: "#f1f5f9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto",
+            }}>
+              <HistoryIcon style={{ width: 28, height: 28, color: "#94a3b8" }} strokeWidth={1.75} />
             </div>
-            <h2 className="text-lg font-bold" style={{ color: "#f8fafc" }}>No sessions yet</h2>
-            <p className="text-sm mt-2" style={{ color: "#94a3b8", maxWidth: 260, lineHeight: 1.5 }}>
-              Check your first location to start building your parking history.
-            </p>
+            <div style={{ fontSize: 18, fontWeight: 700, marginTop: 20, color: "#0f172a" }}>No sessions yet</div>
+            <div style={{ fontSize: 14, color: "#64748b", marginTop: 8, lineHeight: 1.5 }}>
+              Every time you check a location or scan a sign, it appears here.
+            </div>
             <button
               onClick={onCheckParking}
-              className="mt-6 px-6 py-3 rounded-full text-sm font-bold press-effect"
-              style={{ background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", color: "#fff" }}
+              className="press"
+              style={{
+                marginTop: 24,
+                padding: "14px 28px",
+                borderRadius: 999,
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
             >
-              Check first location
+              Check My First Location
             </button>
           </div>
         ) : (
-          /* Session List */
-          <div
-            className="rounded-[22px] overflow-hidden"
-            style={{ background: "#1a1f2b", border: "1px solid #2d3447" }}
-          >
-            {history.map((item, i) => (
-              <button
-                key={item.id}
-                onClick={() => onItemClick(item)}
-                className="w-full px-4 py-3.5 flex items-center gap-3 text-left press-effect"
-                style={{ borderTop: i > 0 ? "1px solid #2d3447" : "none" }}
-              >
-                {/* Status dot */}
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: `${statusColor(item.status)}15`, color: statusColor(item.status) }}
-                >
-                  <StatusIcon status={item.status} />
-                </div>
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold truncate" style={{ color: "#f8fafc" }}>
-                      {item.street}
-                    </span>
-                    <span
-                      className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
-                      style={{ color: statusColor(item.status), background: `${statusColor(item.status)}15` }}
+          groups.map((group) => (
+            <div key={group.label} style={{ marginBottom: 20 }}>
+              <div style={{
+                fontSize: 11,
+                color: "#94a3b8",
+                fontWeight: 700,
+                letterSpacing: 0.5,
+                textTransform: "uppercase",
+                padding: "0 4px 8px",
+              }}>
+                {group.label}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {group.items.map((item, i) => {
+                  const cfg = getStatusConfig(item.status)
+                  const Icon = cfg.icon
+                  return (
+                    <button
+                      key={item.id || i}
+                      onClick={() => onItemClick(item)}
+                      className="press"
+                      style={{
+                        width: "100%",
+                        padding: "14px 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        background: "#fff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 16,
+                        textAlign: "left",
+                        color: "#0f172a",
+                        cursor: "pointer",
+                      }}
                     >
-                      {statusLabels[item.status] || item.status}
-                    </span>
-                  </div>
-                  <p className="text-[11px] mt-0.5" style={{ color: "#94a3b8" }}>
-                    {formatAgo(new Date(item.date))} · {item.location}
-                  </p>
-                </div>
-                <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "#64748b" }} />
-              </button>
-            ))}
-          </div>
+                      <div style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                        background: cfg.bg,
+                        color: cfg.ink,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <Icon style={{ width: 16, height: 16 }} strokeWidth={1.75} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: 15,
+                          fontWeight: 600,
+                          letterSpacing: -0.2,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          color: "#0f172a",
+                        }}>
+                          {item.location || "Unknown location"}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: "#94a3b8", marginTop: 2 }}>
+                          {cfg.label} · {formatAgo(new Date(item.date))}
+                        </div>
+                      </div>
+                      <ChevronRight style={{ width: 14, height: 14, color: "#94a3b8", flexShrink: 0 }} strokeWidth={1.75} />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>

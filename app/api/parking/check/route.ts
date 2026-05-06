@@ -1,4 +1,4 @@
-import { checkParking } from "@/lib/parking-rules"
+import { checkParkingV2 as checkParking } from "@/lib/parking-engine"
 import { ParkingCheckBodySchema } from "@/lib/validation"
 import {
   apiSuccess,

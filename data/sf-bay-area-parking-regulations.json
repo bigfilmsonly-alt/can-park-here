@@ -1,0 +1,645 @@
+{
+  "_metadata": {
+    "title": "San Francisco Bay Area Parking Regulations Database",
+    "last_updated": "2026-05-04",
+    "sources": [
+      "SFMTA (sfmta.com)",
+      "SF Public Works (sfpublicworks.org)",
+      "DataSF Open Data (data.sfgov.org)",
+      "City of Oakland (oaklandca.gov)",
+      "City of Berkeley (berkeleyca.gov)",
+      "City of San Jose (sanjoseca.gov)",
+      "SpotAngels",
+      "California Vehicle Code"
+    ],
+    "notes": "Street sweeping schedules vary block-by-block. This data represents general patterns and rules. Always verify with posted signage."
+  },
+
+  "san_francisco": {
+    "street_sweeping": {
+      "overview": {
+        "managing_agency": "SF Public Works (DPW)",
+        "enforcement_agency": "SFMTA",
+        "coverage": "Approximately 90% of SF streets",
+        "annual_volume": "150,000 curb miles swept, 25,000 tons debris removed",
+        "ticket_cost_2025": "$85-$97"
+      },
+      "frequency_patterns": {
+        "residential": "Weekly or twice per month (1st & 3rd weeks, 2nd & 4th weeks, or weekly)",
+        "commercial": "At least once per week, often nightly",
+        "major_arterials": "Weekly or more frequently"
+      },
+      "time_slot_patterns": {
+        "description": "Time varies block-by-block. Common 2-hour windows observed in DataSF records.",
+        "common_residential_windows": [
+          "6:00 AM - 8:00 AM",
+          "7:00 AM - 8:00 AM",
+          "8:00 AM - 10:00 AM",
+          "9:00 AM - 11:00 AM",
+          "10:00 AM - 12:00 PM",
+          "11:00 AM - 1:00 PM",
+          "12:00 PM - 2:00 PM",
+          "12:00 PM - 3:00 PM",
+          "1:00 PM - 3:00 PM"
+        ],
+        "common_commercial_windows": [
+          "12:00 AM - 2:00 AM",
+          "2:00 AM - 6:00 AM",
+          "4:00 AM - 6:00 AM",
+          "5:00 AM - 6:00 AM",
+          "5:00 AM - 7:00 AM"
+        ],
+        "duration": "Typically 1-hour, 2-hour, or 3-hour windows; some commercial blocks have 4-hour windows"
+      },
+      "day_patterns": {
+        "description": "Every day of the week is used for sweeping across the city, including weekends and even holidays for commercial areas.",
+        "weekday_residential": "Mon-Fri most common for residential",
+        "weekend_sweeping": "Saturday and Sunday sweeping exists, especially near commercial corridors",
+        "holiday_sweeping": "Some commercial corridors (e.g., Market St, Grant Ave) sweep on holidays"
+      },
+      "sample_schedules_from_datasf": [
+        {"street": "Market St (Larkin-Polk)", "day": "Tuesday", "time": "5:00-6:00 AM", "side": "SE", "frequency": "Weekly"},
+        {"street": "Market St (Pine-Front)", "day": "Friday", "time": "5:00-6:00 AM", "side": "SE", "frequency": "Weekly"},
+        {"street": "Market St (2nd-Montgomery)", "day": "Wednesday", "time": "2:00-6:00 AM", "side": "SE", "frequency": "Weekly"},
+        {"street": "Castro St (24th-Jersey)", "day": "Thursday", "time": "6:00-8:00 AM", "side": "East", "frequency": "2nd & 4th weeks"},
+        {"street": "Valencia St (19th-Cunningham)", "day": "Friday", "time": "6:00-8:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Mission St (Excelsior-Santa Rosa)", "day": "Saturday", "time": "5:00-7:00 AM", "side": "NW", "frequency": "Weekly"},
+        {"street": "Cesar Chavez St (San Jose-Guerrero)", "day": "Saturday", "time": "8:00-10:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "Cesar Chavez St (Bay Shore Blvd)", "day": "Sunday", "time": "6:00-8:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "Geary Blvd (Funston-Park Presidio)", "day": "Thursday", "time": "7:00-8:00 AM", "side": "North", "frequency": "1st, 3rd, 5th weeks"},
+        {"street": "Geary Blvd", "day": "Monday", "time": "7:00-8:00 AM", "side": "South", "frequency": "1st, 3rd, 5th weeks"},
+        {"street": "Fulton St (4th-5th Ave)", "day": "Wednesday", "time": "9:00-11:00 AM", "side": "South", "frequency": "2nd & 4th weeks"},
+        {"street": "Fulton St (19th-20th Ave)", "day": "Thursday", "time": "1:00-3:00 PM", "side": "South", "frequency": "1st, 3rd, 5th weeks"},
+        {"street": "Fillmore St (Pacific-Broadway)", "day": "Monday", "time": "11:00 AM-1:00 PM", "side": "East", "frequency": "1st & 3rd weeks"},
+        {"street": "Judah St", "day": "Monday", "time": "7:00-8:00 AM", "side": "South", "frequency": "1st & 3rd weeks"},
+        {"street": "Judah St", "day": "Thursday", "time": "7:00-8:00 AM", "side": "North", "frequency": "2nd & 4th weeks"},
+        {"street": "Cortland Ave (Anderson-Ellsworth)", "day": "Tuesday", "time": "7:00-8:00 AM", "side": "North", "frequency": "2nd & 4th weeks"},
+        {"street": "Ocean Ave (Lakewood-Manor Dr)", "day": "Wednesday", "time": "7:00-8:00 AM", "side": "SW", "frequency": "1st & 3rd weeks"},
+        {"street": "North Point St (Scott-Divisadero)", "day": "Friday", "time": "11:00 AM-1:00 PM", "side": "South", "frequency": "1st & 3rd weeks"},
+        {"street": "Laguna St (Francisco-Bay)", "day": "Thursday", "time": "9:00-11:00 AM", "side": "East", "frequency": "1st & 3rd weeks"},
+        {"street": "Powell St (Columbus-Filbert)", "day": "Monday", "time": "7:00-8:00 AM", "side": "West", "frequency": "1st & 3rd weeks"},
+        {"street": "Post St (Franklin-Gough)", "day": "Wednesday", "time": "6:00-8:00 AM", "side": "South", "frequency": "2nd & 4th weeks"},
+        {"street": "Ellis St (Cyril Magnin-Mason)", "day": "Wednesday", "time": "6:00-8:00 AM", "side": "South", "frequency": "Weekly"},
+        {"street": "Gough St (Hayes-Ivy)", "day": "Tuesday", "time": "12:00-6:00 AM", "side": "East", "frequency": "Weekly"},
+        {"street": "Polk St", "day": "Monday", "time": "6:00-8:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Polk St", "day": "Wednesday", "time": "2:00-6:00 PM", "side": "West", "frequency": "Weekly"},
+        {"street": "San Bruno Ave (Bacon-Wayland)", "day": "Friday", "time": "7:00-8:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Lower Great Hwy (Lincoln-Irving)", "day": "Tuesday", "time": "1:00-3:00 PM", "side": "West", "frequency": "1st, 3rd, 5th weeks"},
+        {"street": "Lower Great Hwy (Quintara-Rivera)", "day": "Monday", "time": "1:00-3:00 PM", "side": "East", "frequency": "2nd & 4th weeks"},
+        {"street": "8th Ave (Judah-Kirkham)", "day": "Wednesday", "time": "8:00-10:00 AM", "side": "East", "frequency": "1st & 3rd weeks"},
+        {"street": "6th Ave (Irving-Judah)", "day": "Wednesday", "time": "12:00-2:00 PM", "side": "East", "frequency": "1st & 3rd weeks"},
+        {"street": "32nd Ave (Cabrillo-Fulton)", "day": "Wednesday", "time": "10:00 AM-12:00 PM", "side": "West", "frequency": "2nd & 4th weeks"},
+        {"street": "14th Ave", "day": "Friday", "time": "9:00-11:00 AM", "side": "NE", "frequency": "1st & 3rd weeks"},
+        {"street": "Collins St (Geary-Anza)", "day": "Friday", "time": "8:00-10:00 AM", "side": "East", "frequency": "Weekly"},
+        {"street": "Pacheco St (18th-19th Ave)", "day": "Wednesday", "time": "10:00 AM-12:00 PM", "side": "South", "frequency": "1st & 3rd weeks"},
+        {"street": "Waller St", "day": "Tuesday", "time": "12:00-2:00 PM", "side": "South", "frequency": "Weekly"},
+        {"street": "17th St", "day": "Wednesday", "time": "12:00-2:00 PM", "side": "South", "frequency": "Weekly"},
+        {"street": "19th St", "day": "Friday", "time": "6:00-8:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "20th St", "day": "Wednesday", "time": "8:00-10:00 AM", "side": "South", "frequency": "Weekly"},
+        {"street": "15th St (Capp-Minna)", "day": "Thursday", "time": "6:00-8:00 AM", "side": "South", "frequency": "2nd & 4th weeks"},
+        {"street": "23rd St", "day": "Monday", "time": "12:00-6:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "California St (Montgomery-Spring)", "day": "Monday", "time": "2:00-6:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "Clay St", "day": "Monday", "time": "2:00-6:00 PM", "side": "North", "frequency": "Weekly"},
+        {"street": "Jackson St", "day": "Wednesday", "time": "2:00-6:00 PM", "side": "North", "frequency": "Weekly"},
+        {"street": "Pine St", "day": "Wednesday", "time": "2:00-6:00 PM", "side": "unspecified", "frequency": "Weekly"},
+        {"street": "O'Farrell St (Security Pacific-Stockton)", "day": "Friday", "time": "2:00-6:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "Kearny St (Sacramento-Commercial)", "day": "Monday", "time": "2:00-6:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Jones St", "day": "Sunday", "time": "6:00-8:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Hyde St", "day": "Tuesday", "time": "6:00-8:00 PM", "side": "East", "frequency": "Weekly"},
+        {"street": "Broadway", "day": "Tuesday", "time": "6:00-8:00 PM", "side": "South", "frequency": "Weekly"},
+        {"street": "Grant Ave", "day": "Sunday", "time": "2:00-6:00 PM", "side": "West", "frequency": "Weekly + holidays"},
+        {"street": "Van Ness Ave", "day": "Holiday", "time": "4:00-6:00 PM", "side": "West", "frequency": "Weekly"},
+        {"street": "Harrison St", "day": "Wednesday", "time": "2:00-6:00 PM", "side": "NW", "frequency": "Weekly"},
+        {"street": "Folsom St", "day": "Tuesday", "time": "9:00-11:00 AM", "side": "East", "frequency": "Weekly"},
+        {"street": "Bryant St", "day": "Wednesday", "time": "9:00-11:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Alabama St", "day": "Friday", "time": "9:00-11:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Kansas St (22nd-Humboldt)", "day": "Friday", "time": "6:00-8:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "San Jose Ave", "day": "Friday", "time": "8:00-10:00 AM", "side": "SE", "frequency": "1st & 3rd weeks"},
+        {"street": "Bay St", "day": "Friday", "time": "11:00 AM-1:00 PM", "side": "North", "frequency": "1st & 3rd weeks"},
+        {"street": "Bay Shore Blvd", "day": "Saturday", "time": "7:00-8:00 AM", "side": "West", "frequency": "Weekly"},
+        {"street": "Geneva Ave (Edinburg-Naples)", "day": "Saturday", "time": "6:00-8:00 AM", "side": "NE", "frequency": "Weekly"},
+        {"street": "Sunnydale Ave", "day": "Wednesday", "time": "8:00-11:00 AM", "side": "North", "frequency": "Weekly"},
+        {"street": "Scott St", "day": "Monday", "time": "10:00 AM-12:00 PM", "side": "West", "frequency": "1st & 3rd weeks"},
+        {"street": "Alemany Blvd (Ralston-Palmetto)", "day": "Thursday", "time": "1:00-3:00 PM", "side": "SE", "frequency": "1st & 3rd weeks"},
+        {"street": "3rd St (Newhall-Kirkwood)", "day": "Wednesday", "time": "2:00-6:00 AM", "side": "East", "frequency": "Weekly"},
+        {"street": "3rd St (Galvez-Hudson)", "day": "Tuesday", "time": "2:00-6:00 AM", "side": "East", "frequency": "Weekly"},
+        {"street": "3rd St (King-Berry)", "day": "Friday", "time": "2:00-6:00 AM", "side": "SW", "frequency": "Weekly"},
+        {"street": "6th St (Stevenson-Jessie)", "day": "Holiday", "time": "4:00-6:00 AM", "side": "NE", "frequency": "Holiday"},
+        {"street": "6th St (Ahern-Bryant)", "day": "Wednesday", "time": "4:00-6:00 AM", "side": "SW", "frequency": "Weekly"},
+        {"street": "Darien Way (Junipero Serra-San Rafael)", "day": "Thursday", "time": "10:00 AM-12:00 PM", "side": "North", "frequency": "2nd & 4th weeks"}
+      ],
+      "neighborhood_general_patterns": {
+        "financial_district_downtown": {
+          "frequency": "Weekly (commercial/nightly sweeping)",
+          "typical_times": "2:00-6:00 AM (overnight)",
+          "typical_days": "Varies by block, Mon-Fri common",
+          "notes": "Market St swept multiple days per week at early morning hours"
+        },
+        "soma": {
+          "frequency": "Weekly",
+          "typical_times": "2:00-6:00 AM for major streets; 9:00-11:00 AM for residential side streets",
+          "typical_days": "Varies by block"
+        },
+        "mission": {
+          "frequency": "Weekly to bimonthly depending on block",
+          "typical_times": "5:00-8:00 AM for commercial; 6:00-8:00 AM or 9:00-11:00 AM for residential",
+          "typical_days": "Thursday-Saturday common for commercial; varies for residential"
+        },
+        "castro": {
+          "frequency": "Bimonthly (2nd & 4th weeks typical for residential)",
+          "typical_times": "6:00-8:00 AM",
+          "typical_days": "Thursday observed in data"
+        },
+        "haight": {
+          "frequency": "Weekly for commercial Haight St; bimonthly for residential",
+          "typical_times": "12:00-2:00 PM residential side streets",
+          "typical_days": "Tuesday observed"
+        },
+        "marina": {
+          "frequency": "Bimonthly (1st & 3rd weeks typical)",
+          "typical_times": "9:00-11:00 AM or 11:00 AM-1:00 PM",
+          "typical_days": "Thursday-Friday common"
+        },
+        "sunset_richmond": {
+          "frequency": "Bimonthly (alternating 1st/3rd or 2nd/4th weeks)",
+          "typical_times": "7:00-8:00 AM (1-hour windows), 8:00-10:00 AM, 10:00 AM-12:00 PM, 1:00-3:00 PM",
+          "typical_days": "Wednesday-Thursday common for Richmond avenues; Monday-Wednesday for Sunset",
+          "notes": "Numbered avenues in Richmond/Sunset tend to have consistent day patterns within nearby blocks"
+        },
+        "nob_hill_russian_hill": {
+          "frequency": "Weekly for major streets; bimonthly for residential",
+          "typical_times": "6:00-8:00 AM or 7:00-8:00 AM",
+          "typical_days": "Monday-Tuesday common"
+        },
+        "north_beach": {
+          "frequency": "Weekly",
+          "typical_times": "Early morning (2:00-6:00 AM for commercial); 7:00-8:00 AM residential",
+          "typical_days": "Varies"
+        },
+        "tenderloin": {
+          "frequency": "Weekly (high-density area)",
+          "typical_times": "4:00-6:00 AM, 6:00-8:00 AM",
+          "typical_days": "Wednesday common"
+        },
+        "potrero_hill": {
+          "frequency": "Weekly to bimonthly",
+          "typical_times": "6:00-8:00 AM",
+          "typical_days": "Friday common"
+        },
+        "bernal_heights": {
+          "frequency": "Bimonthly (2nd & 4th weeks)",
+          "typical_times": "7:00-8:00 AM",
+          "typical_days": "Tuesday observed for Cortland Ave area"
+        },
+        "excelsior": {
+          "frequency": "Weekly for commercial; bimonthly for residential",
+          "typical_times": "5:00-7:00 AM, 7:00-8:00 AM",
+          "typical_days": "Saturday for Mission St corridor"
+        },
+        "bayview_hunters_point": {
+          "frequency": "Weekly",
+          "typical_times": "8:00-11:00 AM, 9:00-11:00 AM",
+          "typical_days": "Monday, Wednesday common"
+        }
+      },
+      "data_source_api": {
+        "url": "https://data.sfgov.org/resource/yhqp-riqs.json",
+        "description": "DataSF Socrata API - complete street sweeping schedule with ~27,000+ records",
+        "fields": ["corridor", "cnn", "limits", "weekday", "fromhour", "tohour", "holidays", "blockside", "week1ofmonth", "week2ofmonth", "week3ofmonth", "week4ofmonth", "week5ofmonth"],
+        "notes": "Use $limit and $offset params for pagination. Can filter by corridor (street name), weekday, etc."
+      }
+    },
+
+    "parking_meters": {
+      "standard_hours": {
+        "weekday": "Monday-Saturday, 9:00 AM - 6:00 PM",
+        "sunday": "12:00 PM - 6:00 PM (in extended-hours areas)",
+        "prepayment_start": "4:30 AM daily",
+        "notes": "Hours vary by location. ALWAYS check the meter."
+      },
+      "extended_hours_program": {
+        "status": "Phased rollout began July 2023, ongoing through 2024-2025 (delayed for economic impact study)",
+        "new_weekday_hours": "9:00 AM - 10:00 PM Monday-Saturday",
+        "new_sunday_hours": "12:00 PM - 6:00 PM",
+        "after_6pm_rule": "No time limits at metered spaces after 6:00 PM and all day Sunday",
+        "already_extended_before_plan": [
+          "Mission Bay",
+          "South Beach",
+          "Embarcadero / Port",
+          "18th Street business district (Potrero Hill)"
+        ],
+        "phases": {
+          "phase_1": {
+            "neighborhoods": ["Dogpatch", "Fisherman's Wharf"],
+            "start": "July 2023"
+          },
+          "phase_2": {
+            "neighborhoods": ["North Beach", "SoMa", "Hayes Valley", "Civic Center", "Lower Polk", "Upper Polk", "Financial District", "Telegraph Hill", "Union Square", "Union Street/Cow Hollow", "Marina", "Upper Fillmore"]
+          },
+          "phase_3": {
+            "neighborhoods": ["Lower Divisadero", "Upper Divisadero", "Western Addition", "Castro/Upper Market/Duboce Triangle", "Inner Sunset", "Middle Irving", "Upper Haight", "Cole Valley", "Showplace Square/Northern Potrero", "Potrero Hill (18th Street)"]
+          },
+          "phase_4": {
+            "neighborhoods": ["Ocean Avenue", "Laurel/Presidio Heights", "Lone Mountain", "Inner Clement", "Inner Geary", "Inner Balboa", "Noe Valley", "Bernal Heights (Cortland)", "Glen Park"]
+          },
+          "phase_5": {
+            "neighborhoods": ["West Portal", "Outer Clement", "Outer Geary", "Outer Balboa", "Outer Noriega", "Inner Noriega", "Taraval", "UCSF/Parnassus"]
+          },
+          "phase_6": {
+            "neighborhoods": ["Bayview", "Visitacion Valley", "San Bruno", "Excelsior/Outer Mission", "24th Street/Calle 24", "Inner Mission", "Mission south of 24th", "Northeast Mission", "Tenderloin", "Lower Fillmore/Japantown", "Lower Haight", "Chinatown"],
+            "notes": "Lower-income neighborhoods whose residents are predominantly people of color scheduled last"
+          }
+        }
+      },
+      "sunday_metering_areas_pre_extension": [
+        "Fisherman's Wharf",
+        "The Embarcadero / Northern and Eastern waterfronts",
+        "Mission Bay",
+        "South Beach",
+        "18th Street (Potrero Hill)",
+        "Near Oracle Park and Chase Center (during events)"
+      ],
+      "special_event_metering": {
+        "oracle_park": "Minimum $7/hour during SF Giants games",
+        "chase_center": "Extended hours during Warriors games and events"
+      },
+      "rates": {
+        "pricing_model": "Demand-responsive pricing, adjusted quarterly",
+        "minimum_rate": "$0.50/hour",
+        "maximum_rate": "$13.00/hour (cap effective July 1, 2025)",
+        "practical_range": "$0.50 - $8.00/hour in practice",
+        "rate_adjustment": "Raised $0.25 if block occupancy >80%, lowered $0.25 if <60%, unchanged if 60-80%",
+        "high_demand_areas": "Downtown, Fisherman's Wharf, Marina, North Beach, Union Square",
+        "low_demand_areas": "Outer neighborhoods, less commercial areas"
+      },
+      "time_limits": {
+        "most_meters": "4-hour maximum (SFpark areas)",
+        "some_areas": "2-hour maximum",
+        "green_meters": "15 or 30 minutes",
+        "no_time_limit_areas": "Some neighborhoods have no time limit",
+        "after_6pm": "No time limits at metered spaces",
+        "sundays": "No time limits",
+        "feeding_meter": "Prohibited - cannot add time beyond legal limit"
+      },
+      "payment_methods": [
+        "Coins",
+        "Credit/debit cards (Visa, MasterCard, AmEx, Discover)",
+        "Pay-by-phone app ($0.35 convenience fee)",
+        "Phone call payment",
+        "License plate payment at multi-space paystations"
+      ],
+      "meter_colors": {
+        "standard_gray": "General parking meter",
+        "green": "Short-term (15 or 30 minutes)",
+        "red": "Commercial loading zone (6+ wheels)",
+        "yellow": "Commercial loading zone"
+      },
+      "broken_meter_rule": "Park for posted time or 2 hours, whichever is shorter",
+      "no_qr_codes": "SFMTA does not accept payments via QR codes",
+      "non_operating_days": ["Thanksgiving Day", "Christmas Day", "New Year's Day"]
+    },
+
+    "residential_permit_parking": {
+      "total_zones": 31,
+      "zone_designations": ["A", "AA", "B", "BB", "C", "CC", "D", "DD", "E", "EE", "F", "G", "H", "HV", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
+      "size_range": "0.1 sq mi (Area DD, smallest) to 1.3 sq mi (Area S, largest)",
+      "established": "First zones (A and B) created in 1977; most zones established in 1970s-1980s",
+      "enforcement_hours": {
+        "standard": "Monday-Friday, 8:00 AM - 6:00 PM",
+        "some_zones": "Monday-Saturday, 8:00 AM - 6:00 PM",
+        "notes": "Varies by RPP Area. Check posted signage."
+      },
+      "time_limit_without_permit": "2 hours (most zones); must move at least 1 block or 1/10 mile (~500 feet)",
+      "permit_holders": "Exempt from time limits in their zone (can park all day)",
+      "costs": {
+        "passenger_vehicle_annual": "$215",
+        "motorcycle_annual": "$108",
+        "prorated": "Available for permits lasting less than 6 months"
+      },
+      "household_limits": {
+        "most_zones": "Up to 4 permits per household",
+        "restricted_zones": "Areas AA, EE, HV: 1 permit per driver, max 2 per household"
+      },
+      "guest_permits": "Available (one-day or weekly, with annual limits)",
+      "enforcement_method": "License Plate Recognition (LPR) technology - virtual permits linked to license plates, no physical stickers",
+      "known_zone_neighborhoods": {
+        "A": "Established 1977 - one of the first two zones",
+        "B": "Established 1977 - one of the first two zones",
+        "I": "Includes parts of Mission (2900 block Mission St)",
+        "S": "Largest zone at 1.3 sq mi; includes Northeast Mission area",
+        "DD": "Smallest zone at 0.1 sq mi",
+        "AA": "Restricted zone (1 permit per driver, 2 per household)",
+        "EE": "Restricted zone (1 permit per driver, 2 per household)",
+        "HV": "Restricted zone (1 permit per driver, 2 per household)"
+      },
+      "interactive_map_url": "https://sfgov.maps.arcgis.com/apps/webappviewer/index.html?id=efb2bfe552454d1cbe9b2ea74ea91d6c"
+    },
+
+    "tow_away_zones": {
+      "commute_hour_tow_away": {
+        "typical_morning": "7:00 AM - 9:00 AM",
+        "typical_evening": "3:00 PM - 7:00 PM (or 4:00 PM - 7:00 PM)",
+        "notes": "Exact times posted on signs. Times vary by street.",
+        "enforcement": "No exemptions for disabled placards, passenger loading, or stopping briefly"
+      },
+      "known_tow_away_streets": [
+        {
+          "street": "Van Ness Avenue",
+          "details": "Multiple tow-away no stopping sections: Market St northerly, Geary to O'Farrell, Bush to Fern, Sutter northerly"
+        },
+        {
+          "street": "Geary Boulevard/Geary Street",
+          "details": "Tow-away no stopping, north side between Van Ness Ave and Franklin St; peak-hour lane on Geary between Gough and Van Ness"
+        },
+        {
+          "street": "Fell Street",
+          "details": "Tow-away zone 7:00 AM - 7:00 PM"
+        },
+        {
+          "street": "Oak Street",
+          "details": "Tow-away zone during commute hours (paired one-way with Fell)"
+        },
+        {
+          "street": "Bush Street",
+          "details": "Peak hour tow-away enforcement"
+        },
+        {
+          "street": "Pine Street",
+          "details": "Peak hour tow-away enforcement"
+        },
+        {
+          "street": "3rd Street",
+          "details": "Congestion enforcement zone"
+        },
+        {
+          "street": "Mission Street",
+          "details": "Transit-priority tow-away enforcement zones"
+        },
+        {
+          "street": "Guerrero Street",
+          "details": "Peak hour restrictions"
+        },
+        {
+          "street": "Cesar Chavez Street",
+          "details": "Tow-away no stopping 7AM-6PM Mon-Fri, 9AM-6PM Sat-Sun on south side (York to Hampshire); north side from Guerrero to 120' east"
+        }
+      ],
+      "common_locations": "Downtown, SoMa, major arterials, transit corridors",
+      "precedence_rule": "Tow-away restrictions override all other parking restrictions posted on the street",
+      "tow_lot": {
+        "address": "450 7th Street (across from Hall of Justice)",
+        "phone": "(415) 865-8200",
+        "hours": "24/7",
+        "operator": "AutoReturn"
+      },
+      "tow_away_map_url": "https://bsm.sfdpw.org/streetspace/TowAwayMap.aspx",
+      "gis_data_url": "https://data.sfgov.org/Transportation/Regularly-scheduled-tow-away-zone-GIS-data/wnhf-gu86"
+    },
+
+    "holiday_enforcement": {
+      "full_suspension_holidays": {
+        "description": "Meters, nightly street sweeping, RPP, weekday daytime sweeping, commuter tow-away ALL suspended",
+        "holidays": [
+          {"name": "New Year's Day", "date_pattern": "January 1"},
+          {"name": "Thanksgiving Day", "date_pattern": "4th Thursday of November"},
+          {"name": "Christmas Day", "date_pattern": "December 25"}
+        ]
+      },
+      "partial_suspension_holidays": {
+        "description": "RPP time limits, general parking time limits, weekday daytime street sweeping suspended. Meters, nightly sweeping, and tow-away zones STILL ENFORCED.",
+        "holidays": [
+          {"name": "Dr. Martin Luther King Jr. Day", "date_pattern": "3rd Monday of January"},
+          {"name": "Presidents' Day", "date_pattern": "3rd Monday of February"},
+          {"name": "Memorial Day", "date_pattern": "Last Monday of May"},
+          {"name": "Juneteenth", "date_pattern": "June 19"},
+          {"name": "Independence Day", "date_pattern": "July 4 (observed)"},
+          {"name": "Labor Day", "date_pattern": "1st Monday of September"},
+          {"name": "Indigenous Peoples' Day", "date_pattern": "2nd Monday of October"},
+          {"name": "Veterans Day", "date_pattern": "November 11"},
+          {"name": "Day After Thanksgiving", "date_pattern": "4th Friday of November"}
+        ]
+      },
+      "always_enforced": [
+        "Safety violations (no stopping, no parking)",
+        "Red zones and blue zones",
+        "7-day commercial area sweeping (except on 3 full-suspension holidays)",
+        "Tow-away zones (except on full-suspension holidays)"
+      ],
+      "notes": "Market Street and other 7-day sweeping corridors may still be enforced on partial-suspension holidays"
+    },
+
+    "accessible_parking": {
+      "blue_zones": {
+        "description": "Street parking spaces reserved for disabled placard/plate holders",
+        "active_hours": "24 hours a day",
+        "exceptions": "Not active during street cleaning hours, tow-away hours, or special event/construction restrictions"
+      },
+      "placard_privileges": {
+        "can_park_at": [
+          "Blue zones (no time limit up to 72 hours)",
+          "General metered parking (free, no payment required)",
+          "Green zones (exempt from short time limits)",
+          "Residential Permit Parking areas (without permit)",
+          "Areas with posted time limits (e.g., 1-hour business district zones)"
+        ],
+        "cannot_park_at": [
+          "No-parking / no-stopping / red zones",
+          "During street-cleaning hours",
+          "During commercial loading hours (yellow curb, yellow/red meters)",
+          "During passenger loading hours (white curb)",
+          "During commuter tow-away hours",
+          "For more than 72 hours in any single space"
+        ]
+      },
+      "placard_types_accepted": "California disabled person parking placard or plate, including from other states and countries",
+      "violations": {
+        "parking_in_blue_zone_without_placard": "$416",
+        "disabled_placard_misuse": "$866",
+        "placard_not_displayed": "$100 (reducible to $25 admin fee with proof of valid placard)"
+      }
+    },
+
+    "curb_colors": {
+      "red": {
+        "meaning": "No parking / No stopping",
+        "active": "24/7",
+        "who_can_stop": "No one (emergency vehicles excepted)",
+        "common_locations": "Bus stops, fire stations, fire hydrants, driveways",
+        "fine": "$110+"
+      },
+      "white": {
+        "meaning": "Passenger loading/unloading only",
+        "time_limit": "5 minutes maximum",
+        "active": "During posted hours (typically business hours)",
+        "common_locations": "Schools, hospitals, restaurants, hotels",
+        "fine": "$110"
+      },
+      "yellow": {
+        "meaning": "Commercial loading zone",
+        "active": "Typically 9:00 AM - 6:00 PM (check signs)",
+        "who_can_use": "Commercial vehicles during posted hours; open to all vehicles after hours",
+        "common_locations": "Business districts, storefronts",
+        "fine": "$110"
+      },
+      "green": {
+        "meaning": "Short-term parking",
+        "time_limit": "10, 15, or 30 minutes (varies by sign)",
+        "active": "During posted hours; reverts to general parking when not active",
+        "common_locations": "ATMs, bank entrances, convenience stores",
+        "fine": "$90",
+        "notes": "Disabled placard holders exempt from time limits"
+      },
+      "blue": {
+        "meaning": "Accessible / Disabled parking only",
+        "active": "24/7",
+        "who_can_use": "Valid disabled placard or plate holders only",
+        "time_limit": "72 hours max",
+        "fine_without_placard": "$416"
+      }
+    },
+
+    "parking_fines_2025": {
+      "street_cleaning_sweeping": "$85-$97",
+      "residential_parking_overtime": "$102",
+      "expired_meter_downtown": "$96",
+      "expired_meter_outside_downtown": "$87",
+      "overtime_parking_downtown": "$96",
+      "overtime_parking_outside_downtown": "$87",
+      "red_yellow_white_zone": "$110",
+      "green_zone": "$90",
+      "tow_away_zone": "$110",
+      "fire_hydrant": "$110",
+      "bus_zone": "$357",
+      "wheelchair_access_violation": "$416",
+      "blue_zone_without_placard": "$416",
+      "disabled_placard_misuse": "$866",
+      "three_day_72hr_overtime": "$75",
+      "blocking_driveway": "$108",
+      "blocking_residential_door": "$60",
+      "parking_on_grades_no_curb_wheels": "$60",
+      "angled_parking": "$72",
+      "motorcycle_parking_violation": "$110",
+      "large_vehicle": "$110",
+      "invalid_wrong_permit": "$110",
+      "marked_space_violation": "$67",
+      "notes": "Fines subject to 8% annual increase in FY2024-25 and FY2025-26. Late fees and registration holds escalate costs significantly. Range $60-$866."
+    },
+
+    "general_rules": {
+      "72_hour_rule": {
+        "description": "Vehicles cannot park in the same spot on a public street for more than 72 consecutive hours",
+        "move_distance": "Must move at least 1 block or 1/10 mile (~500 feet)",
+        "enforcement": "Complaint-driven; SFMTA requests residents wait ~72 hours before reporting",
+        "process": "Marking Notice placed on windshield; vehicle towed if not moved by deadline",
+        "exemptions": "None - RPP permit and disabled placards do NOT exempt from 72-hour rule"
+      },
+      "hill_parking": {
+        "grade_threshold": "3% or more",
+        "downhill": "Angle wheels toward curb",
+        "uphill": "Angle wheels away from curb",
+        "fine": "$60"
+      },
+      "parallel_parking": {
+        "curb_distance": "Wheels must be within 18 inches of curb",
+        "direction": "Must face direction of traffic flow"
+      },
+      "daylighting_ab413": {
+        "effective_date": "January 1, 2025",
+        "rule": "Illegal to park within 20 feet of approach to any marked or unmarked crosswalk",
+        "distance": "~1 standard parking space or 1 large car length",
+        "sf_enforcement": "SFMTA currently only cites if curb is painted red (to avoid confusion)",
+        "fine": "$65+"
+      },
+      "crosswalk_distance": "Must maintain 20+ feet from marked or unmarked crosswalks",
+      "driveway_blocking": "Cannot park in driveways or driveway curb cuts",
+      "sidewalk_parking": "Prohibited"
+    }
+  },
+
+  "oakland": {
+    "street_sweeping": {
+      "managing_agency": "City of Oakland Public Works",
+      "frequency": {
+        "residential": "Once or twice per month, alternating even/odd sides by house numbers",
+        "commercial": "Swept at night"
+      },
+      "hours": {
+        "residential": "After 8:00 AM to approximately 2:30 PM",
+        "commercial": "Night sweeping"
+      },
+      "ticket_cost": {
+        "initial": "$66",
+        "unpaid_escalation_1": "$119",
+        "unpaid_escalation_2": "$196"
+      },
+      "holidays_no_sweeping": [
+        "New Year's Day",
+        "MLK Jr. Day",
+        "Lincoln's Birthday (Feb 12)",
+        "Presidents' Day",
+        "Memorial Day",
+        "Independence Day (Jul 3-4)",
+        "Labor Day",
+        "California Admission Day (Sep 9)",
+        "Veterans Day",
+        "Thanksgiving Day & Day After",
+        "Christmas Day"
+      ]
+    },
+    "parking_meters": {
+      "hours": "Monday-Saturday, 8:00 AM - 6:00 PM",
+      "sunday_hours": "12:00 PM - 6:00 PM (started late 2025/early 2026)",
+      "rates": {
+        "minimum": "$1.00/hour",
+        "standard": "$3.00/hour (post July 2024 increase)",
+        "demand_responsive_areas": ["Montclair Village ($1-$3/hr)", "Chinatown (variable rates)"]
+      }
+    },
+    "residential_parking_permits": {
+      "description": "RPP zones exist; reserve space for residents during posted hours",
+      "enforcement": "During posted hours on curb signs"
+    }
+  },
+
+  "berkeley": {
+    "street_sweeping": {
+      "managing_agency": "City of Berkeley Public Works",
+      "frequency": "Residential streets cleaned once per month, same day each month (e.g., first Tuesday)",
+      "commercial": "More frequent",
+      "holidays": "No sweeping on city holidays"
+    },
+    "parking_meters": {
+      "hours": "9:00 AM - 6:00 PM (considering extension to 8:00 PM)",
+      "rates": {
+        "range": "$1.50 - $4.00/hour",
+        "higher_near_downtown": "Up to $4.00/hour near downtown arts district"
+      },
+      "time_limits": "30 minutes to 8 hours depending on location; many areas have 2-hour limit",
+      "residential_permits": "Available for RPP zones"
+    }
+  },
+
+  "san_jose": {
+    "street_sweeping": {
+      "managing_agency": "City of San Jose Dept of Transportation",
+      "frequency": "Residential streets swept once per month",
+      "schedule": "Day after garbage collection",
+      "hours": "7:00 AM - 5:00 PM",
+      "lookup": "City website or call (408) 535-3500"
+    },
+    "parking_meters": {
+      "hours": "Monday-Saturday, 9:00 AM - 6:00 PM (excluding city holidays)",
+      "exception": "Little Italy meters: 9:00 AM - 10:00 PM every day",
+      "rates": {
+        "range": "$1.00 - $2.00/hour",
+        "standard": "$2.00/hour"
+      },
+      "time_limits": {
+        "most_common": "1-hour or 2-hour",
+        "short_term": "12 or 30 minutes",
+        "long_term": "4 hours and up"
+      },
+      "payment": "Card, coins, or app"
+    }
+  }
+}

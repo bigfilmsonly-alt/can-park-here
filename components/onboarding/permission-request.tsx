@@ -67,13 +67,13 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
   const Icon = step === 0 ? MapPin : Bell
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col animate-fade-in" style={{ background: "var(--background)", color: "var(--foreground)" }}>
+    <div className="fixed inset-0 z-50 flex flex-col animate-fade-in" style={{ background: "var(--park-bg)", color: "var(--park-fg)" }}>
       <div className="flex-1 flex flex-col items-center px-8 pt-20">
         {/* Icon with ripple rings */}
         <div className="relative mb-2">
           <div
             className="w-[180px] h-[180px] rounded-full flex items-center justify-center"
-            style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
+            style={{ background: "var(--park-accent-pale)", color: "var(--park-accent)" }}
           >
             <Icon className="w-[88px] h-[88px]" />
           </div>
@@ -83,7 +83,7 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
               className="absolute rounded-full border"
               style={{
                 inset: -(14 + i * 20),
-                borderColor: "var(--accent)",
+                borderColor: "var(--park-accent)",
                 opacity: 0.15 - i * 0.04,
               }}
             />
@@ -121,7 +121,7 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
             >
               <div
                 className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
-                style={{ background: "var(--accent-pale)", color: "var(--accent)" }}
+                style={{ background: "var(--park-accent-pale)", color: "var(--park-accent)" }}
               >
                 <Check className="w-[18px] h-[18px]" />
               </div>
@@ -140,7 +140,7 @@ export function PermissionRequest({ onComplete }: PermissionRequestProps) {
           onClick={step === 0 ? requestLocation : requestNotifications}
           disabled={requesting}
           className="w-full py-4 rounded-full text-base font-bold press-effect disabled:opacity-70"
-          style={{ background: "var(--accent)", color: "#fff" }}
+          style={{ background: "var(--park-accent)", color: "#fff" }}
         >
           {step === 0 ? "Allow location" : "Allow notifications"}
         </button>

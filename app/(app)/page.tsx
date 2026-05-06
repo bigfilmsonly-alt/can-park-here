@@ -29,6 +29,7 @@ export default function HomePage() {
       onCancelTimer={ctx.handleCancelTimer}
       onOpenSettings={() => router.push("/settings")}
       onOpenHistory={() => router.push("/history")}
+      onShare={() => ctx.setShowShare(true)}
     />
   )
 }

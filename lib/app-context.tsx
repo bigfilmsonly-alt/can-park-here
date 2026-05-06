@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
@@ -16,6 +17,7 @@ import { useVoiceCommands } from "@/hooks/use-voice-commands"
 import { useOffline } from "@/hooks/use-offline"
 import { useBiometric } from "@/hooks/use-biometric"
 import { checkParking, type ParkingResult, getUserAccessibility } from "@/lib/parking-rules"
+import { checkParkingV2 } from "@/lib/parking-engine"
 import {
   startParkingSession,
   getActiveSessionSync,
@@ -69,6 +71,10 @@ interface AppContextValue {
   setShowPhotoVault: (v: boolean) => void
   showReportIssue: boolean
   setShowReportIssue: (v: boolean) => void
+  showPostParking: boolean
+  setShowPostParking: (v: boolean) => void
+  showShare: boolean
+  setShowShare: (v: boolean) => void
 
   // Handlers
   handleCheckParking: () => Promise<void>
@@ -141,6 +147,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showScanSign, setShowScanSign] = useState(false)
   const [showPhotoVault, setShowPhotoVault] = useState(false)
   const [showReportIssue, setShowReportIssue] = useState(false)
+  const [showPostParking, setShowPostParking] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const [activeSession, setActiveSession] = useState<ProtectionSession | null>(null)
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState<number | null>(null)
   const [remainingChecks, setRemainingChecks] = useState(10)
@@ -150,6 +158,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { loading, error, getCurrentLocation } = useGeolocation()
   const { savedLocations, saveLocation, removeLocation, isLocationSaved, getLocationByCoords } = useSavedLocations()
   const { isActive: timerActive, remainingSeconds: timerRemainingSeconds, startTimer, cancelTimer, formatTimeDisplay } = useTimer()
+  const prevTimerActiveRef = useRef(false)
+
+  // Detect timer expiry → show post-parking feedback
+  useEffect(() => {
+    if (prevTimerActiveRef.current && !timerActive) {
+      setShowPostParking(true)
+    }
+    prevTimerActiveRef.current = timerActive
+  }, [timerActive])
   const { isOnline, cachedCount, cacheLocation } = useOffline()
   const { isEnabled: biometricEnabled, isAuthenticated, isLoading: biometricLoading, error: biometricError, authenticate } = useBiometric()
 
@@ -248,13 +265,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           result = json.data
         } else {
           // API error — fall back to client-side
-          result = checkParking(location.latitude, location.longitude, userAccessibility)
+          result = checkParkingV2(location.latitude, location.longitude, userAccessibility)
         }
       } catch {
-        result = checkParking(location.latitude, location.longitude, userAccessibility)
+        result = checkParkingV2(location.latitude, location.longitude, userAccessibility)
       }
     } else {
-      result = checkParking(location.latitude, location.longitude, userAccessibility)
+      result = checkParkingV2(location.latitude, location.longitude, userAccessibility)
     }
     setParkingResult(result)
     setCurrentLocation(location)
@@ -307,6 +324,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     setHistory((prev) => [historyItem, ...prev.slice(0, 19)])
 
+    setChecking(false)
     router.push("/status")
   }, [getCurrentLocation, cacheLocation, router])
 
@@ -314,7 +332,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const session = getActiveSessionSync()
     if (!session) return
     const userAccessibility = getUserAccessibility()
-    const result = checkParking(session.coordinates.lat, session.coordinates.lng, userAccessibility)
+    const result = checkParkingV2(session.coordinates.lat, session.coordinates.lng, userAccessibility)
     setParkingResult(result)
     setCurrentLocation({
       latitude: session.coordinates.lat,
@@ -335,7 +353,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return
       }
       const userAccessibility = getUserAccessibility()
-      const result = checkParking(savedLoc.coordinates.lat, savedLoc.coordinates.lng, userAccessibility)
+      const result = checkParkingV2(savedLoc.coordinates.lat, savedLoc.coordinates.lng, userAccessibility)
       setParkingResult(result)
       setCurrentLocation({
         latitude: savedLoc.coordinates.lat,
@@ -448,7 +466,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return
       }
       const userAccessibility = getUserAccessibility()
-      const result = checkParking(item.coordinates.lat, item.coordinates.lng, userAccessibility)
+      const result = checkParkingV2(item.coordinates.lat, item.coordinates.lng, userAccessibility)
       setParkingResult(result)
       setCurrentLocation({
         latitude: item.coordinates.lat,
@@ -521,7 +539,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const handleCancelTimer = useCallback(() => {
     cancelTimer()
-    showToast("info", "Timer cancelled", "Your parking timer has been stopped")
+    setShowPostParking(true)
   }, [cancelTimer])
 
   const handleOnboardingComplete = useCallback(() => {
@@ -633,6 +651,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setShowPhotoVault,
     showReportIssue,
     setShowReportIssue,
+    showPostParking,
+    setShowPostParking,
+    showShare,
+    setShowShare,
     handleCheckParking,
     handleResumeSession,
     handleCheckSavedLocation,

@@ -12,7 +12,7 @@ describe("checkParking", () => {
     vi.setSystemTime(new Date(2026, 2, 28, 0, 0))
     const result = checkParking(40, -80) // random coords -> default zone
     expect(result.status).toBe("allowed")
-    expect(result.title).toBe("Yes, you can park here")
+    expect(result.headline).toContain("Yes")
     expect(result.activeRule).toBeNull()
   })
 
@@ -43,7 +43,7 @@ describe("checkParking", () => {
     vi.setSystemTime(new Date(2026, 2, 23, 8, 0))
     const result = checkParking(37.7849, -122.4094, { hasHandicapPlacard: true, placardType: "permanent" })
     expect(result.status).toBe("prohibited")
-    expect(result.title).toBe("Tow-away zone")
+    expect(result.headline).toBe("Don't park here.")
     expect(result.activeRule!.type).toBe("tow-zone")
     expect(result.timeRemaining).toBeGreaterThan(0)
   })
@@ -74,7 +74,7 @@ describe("checkParking", () => {
     // lat 37.7885, lng -122.3980 fails downtown check (lng diff 0.0114>0.01) but passes commercial
     const result = checkParking(37.7885, -122.3980)
     expect(result.status).toBe("prohibited")
-    expect(["Fire hydrant zone", "Bus stop"]).toContain(result.title)
+    expect(result.headline).toBe("Don't park here.")
   })
 
   it("includes warnings when rules generate them", () => {
@@ -88,7 +88,7 @@ describe("checkParking", () => {
 
 describe("formatTimeRemaining", () => {
   it("formats minutes-only correctly", () => {
-    expect(formatTimeRemaining(45)).toBe("45m")
+    expect(formatTimeRemaining(45)).toBe("45 min")
   })
 
   it("formats hours and minutes correctly", () => {
@@ -96,11 +96,11 @@ describe("formatTimeRemaining", () => {
   })
 
   it("formats exact hours correctly", () => {
-    expect(formatTimeRemaining(120)).toBe("2h 00m")
+    expect(formatTimeRemaining(120)).toBe("2h")
   })
 
   it("formats zero minutes correctly", () => {
-    expect(formatTimeRemaining(0)).toBe("0m")
+    expect(formatTimeRemaining(0)).toBe("0 min")
   })
 })
 

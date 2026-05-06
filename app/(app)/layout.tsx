@@ -12,6 +12,8 @@ import { PermissionRequest } from "@/components/onboarding/permission-request"
 import { AuthScreen } from "@/components/auth/auth-screen"
 import { BiometricLock } from "@/components/biometric-lock"
 import { CheckingScreen } from "@/components/screens/checking-screen"
+import { CityProvider } from "@/lib/city-context"
+import { I18nProvider } from "@/lib/i18n"
 
 function ModalSpinner() {
   return (
@@ -43,6 +45,16 @@ const TimerModal = dynamic(
 
 const UpgradeModal = dynamic(
   () => import("@/components/upgrade-modal").then(mod => ({ default: mod.UpgradeModal })),
+  { loading: () => <ModalSpinner /> }
+)
+
+const PostParkingModal = dynamic(
+  () => import("@/components/post-parking-modal").then(mod => ({ default: mod.PostParkingModal })),
+  { loading: () => <ModalSpinner /> }
+)
+
+const ShareModal = dynamic(
+  () => import("@/components/share-modal").then(mod => ({ default: mod.ShareModal })),
   { loading: () => <ModalSpinner /> }
 )
 
@@ -121,6 +133,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         currentAddress={ctx.currentLocation?.address}
         showToast={showToast}
       />
+      <PostParkingModal
+        isOpen={ctx.showPostParking}
+        onClose={() => ctx.setShowPostParking(false)}
+        onShare={() => { ctx.setShowPostParking(false); ctx.setShowShare(true) }}
+        location={ctx.currentLocation ? { lat: ctx.currentLocation.latitude, lng: ctx.currentLocation.longitude } : null}
+        address={ctx.currentLocation?.address}
+      />
+      <ShareModal
+        isOpen={ctx.showShare}
+        onClose={() => ctx.setShowShare(false)}
+      />
       {ctx.checking && (
         <CheckingScreen onComplete={() => ctx.setChecking(false)} />
       )}
@@ -130,10 +153,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ToastProvider>
-      <AppProvider>
-        <AppLayoutContent>{children}</AppLayoutContent>
-      </AppProvider>
-    </ToastProvider>
+    <I18nProvider>
+      <CityProvider>
+        <ToastProvider>
+          <AppProvider>
+            <AppLayoutContent>{children}</AppLayoutContent>
+          </AppProvider>
+        </ToastProvider>
+      </CityProvider>
+    </I18nProvider>
   )
 }

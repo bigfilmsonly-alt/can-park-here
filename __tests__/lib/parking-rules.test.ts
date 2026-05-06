@@ -43,7 +43,7 @@ describe("checkParking", () => {
       const result = checkParking(COORDS.default.lat, COORDS.default.lng)
 
       expect(result.status).toBe("prohibited")
-      expect(result.title).toContain("Street cleaning")
+      expect(result.reason).toContain("Street cleaning")
       expect(result.activeRule).not.toBeNull()
       expect(result.activeRule!.type).toBe("street-cleaning")
     })
@@ -93,7 +93,7 @@ describe("checkParking", () => {
 
       // Handicap check takes precedence over tow-zone
       expect(result.status).toBe("prohibited")
-      expect(result.title).toBe("Accessible parking only")
+      expect(result.title).toBe("Don't park here.")
       expect(result.handicapInfo).toBeDefined()
       expect(result.handicapInfo!.requiresPlacard).toBe(true)
     })
@@ -103,7 +103,7 @@ describe("checkParking", () => {
       const result = checkParking(COORDS.downtown.lat, COORDS.downtown.lng, withPlacard)
 
       expect(result.status).toBe("prohibited")
-      expect(result.title).toBe("Tow-away zone")
+      expect(result.headline).toBe("Don't park here.")
       expect(result.activeRule!.type).toBe("tow-zone")
       expect(result.activeRule!.fine).toBe(500)
       expect(result.timeRemaining).toBeGreaterThan(0)
@@ -160,7 +160,7 @@ describe("checkParking", () => {
       )
 
       expect(result.status).toBe("prohibited")
-      expect(result.title).toBe("Accessible parking only")
+      expect(result.title).toBe("Don't park here.")
       expect(result.handicapInfo!.requiresPlacard).toBe(true)
     })
 
@@ -173,7 +173,7 @@ describe("checkParking", () => {
       )
 
       expect(result.status).toBe("prohibited")
-      expect(result.title).toBe("Permit required")
+      expect(result.reason).toContain("Permit parking only")
       expect(result.activeRule!.type).toBe("permit-only")
       expect(result.warnings.some((w) => w.type === "permit")).toBe(true)
     })
@@ -250,8 +250,8 @@ describe("checkParking", () => {
       )
 
       expect(result.status).toBe("prohibited")
-      expect(result.title).toBe("Accessible parking only")
-      expect(result.description).toContain("$450")
+      expect(result.headline).toBe("Don't park here.")
+      expect(result.reason).toContain("$450")
     })
 
     it("allows parking for handicap zone when user has valid placard", () => {
@@ -361,14 +361,14 @@ describe("checkParking", () => {
 
 describe("formatTimeRemaining", () => {
   it("formats minutes-only correctly", () => {
-    expect(formatTimeRemaining(45)).toBe("45m")
-    expect(formatTimeRemaining(1)).toBe("1m")
-    expect(formatTimeRemaining(0)).toBe("0m")
+    expect(formatTimeRemaining(45)).toBe("45 min")
+    expect(formatTimeRemaining(1)).toBe("1 min")
+    expect(formatTimeRemaining(0)).toBe("0 min")
   })
 
   it("formats hours and minutes correctly", () => {
     expect(formatTimeRemaining(90)).toBe("1h 30m")
-    expect(formatTimeRemaining(120)).toBe("2h 00m")
+    expect(formatTimeRemaining(120)).toBe("2h")
     expect(formatTimeRemaining(125)).toBe("2h 05m")
   })
 
