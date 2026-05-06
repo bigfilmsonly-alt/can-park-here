@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { AlertTriangle, Truck, Wrench, Flag, ArrowUp, ArrowDown, ShieldAlert } from "lucide-react"
+import { useHaptics } from "@/hooks/use-haptics"
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -113,6 +114,7 @@ function saveVotes(votes: Record<string, number>) {
 export function CommunityScreen({
   onOpenReportIssue,
 }: CommunityScreenProps) {
+  const haptics = useHaptics()
   const [activeChip, setActiveChip] = useState<FilterChip>("all")
   /* votes stores id -> delta (+1 upvoted, -1 downvoted, 0 neutral) */
   const [votes, setVotes] = useState<Record<string, number>>({})
@@ -132,12 +134,14 @@ export function CommunityScreen({
   const handleUpvote = (id: string) => {
     const current = votes[id] ?? 0
     const next = current === 1 ? 0 : 1 /* toggle */
+    haptics.light()
     persistVotes({ ...votes, [id]: next })
   }
 
   const handleDownvote = (id: string) => {
     const current = votes[id] ?? 0
     const next = current === -1 ? 0 : -1 /* toggle */
+    haptics.light()
     persistVotes({ ...votes, [id]: next })
   }
 
